@@ -1,0 +1,5 @@
+{
+    "key": "F7",
+    "command": "vs-bruno.openPlainText",
+    "when": "resourceLangId == bru"
+}

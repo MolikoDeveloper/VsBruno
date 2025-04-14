@@ -1,14 +1,29 @@
 import * as vscode from "vscode";
+import BruCustomEditorProvider from "./BruCustomEditorProvider";
 
 export const activate = (context: vscode.ExtensionContext) => {
-  const disposable = vscode.commands.registerCommand(
-    "bun-vscode-extension.helloworld",
-    () => {
-      vscode.window.showInformationMessage("Hello World!");
-    }
-  );
+  const provider = new BruCustomEditorProvider(context);
+  const providerRegistration = vscode.window.registerCustomEditorProvider(
+    'vs-bruno.bruEditor',
+    provider
+  )
 
-  context.subscriptions.push(disposable);
+  // reopen in text editor
+  const openPlainText = vscode.commands.registerCommand(
+    "vs-bruno.openPlainText",
+    async () => {
+      const activeEditor = vscode.window.activeTextEditor;
+      if (!activeEditor) return;
+
+      await vscode.commands.executeCommand(
+        "workbench.action.reopenWith",
+        activeEditor.document.uri,
+        "default"
+      )
+    }
+  )
+
+  context.subscriptions.push(providerRegistration, openPlainText)
 };
 
-export const deactivate = () => {};
+export const deactivate = () => { };

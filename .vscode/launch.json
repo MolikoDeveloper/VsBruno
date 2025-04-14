@@ -8,8 +8,13 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/dist/**/*.cjs"],
+      "args": [
+        "--folder-uri=${workspaceFolder}/test/bruno",
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.cjs"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]

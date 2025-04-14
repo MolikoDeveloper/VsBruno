@@ -1,7 +1,7 @@
 import { describe, it, expect, spyOn, mock, jest } from "bun:test";
 import * as vscode from "vscode";
 
-import { activate } from "./extension.ts";
+import { activate } from "../src/extension.ts";
 
 spyOn(vscode.commands, "registerCommand");
 spyOn(vscode.window, "showInformationMessage");

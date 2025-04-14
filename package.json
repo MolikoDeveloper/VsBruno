@@ -2,15 +2,21 @@
   "main": "./dist/extension.cjs",
   "module": "index.ts",
   "dependencies": {
-    "@types/vscode": "^1.86.0"
+    "@types/vscode": "^1.99.1",
+    "@types/vscode-webview": "^1.57.5",
+    "lodash": "^4.17.21",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@vscode/vsce": "^2.23.0",
-    "esbuild": "^0.20.0"
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vscode/vsce": "^2.32.0",
+    "esbuild": "^0.20.2"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.3.3"
   },
   "type": "module",
   "scripts": {
@@ -22,19 +28,31 @@
     "clean": "rm -r ./dist"
   },
   "//": "START EXTENSION ATTRIBUTES",
-  "name": "VsBruno",
+  "name": "vs-bruno",
   "version": "0.0.1",
-  "description": "Extension description",
-  "displayName": "Extension display name",
+  "description": "a bruno files compatible api client.",
+  "displayName": "VS-Bruno",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOURNAME"
+    "url": "https://github.com/MolikoDeveloper"
   },
   "contributes": {
     "commands": [
       {
-        "command": "bun-vscode-extension.helloworld",
-        "title": "Hello World"
+        "command": "vs-bruno.openPlainText",
+        "title": "Abrir BRU como texto"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "vs-bruno.bruEditor",
+        "displayName": "Bruno Editor",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.bru"
+          }
+        ]
       }
     ]
   },
