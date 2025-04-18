@@ -9,7 +9,7 @@ code.hljs {
 }
 
 .hljs {
-    background: #2e3440
+    background: var(--vscode-editorWidget-background)
 }
 
 .hljs,

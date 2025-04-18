@@ -3,14 +3,31 @@
 
 :root {
     color-scheme: light dark;
+    height: 100%;
+}
+
+html {
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
 }
 
 body {
-    /* Usa la misma fuente que el editor */
     font-family: var(--vscode-editor-font-family), monospace;
-    /* También podrías heredar colores: */
     color: var(--vscode-editor-foreground);
     background-color: var(--vscode-editor-background);
+    height: 100%;
+    padding: 0;
+}
+
+.markdown {
+    all: initial;
+}
+
+.markdown>* {
+    all: revert;
+    font-family: var(--vscode-editor-font-family), monospace;
+    color: var(--vscode-editor-foreground);
 }
 
 .markdown table {
@@ -24,5 +41,3 @@ body {
 .markdown td {
     @apply border p-2;
 }
-
-.markdown {}

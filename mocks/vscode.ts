@@ -4073,9 +4073,9 @@
 // interface Thenable<T> extends PromiseLike<T> {}
 
 export const commands = {
-  registerCommand: () => {},
+  registerCommand: () => { },
 };
 
 export const window = {
-  showInformationMessage: () => {},
+  showInformationMessage: () => { },
 };
