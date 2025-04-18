@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { parseBru, stringifyBru } from "./bruno/bruno";
+import type { SerializedResponse } from "./@types/shared";
 
 class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     constructor(private readonly context: vscode.ExtensionContext) { }
@@ -39,7 +40,7 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
         });
 
         //listen
-        webviewPanel.webview.onDidReceiveMessage((message) => {
+        webviewPanel.webview.onDidReceiveMessage(async (message) => {
             switch (message.type) {
                 case "edit":
                     const bru_string = stringifyBru(JSON.parse(message.text))
@@ -50,9 +51,53 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                         type: "open",
                         data: parseBru(document.getText())
                     });
-
-                    //webviewPanel.webview.postMessage({ type: 'baseUri', data: webviewUri.toString() });
                     break;
+                case "fetch":
+                    const { uri, init } = message.data as { uri: string | URL; init?: RequestInit };
+                    if (!uri) { return; }
+
+                    try {
+                        const res = await fetch(uri.toString(), init);
+
+                        // ── serializar cabeceras ──
+                        const headers: Record<string, string> = {};
+                        res.headers.forEach((v, k) => (headers[k] = v));
+
+                        // ── serializar cuerpo ──
+                        const ct = headers["content-type"] ?? "";
+                        let parsedAs: "json" | "text" | "binary";
+                        let body: unknown;
+
+                        if (ct.includes("application/json")) {
+                            body = await res.json();
+                            parsedAs = "json";
+                        } else if (ct.startsWith("text/")) {
+                            body = await res.text();
+                            parsedAs = "text";
+                        } else {
+                            // binario → base64 para no corromperlo en el postMessage
+                            const ab = await res.arrayBuffer();
+                            body = Buffer.from(ab).toString("base64");
+                            parsedAs = "binary";
+                        }
+
+                        const payload: SerializedResponse = {
+                            ok: res.ok,
+                            status: res.status,
+                            statusText: res.statusText,
+                            url: res.url,
+                            headers,
+                            parsedAs,
+                            body,
+                        };
+
+                        webviewPanel.webview.postMessage({ type: "fetch", data: payload });
+                    } catch (err) {
+                        webviewPanel.webview.postMessage({
+                            type: "fetch-error",
+                            data: String(err),
+                        });
+                    }
             }
         })
 
