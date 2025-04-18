@@ -3,129 +3,195 @@ import { createRoot } from "react-dom/client";
 import { Tag } from "../components/tag";
 import { type BruBlock } from "../bruno/bruno";
 import { Params } from "../components/Params";
-import Markdown2 from "markdown-to-jsx"
+import Markdown2 from "markdown-to-jsx";
 import { SyntaxHighlightedCode } from "../components/mdOverrides/SyntaxHighlightedCode";
+import type { SerializedResponse } from "../@types/shared";
+import { vscode } from "../common/vscodeapi";
 
-const tabs = [
-    { id: "L_tab_params", title: "Params" },
-    { id: "L_tab_body", title: "Body" },
-    { id: "L_tab_header", title: "Header" },
-    { id: "L_tab_auth", title: "Auth" },
-    { id: "L_tab_vars", title: "Vars" },
-    { id: "L_tab_scripts", title: "Script" },
-    { id: "L_tab_assert", title: "Assert" },
-    { id: "L_tab_test", title: "Tests" },
-    { id: "L_tab_docs", title: "Docs" },
-    { id: "R_tab_Response", title: "Response" },
-    { id: "R_tab_Headers", title: "Headers" },
-    { id: "R_tab_Timeline", title: "Timeline" },
-    { id: "R_tab_Tests", title: "Tests" },
+const LEFT_TABS = [
+    "params",
+    "body",
+    "header",
+    "auth",
+    "vars",
+    "scripts",
+    "assert",
+    "test",
+    "docs"
 ];
 
+const RIGHT_TABS = ["response", "headers", "timeline", "tests"];
+
 function App() {
-    const [documentText, setDocumentText] = React.useState<BruBlock[]>([]);
-    const [activeItem, setActive] = React.useState<string>("L_tab_params");
+    const saved = vscode.getState();
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const isResizing = React.useRef(false);
 
-    // Listen for messages from extension
+    const [rightWidth, setRightWidth] = React.useState(
+        saved?.panelSize?.rightWidth ?? 600
+    );
+    const [BruContent, setBruContent] = React.useState<BruBlock[]>([]);
+    const [L_activeTab, setLTab] = React.useState(
+        saved?.activetab?.active_L_Tab ?? "L_tab_params"
+    );
+    const [R_activeTab, setRTab] = React.useState(
+        saved?.activetab?.active_R_Tab ?? "R_tab_response"
+    );
+    const [resp, setResp] = React.useState<SerializedResponse | null>(null);
+
     React.useEffect(() => {
-        const vsCode = acquireVsCodeApi();
+        vscode.postMessage({
+            type: "fetch",
+            data: { uri: "https://pokeapi.co/api/v2/pokemon/ditto" }
+        });
+
         window.addEventListener("message", (event) => {
-            const message: { type: "open" | "update" | "baseUri", data: BruBlock[] } = event.data;
-
-            if (message.type === "update" || message.type === 'open') {
-                message.data.forEach(d => {
-                    if (d.blockName === "docs")
-                        setDocumentText(d.data._raw)
-                })
-            }
-            if (message.type === "baseUri") {
-                console.log(`bru:`, message)
-                const baseUrl = message.data;
-
+            const message = event.data;
+            if (message.type === "update" || message.type === "open") {
+                setBruContent(message.data);
+            } else if (message.type === "fetch") {
+                setResp(message.data as SerializedResponse);
             }
         });
-        // request the initial doc text from extension
-        vsCode.postMessage({ type: "loaded" });
+
+        vscode.postMessage({ type: "loaded" });
     }, []);
 
-    // Parse the .bru text here or show a custom interface
-    // ...
-    // If user modifies something, send back to extension:
-    const sendEdit = () => {
-        // global
-        const vsCode = acquireVsCodeApi();
-        vsCode.postMessage({ type: "edit", text: documentText });
+    React.useEffect(() => {
+        const onMouseMove = (e: MouseEvent) => {
+            if (!isResizing.current || !containerRef.current) return;
+            const containerRect = containerRef.current.getBoundingClientRect();
+            const offset = e.clientX - containerRect.left;
+            const newRight = containerRect.width - offset;
+            const clamped = Math.max(300, Math.min(newRight, containerRect.width - 300));
+            setRightWidth(clamped);
+        };
+
+        const onMouseUp = () => {
+            isResizing.current = false;
+            document.body.style.userSelect = "";
+            document.body.style.cursor = "";
+            vscode.setState({
+                ...vscode.getState(),
+                panelSize: { rightWidth }
+            });
+        };
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+        return () => {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
+        };
+    }, [rightWidth]);
+
+    const handleTabClick = (tab: string, side: "L" | "R") => {
+        if (side === "L") setLTab(tab);
+        if (side === "R") setRTab(tab);
+        vscode.setState({
+            ...vscode.getState(),
+            activetab: {
+                active_L_Tab: side === "L" ? tab : L_activeTab,
+                active_R_Tab: side === "R" ? tab : R_activeTab
+            }
+        });
     };
 
-    const activeTag = React.useCallback(({ event, props }: { event: React.MouseEvent<HTMLDivElement, MouseEvent>; props: { active: boolean }; }) => {
-        setActive(event.currentTarget.id);
-    }, [])
+    const renderLeftPanel = () => {
+        const docs = BruContent.find((d) => d.blockName === "docs")?.data._raw;
+        return (
+            <>
+                <div className="flex flex-wrap gap-1 select-none">
+                    {LEFT_TABS.map((id) => (
+                        <Tag
+                            key={id}
+                            title={id[0].toUpperCase() + id.slice(1)}
+                            id={`L_tab_${id}`}
+                            active={L_activeTab === `L_tab_${id}`}
+                            onClick={() => handleTabClick(`L_tab_${id}`, "L")}
+                        />
+                    ))}
+                </div>
+                <div className="relative">
+                    {L_activeTab === "L_tab_params" && (
+                        <div>
+                            <p className="text-[#dac100]">Query</p>
+                            <Params value={[{ method: "device", value: "x13", active: true }]} />
+                        </div>
+                    )}
+                    {L_activeTab === "L_tab_docs" && (
+                        <div>
+                            <p className="text-yellow-400 text-[14px] cursor-pointer mt-2">edit</p>
+                            <Markdown2
+                                className="revert-tailwind markdown"
+                                options={{ overrides: { code: SyntaxHighlightedCode } }}
+                            >
+                                {docs}
+                            </Markdown2>
+                        </div>
+                    )}
+                </div>
+            </>
+        );
+    };
+
+    const renderRightPanel = () => (
+        <>
+            <div className="flex flex-wrap gap-1 select-none">
+                {RIGHT_TABS.map((id) => (
+                    <Tag
+                        key={id}
+                        title={id[0].toUpperCase() + id.slice(1)}
+                        id={`R_tab_${id}`}
+                        active={R_activeTab === `R_tab_${id}`}
+                        onClick={() => handleTabClick(`R_tab_${id}`, "R")}
+                    />
+                ))}
+            </div>
+            <div className="relative h-full pt-4 pb-[70px]">
+                {R_activeTab === "R_tab_response" && resp && (
+                    <Markdown2
+                        className="markdown h-full overflow-auto border border-[var(--vscode-pickerGroup-border)]"
+                        options={{ overrides: { code: SyntaxHighlightedCode } }}
+                    >
+                        {"```jsons\n" + JSON.stringify(resp.body, null, 1) + "\n```"}
+                    </Markdown2>
+                )}
+            </div>
+        </>
+    );
 
     return (
-        <div className="">
-            <div className="bg-[var(--vscode-input-background)] text-[15px] font-bold flex">
-                <div className="self-center h-full select-none">
-                    GET
-                </div>
-                <input type="text" style={{ outline: "0px" }} className="w-full h-full m-0 p-2" />
+        <div className="m-0 p-0 relative h-screen px-4">
+            <div className="bg-[var(--vscode-input-background)] h-[30px] text-[15px] font-bold flex m-0">
+                <div className="self-center select-none px-4">GET</div>
+                <input
+                    type="text"
+                    style={{ outline: "0px" }}
+                    placeholder="http://www.example.com/api/version"
+                    className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                />
             </div>
-            <div className="flex flex-auto">
-                <div className="w-full">
-                    <div className="flex flex-wrap gap-1 select-none">
-                        {
-                            tabs.map((data, key) => (
-                                data.id.startsWith("L_tab") ?
-                                    <>
-                                        <Tag key={key} title={data.title} id={data.id} active={activeItem === data.id} onClick={activeTag}></Tag>
-                                    </> : <></>)
-                            )
-                        }
-                    </div>
-                    <div className="min-w-[320px] relative">
-                        {
-                            tabs.map((data, key) => {
-                                if (!data.id.startsWith("L_tab")) return <></>;
+            <div ref={containerRef} className="flex h-full w-full relative">
+                <div className="flex-1 overflow-hidden">{renderLeftPanel()}</div>
 
-                                const visible = data.id === activeItem ? "visible" : "hidden";
+                <div
+                    className="w-1 bg-[var(--vscode-editorGroup-border)] mx-4 cursor-col-resize"
+                    onMouseDown={() => {
+                        isResizing.current = true;
+                        document.body.style.userSelect = "none";
+                        document.body.style.cursor = "col-resize";
+                    }}
+                />
 
-                                switch (data.id) {
-                                    case "L_tab_params":
-                                        return <div className="w-full absolute" style={{ visibility: visible }} key={key}>
-                                            <p className="text-[#6b6b6b]">Query</p>
-                                            <Params value={[{ method: "device", value: "x13", active: true }]}></Params>
-                                        </div>
-                                    case "L_tab_body":
-                                        return <div className="absolute" key={key} style={{ visibility: visible }}>
-                                            body here.
-                                        </div>
-                                    case "L_tab_docs":
-                                        return <div key={key} className="absolute" style={{ visibility: visible }}>
-                                            <p className="text-yellow-400 text-[14px] cursor-pointer mt-2">edit</p>
-                                            <Markdown2 className="markdown" options={{ overrides: { code: SyntaxHighlightedCode } }}>{`${documentText}`}</Markdown2>
-                                        </div>
-                                    default:
-                                        return <></>
-                                }
-                            })
-                        }
-                    </div>
-                </div>
-                <div className="w-[px] border-x h-['available'] mx-4"></div>
-                <div className="w-full">
-                    <div className="flex flex-wrap gap-1 select-none">
-                        {
-                            tabs.map((data, key) => (
-                                data.id.startsWith("R_tab") ?
-                                    <>
-                                        <Tag key={key} title={data.title} id={data.id} active={activeItem === data.id} onClick={activeTag}></Tag>
-                                    </> : <></>)
-                            )
-                        }
-                    </div>
-                    <Markdown2 className="markdown" options={{ overrides: { code: SyntaxHighlightedCode, } }}>{`${documentText}`}</Markdown2>
+                <div
+                    className="overflow-hidden transition-none"
+                    style={{ width: `${rightWidth}px` }}
+                >
+                    {renderRightPanel()}
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
 
@@ -133,4 +199,3 @@ const container = document.getElementById("root");
 if (container) {
     createRoot(container).render(<App />);
 }
-
