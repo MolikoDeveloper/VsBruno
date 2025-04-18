@@ -1,18 +1,31 @@
-import * as React from 'react';
+// SyntaxHighlightedCode.tsx ─────────────────────────────────────────────────
+import React from "react";
+import { JsonSchemaViewer } from "./JsonSchemaViewer";
 
-type Props = React.ComponentProps<'code'>;
+type Props = React.ComponentProps<"code">;
 
 export function SyntaxHighlightedCode(props: Props) {
-  const ref = React.useRef<HTMLElement | null>(null);
+  const cls = props.className ?? "";
+
+  /* ① Solo para ```jsons``` */
+  if (cls.includes("lang-jsons") && typeof props.children === "string") {
+    try {
+      const json = JSON.parse(props.children);
+      return <JsonSchemaViewer data={json} />;
+    } catch {
+      /* Si falla el parseo seguimos al resaltado normal */
+    }
+  }
+
+  /* ② Highlight.js normal */
+  const ref = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
-    const el = ref.current;
-    if (el && props.className?.includes('lang-') && (window as any).hljs) {
-      // Quitar la marca para forzar a hljs a rehacer el resaltado
-      el.removeAttribute('data-highlighted');
-      (window as any).hljs.highlightElement(el);
+    if (ref.current && cls.includes("lang-") && (window as any).hljs) {
+      ref.current.removeAttribute("data-highlighted");
+      (window as any).hljs.highlightElement(ref.current);
     }
-  }, [props.className, props.children]);
+  }, [cls, props.children]);
 
   return <code ref={ref} {...props} />;
 }
