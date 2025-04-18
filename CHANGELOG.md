@@ -10,3 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Integrated React-based custom editor for `.bru` files.
 - Added command `vs-bruno.openPlainText` to re-open `.bru` in text mode (F7).
+- Added a MarkDown viewer.
+- Added Tailwind support.
+- added postcss build config.
+- better bruno parser.

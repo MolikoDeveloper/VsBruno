@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { parseBru, stringifyBru } from "./bruno/bruno";
 
 class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     constructor(private readonly context: vscode.ExtensionContext) { }
@@ -8,6 +9,11 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
      * We show a WebviewPanel with React inside it.
      */
     public async resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): Promise<void> {
+
+        /*const webviewUri = webviewPanel.webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "media", "monaco")
+        );*/
+
         //setup basic webview options
         webviewPanel.webview.options = {
             enableScripts: true
@@ -19,11 +25,16 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
             document
         )
 
+        //webviewPanel.title = `GET - ${document.uri.path.split('/').pop()}`;
+
         //Optionally, respond to changes in the doc's text
         const changeDoc = vscode.workspace.onDidChangeTextDocument((e) => {
             if (e.document.uri.toString() === document.uri.toString()) {
                 // Re-render or post a message to the webview with updated text
-                webviewPanel.webview.postMessage({ type: "update", text: document.getText() });
+                webviewPanel.webview.postMessage({
+                    type: "update",
+                    data: parseBru(document.getText())
+                });
             }
         });
 
@@ -31,13 +42,16 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
         webviewPanel.webview.onDidReceiveMessage((message) => {
             switch (message.type) {
                 case "edit":
-                    console.log(message)
+                    const bru_string = stringifyBru(JSON.parse(message.text))
+                    console.log(bru_string)
                     break;
                 case "loaded":
                     webviewPanel.webview.postMessage({
                         type: "open",
-                        text: document.getText()
+                        data: parseBru(document.getText())
                     });
+
+                    //webviewPanel.webview.postMessage({ type: 'baseUri', data: webviewUri.toString() });
                     break;
             }
         })
@@ -50,21 +64,41 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     }
 
     private getHtmlForWebView(webview: vscode.Webview, doc: vscode.TextDocument): string {
+        // serve App.cjs
         const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview/App.cjs")
+            vscode.Uri.joinPath(this.context.extensionUri, "dist", "webview", "App.cjs")
         );
 
-        console.log(scriptUri)
+        //serve tailwind.css
+        const cssUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "dist", "tailwind.css")
+        )
+
+        const highlightMinJs = webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, "dist", "common", "highlight.min.cjs")
+        )
+
+
 
         return /*html*/`
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'none'; img-src ${webview.cspSource} data:; 
-                   style-src ${webview.cspSource} 'unsafe-inline'; 
-                   script-src ${webview.cspSource};" />
+      <meta charset="UTF-8" />
+      <meta http-equiv="Content-Security-Policy" 
+      content="
+  default-src 'none';
+  img-src    ${webview.cspSource} data:;
+  style-src  ${webview.cspSource} 'unsafe-inline';
+  script-src ${webview.cspSource};
+"
+      content="
+      default-src 'none';
+      img-src ${webview.cspSource} data:; 
+      style-src ${webview.cspSource} 'unsafe-inline'; 
+      script-src ${webview.cspSource};" />
+      <link rel="stylesheet" href="${cssUri}"/>
+      <script crossorigin src=${highlightMinJs}></script>
     <title>.bru Editor</title>
   </head>
   <body>
@@ -77,3 +111,5 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
 }
 
 export default BruCustomEditorProvider
+
+//vscode-file://vscode-app/c:/Users/aarriagadac/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/workbench.desktop.main.css

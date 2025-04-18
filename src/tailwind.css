@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "../nord.min.css";
+
+:root {
+    color-scheme: light dark;
+}
+
+body {
+    /* Usa la misma fuente que el editor */
+    font-family: var(--vscode-editor-font-family), monospace;
+    /* También podrías heredar colores: */
+    color: var(--vscode-editor-foreground);
+    background-color: var(--vscode-editor-background);
+}
+
+.markdown table {
+    @apply mt-2;
+}
+
+.markdown th {
+    @apply border p-2;
+}
+
+.markdown td {
+    @apply border p-2;
+}
+
+.markdown {}

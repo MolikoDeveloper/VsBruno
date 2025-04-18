@@ -4,9 +4,11 @@
     {
       "type": "bun",
       "script": "bun run ./scripts/build-with-esbuild.ts",
+      //"script": "bun run ./scripts/bun.config.ts",
       "problemMatcher": [],
       "label": "bun: build",
       "detail": "bun run ./scripts/build-with-esbuild.ts - package.json",
+      //"detail": "bun run ./scripts/bun.config.ts - package.json",
       "group": {
         "kind": "build",
         "isDefault": true

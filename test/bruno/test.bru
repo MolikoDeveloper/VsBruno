@@ -5,14 +5,13 @@ meta {
 }
 
 get {
-  url: http://localhost:3001/api/devices?filter=aarriagadac
+  url: http://localhost:3001/api/devices
   body: none
-  auth: bearer 
+  auth: bearer
 }
 
-params:query {   
-  filter: aarriagadac
-  ~limit: 3 
+params:query {
+  ~limit: 60
   ~page: 0
 }
 
@@ -22,12 +21,12 @@ auth:bearer {
 
 docs {
   # `GET` devices
-  
+    
   returns all the devices created.
-  
+    
   ### model:
-  ```ts
-  type devices = {
+  ```js
+  {
     data?: {
       Tipo: string,
       Marca: string,
@@ -44,11 +43,11 @@ docs {
     total: number,
     pages: number
   }
-  ```
-  
-  ### endpoint
-  
-  endpoint       | method | auth?
-  ---------------|--------|------
-  `/api/devices` | GET    | true
+```
+
+### endpoint
+
+|endpoint       | method | auth?|
+|---------------|--------|------|
+|`/api/devices` | GET    | true |
 }
