@@ -3,7 +3,7 @@
   "publisher": "MolikoDeveloper",
   "//": "START EXTENSION ATTRIBUTES",
   "name": "vs-bruno",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a bruno files compatible api client.",
   "displayName": "VS-Bruno",
   "icon": "icon.png",
