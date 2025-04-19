@@ -12,14 +12,15 @@ export const activate = (context: vscode.ExtensionContext) => {
   const openPlainText = vscode.commands.registerCommand(
     "vs-bruno.openPlainText",
     async () => {
+      console.log("reopenign")
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) return;
 
       await vscode.commands.executeCommand(
         "workbench.action.reopenWith",
         activeEditor.document.uri,
-        "default"
-      )
+        "Default"
+      );
     }
   )
 

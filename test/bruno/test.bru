@@ -1,79 +1,53 @@
 meta {
-  name: products
+  name: devices
   type: http
-  seq: 1
+  seq: 2
 }
 
-post {
-  url: http://localhost:3001/api/products
-  body: multipartForm
+get {
+  url: http://localhost:3001/api/devices?filter=aarriagadac
+  body: none
   auth: bearer
+}
+
+params:query {
+  filter: aarriagadac
+  name: alberto
 }
 
 auth:bearer {
   token: 4ZaF7hdEgNn43KSvyezkTQ==
 }
 
-body:json {
-  {
-    data: {
-      brand: "example",
-      model_name: "example",
-      product_name: "example",
-      type: "example"
-    },
-    image: null
-  }
-}
-
-body:multipart-form {
-  data: {"brand" : "test", "model_name":"test", "product_name":"test", "type":"test"}
-  image: @file(C:\Users\molik\Nextcloud\Photos\steam profile picture.jpg)
-}
-
 docs {
-  # `POST` products
+  # `GET` devices
   
-  ### description
-   insert a single product throught the API.
-
-  ### data body:
-  ```ts
-  //as multipart form
-  {
-    data: {
-      brand: string;
-      model_name: string;
-      product_name: string;
-      type: string;
-    },
-    image: File ;
-  }
-  ```
+  returns all the devices created.
   
-  ### returns
-   details of the created product.
-   
-  ### return model:
+  ### model:
   ```ts
-  ProductResponse: {
+  type devices = {
     data?: {
-      id: string,
-      brand: string,
-      model_name: string,
-      product_name: string,
-      type: string
-    },
+      Tipo: string,
+      Marca: string,
+      Modelo: string,
+      "N. Serie": string,
+      Usuario: string,
+      Ticket: string,
+      id: string
+    }[],
     status: {
       code: number,
       description: string
-    }
+    },
+    total: number,
+    pages: number
   }
   ```
   
   ### endpoint
   
-  |endpoint        | method | auth?|
-  |----------------|--------|------|
-  |`/api/products` | POST   | true|
+  |endpoint       | method | auth?|
+  |---------------|:------:|:----:|
+  |`/api/devices` | GET    | true |
 }

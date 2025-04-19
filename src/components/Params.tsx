@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-type Entry = { method: string; value: string; active: boolean };
+export type Entry = { method: string; value: string; active: boolean };
 
 interface EditableListProps {
     value: Entry[];
