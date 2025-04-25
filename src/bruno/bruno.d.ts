@@ -5,17 +5,8 @@ export interface BruFile {
 
   /* query / params / headers */
   query?: Record<string, string>;
-  params?: {
-    enabled: boolean;
-    name: string,
-    type: "query" | "path",
-    value: string
-  }[];
-  headers?: {
-    enabled: boolean,
-    name: string,
-    value: string
-  }[];
+  params?: BruParams[];
+  headers?: BruHeaders[];
 
   /* bodies */
   body?: BruBody;
@@ -41,6 +32,20 @@ export interface BruFile {
   /* any future blocks */
   [unknownBlock: string]: unknown;
 }
+
+export interface BruHeaders {
+  enabled: boolean,
+  name: string,
+  value: string
+}
+
+export interface BruParams {
+  enabled: boolean;
+  name: string,
+  type: "query" | "path",
+  value: string
+}
+
 
 /* ───────────────────── meta ───────────────────── */
 export interface BruMeta {

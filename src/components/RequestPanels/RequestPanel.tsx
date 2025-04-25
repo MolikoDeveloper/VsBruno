@@ -1,96 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import RequestParamsPanel from "./Params_RequestPanel";
 import BodyParamsPanel from "./Body_RequestPanel";
-import { useBruContent } from "src/webview/context/BruProvider";
 import Headers_RequestPanel from "./Headers_RequestPanel";
 import Auth_RequestPanel from "./Auth_RequestPanel";
+import { useBruContent } from "src/webview/context/BruProvider";
 
 interface Props {
     className?: string
 }
 const tabs = ["Params", "Body", "Headers", "Auth", "Vars", "Script", "Assert", "Test", "Docs"];
 
-type Mime = {
-    name: string,
-    values:
-    {
-        key: string
-        mime: string
-        name: string
-        active: boolean;
-    }[]
-}
-
-const mimes: Mime[] = [
-    {
-        name: "Form",
-        values: [
-            {
-                mime: "multipart/form-data",
-                key: "multipartForm",
-                name: "Multipart Form",
-                active: false
-            },
-            {
-                mime: "application/x-www-form-urlencoded",
-                key: "form-url-encoded",
-                name: "formUrlEncoded",
-                active: false
-            }
-        ]
-    },
-    {
-        name: "Raw",
-        values: [
-            {
-                mime: "application/json",
-                key: "json",
-                name: "JSON",
-                active: false
-            },
-            {
-                mime: "application/ld+json",
-                key: "ldjson",
-                name: "Json-LD (ex)",
-                active: false
-            },
-            {
-                mime: "application/xml",
-                key: "xml",
-                name: "XML",
-                active: false
-            },
-            {
-                mime: "text/plain",
-                key: "text",
-                name: "Plain Text",
-                active: false
-            },
-            {
-                mime: "application/sparql",
-                key: "sparql",
-                name: "SparQL",
-                active: false
-            }
-        ]
-    },
-    {
-        name: "Others",
-        values: [
-            {
-                mime: "",
-                key: "none",
-                name: "No Body",
-                active: true
-            }
-        ]
-    }
-]
 
 export default function ({ className }: Props) {
     const { bruContent } = useBruContent();
-    const [currentTab, setCurrentTab] = useState<string>("Auth");
-    const [contentType, setContentType] = useState<string>("");
+    const [currentTab, setCurrentTab] = useState<string>("Params");
 
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]";
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]";
@@ -100,39 +23,32 @@ export default function ({ className }: Props) {
             <div className="flex flex-col h-full relative">
                 <section className="flex flex-wrap items-center" role="tablist">
                     {tabs.map((t, index) => (
-                        <div key={"tab" + t + index}
+                        <div key={"Reqtab" + index}
                             className={`select-none px-0 py-[6px] cursor-pointer mr-5 ${currentTab === t ? activeStyle : inactiveStyle}`}
-                            onClick={(e) => setCurrentTab(t)}
+                            onClick={() => setCurrentTab(t)}
                         >
                             {t}
-                            <sup className="ml-1 font-medium"></sup>
+                            <>{
+                                {
+                                    "Params": <sup className="ml-1 font-medium">{bruContent?.params?.length || ""}</sup>,
+                                    "Body": <sup className="ml-1 font-medium">{bruContent?.body?.json && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                    "Headers": <sup className="ml-1 font-medium">{bruContent?.headers?.length || ""}</sup>,
+                                    "Auth": <sup className="ml-1 font-medium">{(bruContent?.http?.auth !== "none" as any) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                    "Vars": <></>,
+                                    "Script": <></>,
+                                    "Assert": <></>,
+                                    "Test": <></>,
+                                    "Docs": <sup className="ml-1 font-medium">{bruContent?.docs && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                }[t]
+                            }</>
                         </div>
                     ))}
-                    {currentTab === "Body" && (
-                        <div className="flex flex-grow justify-end items-center">
-                            <div className="inline-flex items-center cursor-pointer">
-                                <div className="text-amber-300 flex items-center justify-center pl-3 py-1 select-none selected-body-mode" aria-expanded="false">
-                                    <select className="bg-transparent text-amber-400 py-1 [&>*]:bg-[var(--vscode-input-background)]"
-                                        defaultValue={bruContent?.http?.body} onChange={(e) => setContentType(e.currentTarget.value)} style={{ outline: 0 }}>
-                                        {mimes.map((m, i) => (
-                                            <optgroup key={'ctg' + i} label={m.name}>
-                                                {m.values.map((mv, iv) => (
-                                                    <option key={"cto" + iv} className={`text-[var(--vscode-tab-activeForeground)] ${!mv.active && "text-red-400"}`} value={mv.key}>{mv.name}</option>
-                                                ))}
-                                            </optgroup>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <button className="ml-1 cursor-pointer">Prettify</button>
-                        </div>
-                    )}
                 </section>
-                <section className="flex w-full flex-1 mt-5">
+                <section className="flex w-full flex-1">
                     {
                         {
-                            "Params": <RequestParamsPanel></RequestParamsPanel>,
-                            "Body": <BodyParamsPanel contentType={contentType}></BodyParamsPanel>,
+                            "Params": <RequestParamsPanel />,
+                            "Body": <BodyParamsPanel />,
                             "Headers": <Headers_RequestPanel />,
                             "Auth": <Auth_RequestPanel />,
                             "Vars": <>WIP</>,

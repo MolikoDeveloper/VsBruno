@@ -61,20 +61,20 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                 case "edit":
                     this.handleEditMessage(message);
                     break;
-                case "loaded":
+                case "init":
                     webview.postMessage({
                         type: "open",
                         data: bruToJsonV2(document.getText())
+                    });
+                    webview.postMessage({
+                        type: "collection",
+                        data: await this.findNearestCollection(document.uri) ?? null
                     });
                     break;
                 case "fetch":
                     await this.handleFetchMessage(message, webview);
                     break;
-                case "refresh-collections":
-                    webview.postMessage({
-                        type: "collections",
-                        data: await this.findNearestCollection(document.uri) ?? null
-                    })
+
             }
         });
 

@@ -1,10 +1,33 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
+import type { BruParams } from "src/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider"
 
 export interface ParamEntry { method: string; value: string; active: boolean; }
 
+
 export default function () {
-    const { bruContent } = useBruContent();
+    const { bruContent, setBruContent } = useBruContent();
+
+    const updateParam = <K extends keyof BruParams>(
+        index: number,
+        key: K,
+        value: BruParams[K]
+    ) => {
+        setBruContent(prev => {
+            if (!prev?.params) return prev;
+            const next = [...prev.params];
+            next[index] = { ...next[index], [key]: value };  // modify solo el índice
+            return { ...prev, params: next };
+        });
+    };
+
+    const removeParam = (index: number) => {
+        setBruContent(prev => {
+            if (!prev?.params) return prev;
+            const next = prev.params.filter((_, i) => i !== index);
+            return { ...prev, params: next };
+        });
+    };
 
     return (
         <div className="w-full flex flex-col">
@@ -22,17 +45,24 @@ export default function () {
                         {bruContent?.params?.map((e, i) => <>
                             <tr key={`requestParams-${i}`}>
                                 <td className="w-[30%]">
-                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal" style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}></input>
+                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                        style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
+                                        onChange={(ev) => {
+                                            updateParam(i, "name", ev.target.value)
+                                        }}></input>
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available" />
+                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available"
+                                            onChange={(val) => {
+                                                updateParam(i, "value", val)
+                                            }} />
                                     </div>
                                 </td>
                                 <td className="w-[70px]">
                                     <div className="flex items-center w-fit">
-                                        <input type="checkbox" tabIndex={-1} className="mr-3" checked={e.enabled} />
-                                        <button tabIndex={-1}>
+                                        <input type="checkbox" tabIndex={-1} className="mr-3" checked={e.enabled} onChange={(ev) => updateParam(i, "enabled", ev.currentTarget.checked)} />
+                                        <button tabIndex={-1} className="cursor-pointer" onClick={() => removeParam(i)}>
                                             <svg width={20} height={20} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
                                                 fill="none" strokeLinecap="round" strokeLinejoin="round">
                                                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -49,7 +79,19 @@ export default function () {
                         </>)}
                     </tbody>
                 </table>
-                <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline">+&nbsp;<span>Add Param</span></button>
+                <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline"
+                    onClick={() => {
+                        const blankParam: BruParams = {
+                            enabled: true,     // o false, como prefieras
+                            name: "",
+                            type: "query",     // valor por defecto
+                            value: ""
+                        };
+                        setBruContent(prev => ({
+                            ...prev,
+                            params: [...(prev?.params ?? []), blankParam]
+                        }))
+                    }}>+&nbsp;<span>Add Param</span></button>
                 <div className="mb-1 text-[var(--vscode-tab-activeForeground)] text-xs">Path</div>
                 <table className="br-table w-full">
                     <thead>

@@ -90,8 +90,8 @@
           "bru"
         ],
         "icon": {
-          "light": "icon.svg",
-          "dark": "icon.svg"
+          "light": "bruno.svg",
+          "dark": "bruno.svg"
         }
       }
     ]

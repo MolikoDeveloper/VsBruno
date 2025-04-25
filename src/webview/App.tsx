@@ -9,10 +9,9 @@ import type { SerializedResponse } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/components/ResponsePanels/ResponsePanel";
 import type { BruCollection, BruFile } from "src/bruno/bruno";
-import Bruno from "src/bruno/icon";
 
 type msg = {
-    type: "update" | "open" | "fetch" | "collections"
+    type: "update" | "open" | "fetch" | "collection"
     data: unknown
 }
 
@@ -21,25 +20,25 @@ export default function () {
     const [response, setResponse] = useState<SerializedResponse | null>(null)
 
     useEffect(() => {
-        vscode.postMessage({ type: "loaded" });
-        vscode.postMessage({ type: "refresh-collections" });
+        vscode.postMessage({ type: "init" });
 
         const listener = (event: MessageEvent) => {
             const message: msg = event.data;
             switch (message.type) {
                 case "open":
                     setBruContent(message.data as BruFile)
-                    console.log(message.data)
                     break;
                 case "update":
                     setBruContent(message.data as BruFile)
-                    console.log(message.data)
                     break;
                 case "fetch":
                     setResponse(message.data as SerializedResponse)
                     break;
-                case "collections":
+                case "collection":
                     setBruCollection(message.data as BruCollection)
+                    break;
+                default:
+                    console.log(message.type);
                     break;
             }
         }
