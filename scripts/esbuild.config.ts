@@ -70,7 +70,9 @@ const config: BuildOptions = {
     }),
   ],
   alias: {
-    "style-mod": require.resolve("src/vendor/style-mod/src/style-mod.js")
+    "style-mod": require.resolve("src/vendor/style-mod/src/style-mod.js"),
+    "@lezer/common": require.resolve("src/vendor/@lezer/common/dist/index.js"),
+    "@lezer/highlight": require.resolve("src/vendor/@lezer/highlight/dist/index.js"),
   }
 };
 
