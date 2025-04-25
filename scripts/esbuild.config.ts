@@ -30,7 +30,8 @@ SOFTWARE.
 const config: BuildOptions = {
   entryPoints: [
     "./src/extension.ts",
-    "./src/webview/Hydrate.tsx",
+    "./src/webview/HydrateBruno.tsx",
+    "./src/webview/HydrateCollection.tsx",
     "./src/tailwind.css",
     "./src/common/highlight.min.cjs"
   ],

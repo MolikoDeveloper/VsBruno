@@ -61,10 +61,38 @@
         "priority": "default",
         "selector": [
           {
-            "filenamePattern": "*.bru"
+            "filenamePattern": "**/*.bru",
+            "excludePattern": "**/collection.bru"
           }
         ],
         "retainContextWhenHidden": true
+      },
+      {
+        "viewType": "vs-bruno.collectionEditor",
+        "displayName": "Bruno Collection Editor",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "**/collection.bru"
+          }
+        ],
+        "retainContextWhenHidden": true
+      }
+    ],
+    "languages": [
+      {
+        "id": "bru",
+        "extensions": [
+          ".bru"
+        ],
+        "aliases": [
+          "BRU",
+          "bru"
+        ],
+        "icon": {
+          "light": "icon.svg",
+          "dark": "icon.svg"
+        }
       }
     ]
   },

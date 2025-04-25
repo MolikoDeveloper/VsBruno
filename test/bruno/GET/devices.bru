@@ -5,16 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:3001/api/devices?filter=aarriagadac
+  url: http://localhost:3001/api/devices
   body: none
   auth: bearer
 }
 
 params:query {
-  filter: aarriagadac
-  ~name: alberto
+  ~filter: aarriagadac
 }
- 
+
 auth:bearer {
   token: 4ZaF7hdEgNn43KSvyezkTQ==
 }
@@ -47,7 +46,7 @@ docs {
   
   ### endpoint
   
-  |endpoint       | method | auth?|
-  |---------------|:------:|:----:|
-  |`/api/devices` | GET    | true |
+  endpoint       | method | auth?
+  ---------------|--------|------
+  `/api/devices` | GET    | true
 }

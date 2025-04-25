@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import type { SerializedResponse } from "src/types/shared";
 //@ts-ignore
-import { bruToJsonV2, jsonToBruV2 } from '@usebruno/lang';
+import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru } from '@usebruno/lang';
 
 class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     constructor(private readonly context: vscode.ExtensionContext) { }
@@ -11,21 +11,50 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
         panel: vscode.WebviewPanel,
         token: vscode.CancellationToken
     ): Promise<void> {
-        panel.title = "a"
         const { webview } = panel;
-
         webview.options = { enableScripts: true };
-
         webview.html = this.getHtmlForWebView(webview);
 
-        const changeDoc = vscode.workspace.onDidChangeTextDocument((e) => {
-            if (e.document.uri.toString() === document.uri.toString()) {
+        const nearest = await this.findNearestCollection(document.uri);
+        let currentCollectionUri: string | null = nearest?.uri ?? null;
+
+        const changeDoc = vscode.workspace.onDidChangeTextDocument(async (e) => {
+            const uriStr = e.document.uri.toString();
+
+            /* ① Cambios en el .bru que el usuario edita */
+            if (uriStr === document.uri.toString()) {
                 webview.postMessage({
                     type: "update",
-                    data: bruToJsonV2(document.getText()),
+                    data: bruToJsonV2(e.document.getText()),
+                });
+                return;
+            }
+
+            /* ② Cambios en la colección actualmente seleccionada */
+            if (uriStr === currentCollectionUri) {
+                webview.postMessage({
+                    type: "collection",
+                    data: collectionBruToJson(e.document.getText()),
                 });
             }
         });
+
+        /* ───── ② Creación / borrado / renombrado de collection.bru ───── */
+        const watcher = vscode.workspace.createFileSystemWatcher("**/collection.bru");
+        const refreshNearest = async () => {
+            const nearestNow = await this.findNearestCollection(document.uri);
+            const newUri = nearestNow?.uri ?? null;
+
+            if (newUri !== currentCollectionUri) {
+                currentCollectionUri = newUri;
+                webview.postMessage({
+                    type: "collection",
+                    data: nearestNow?.data ?? null,   // puede ser null si ya no hay colección
+                });
+            }
+        };
+        watcher.onDidCreate(refreshNearest);
+        watcher.onDidDelete(refreshNearest);
 
         webview.onDidReceiveMessage(async (message) => {
             switch (message.type) {
@@ -33,20 +62,26 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                     this.handleEditMessage(message);
                     break;
                 case "loaded":
-
                     webview.postMessage({
                         type: "open",
-                        //data: parseBru(document.getText()),
                         data: bruToJsonV2(document.getText())
                     });
                     break;
                 case "fetch":
                     await this.handleFetchMessage(message, webview);
                     break;
+                case "refresh-collections":
+                    webview.postMessage({
+                        type: "collections",
+                        data: await this.findNearestCollection(document.uri) ?? null
+                    })
             }
         });
 
-        panel.onDidDispose(() => changeDoc.dispose());
+        panel.onDidDispose(() => {
+            changeDoc.dispose()
+            watcher.dispose()
+        });
     }
 
     private handleEditMessage(message: { text: string }) {
@@ -108,7 +143,7 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
             webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
 
         const cssUri = getUri(["dist", "tailwind.css"]);
-        const scriptUri = getUri(["dist", "webview", "Hydrate.cjs"]);
+        const scriptUri = getUri(["dist", "webview", "HydrateBruno.cjs"]);
         const highlightJsUri = getUri(["dist", "common", "highlight.min.cjs"]);
 
         return /*html*/ `
@@ -132,6 +167,52 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
   </body>
 </html>
     `;
+    }
+
+    /** Devuelve la collection.bru más cercana o null (sin usar 'path') */
+    private async findNearestCollection(
+        docUri: vscode.Uri
+    ): Promise<{ uri: string; data: any } | null> {
+        const wsFolder = vscode.workspace.getWorkspaceFolder(docUri);
+        if (!wsFolder) return null;                           // archivo fuera del workspace
+
+        // ① Dir actual donde está el documento
+        let current = this.parentUri(docUri);                 // carpeta que contiene al .bru
+
+        // ② Mientras sigamos dentro del workspace
+        while (current.path.startsWith(wsFolder.uri.path)) {
+            const candidate = vscode.Uri.joinPath(current, "collection.bru");
+
+            try {
+                // Si existe -> la devolvemos
+                await vscode.workspace.fs.stat(candidate);
+
+                const bytes = await vscode.workspace.fs.readFile(candidate);
+                const text = Buffer.from(bytes).toString("utf8");
+                return {
+                    uri: candidate.toString(),
+                    data: collectionBruToJson(text),
+                };
+            } catch {
+                /* no existe aquí: seguimos subiendo */
+            }
+
+            const next = this.parentUri(current);
+            if (next.path === current.path) break;              // ya estábamos en la raíz
+            current = next;
+        }
+
+        return null;                                          // no se encontró ninguna
+    }
+
+    /* Helper pequeñito para subir un nivel usando sólo vscode.Uri */
+    private parentUri(uri: vscode.Uri): vscode.Uri {
+        const segments = uri.path.split("/");
+        if (segments.length <= 2)               // ['', '']  ó ['', 'folder']
+            return uri;                           // ya no podemos subir más
+
+        const parentPath = segments.slice(0, -1).join("/") || "/";
+        return uri.with({ path: parentPath });
     }
 }
 

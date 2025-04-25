@@ -1,0 +1,72 @@
+meta {
+  name: persons
+  type: http
+  seq: 2
+}
+
+put {
+  url: http://localhost:3001/api/persons
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: 4ZaF7hdEgNn43KSvyezkTQ==
+}
+
+body:json {
+  {
+    "fullname": "Prueba AAA",
+    "email": "test@test.com",
+    "run": "11.111.111-9"
+  }
+}
+
+body:multipart-form {
+  data: {"brand" : "test", "model_name":"test", "product_name":"test", "type":"test"}
+  image: @file(Z:\ADLX65YCC3A.webp)
+}
+
+docs {
+  # `POST` products
+  
+  ### description
+   creates a new person, using the email initials as id.
+  
+  ### data body:
+  ```ts
+  //as json
+  {
+    "fullname": string,
+    "email": string,
+    "run": string
+  }
+  ```
+  
+  ### returns
+   details of the created product.
+   
+  ### return model:
+  ```ts
+  ProductResponse: {
+    data?: {
+      id: string,
+      active: boolean
+      created_at: Date,
+      email: string,
+      fullname: string,
+      run: string
+    },
+    status: {
+      code: number,
+      description: string
+    }
+  }
+  ```
+  
+  ### endpoint
+  
+  endpoint        | method | auth?
+  ----------------|--------|------
+  `/api/products` | POST   | true
+}

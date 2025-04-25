@@ -1,0 +1,25 @@
+{
+  "version": "1",
+  "name": "Inventory-Management",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ],
+  "presets": {
+    "requestType": "http",
+    "requestUrl": "http://localhost:3001/api/"
+  },
+  "proxy": {
+    "bypassProxy": "",
+    "enabled": false,
+    "auth": {
+      "enabled": false,
+      "username": "",
+      "password": ""
+    },
+    "port": null,
+    "hostname": "",
+    "protocol": "http"
+  }
+}

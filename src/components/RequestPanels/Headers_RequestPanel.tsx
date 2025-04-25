@@ -1,37 +1,34 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { useBruContent } from "src/webview/context/BruProvider"
 
-export interface ParamEntry { method: string; value: string; active: boolean; }
-
 export default function () {
     const { bruContent } = useBruContent();
 
     return (
         <div className="w-full flex flex-col">
             <div className="flex-1 mt-2 w-full">
-                <div className="mb-1 text-xs text-[var(--vscode-tab-activeForeground)]">Query</div>
                 <table className="br-table w-full">
                     <thead>
                         <tr>
-                            <td className="w-[30%]">Name</td>
+                            <td className="w-[30%]">key</td>
                             <td>Value</td>
                             <td className="w-[70px]"></td>
                         </tr>
                     </thead>
                     <tbody>
-                        {bruContent?.params?.map((e, i) => <>
-                            <tr key={`requestParams-${i}`}>
+                        {bruContent?.headers?.map((h, e) => (
+                            <tr>
                                 <td className="w-[30%]">
-                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal" style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}></input>
+                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal" style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={h.name}></input>
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available" />
+                                        <ReactCodeMirror value={h.value} theme="none" basicSetup={false} editable className="CM-Table w-available" />
                                     </div>
                                 </td>
                                 <td className="w-[70px]">
                                     <div className="flex items-center w-fit">
-                                        <input type="checkbox" tabIndex={-1} className="mr-3" checked={e.enabled} />
+                                        <input type="checkbox" tabIndex={-1} className="mr-3" checked={h.enabled} />
                                         <button tabIndex={-1}>
                                             <svg width={20} height={20} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
                                                 fill="none" strokeLinecap="round" strokeLinejoin="round">
@@ -46,21 +43,10 @@ export default function () {
                                     </div>
                                 </td>
                             </tr>
-                        </>)}
+                        ))}
                     </tbody>
                 </table>
                 <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline">+&nbsp;<span>Add Param</span></button>
-                <div className="mb-1 text-[var(--vscode-tab-activeForeground)] text-xs">Path</div>
-                <table className="br-table w-full">
-                    <thead>
-                        <tr>
-                            <td className="w-[30%]">Name</td>
-                            <td>Value</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
             </div>
         </div>
     )

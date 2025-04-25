@@ -1,0 +1,51 @@
+meta {
+  name: users
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3001/api/system/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: 4ZaF7hdEgNn43KSvyezkTQ==
+}
+
+docs {
+  # `GET` System users
+  
+  returns a list users registered in the system
+  
+  ### model:
+  ```ts
+  type productTypes = {
+    data?: {
+      active: boolean
+      email: string
+      id: string
+      username: string
+      role: {
+        active: boolean
+        created_at: string
+        id: string
+        name: string
+        update_at: string
+      }
+    }[],
+    status: {
+      code: number,
+      description: string
+    },
+    total: number
+  }
+  ```
+  
+  ### endpoint
+  
+  endpoint        | method | auth?
+  ----------------|--------|------
+  `/api/system/users` | GET    | true
+}

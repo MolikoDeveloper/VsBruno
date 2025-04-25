@@ -1,0 +1,35 @@
+meta {
+  name: version
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3001/api/version
+  body: none
+  auth: none
+}
+
+script:post-response {
+  console.log(res.body.app)
+}
+
+docs {
+  # `GET` version
+  
+  returns API and Bun version.
+  
+  ### model:
+  ```ts
+  {
+    app: string,
+    bun: string
+  }
+  ```
+  
+  ### endpoint
+  
+  endpoint       | method | auth?
+  ---------------|--------|------
+  `/api/version` | GET    | false
+}

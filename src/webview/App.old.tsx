@@ -118,7 +118,7 @@ function App() {
         const httpMethods = ["post", "get", "put", "delete", "patch", "options", "head",];
 
         /* params:query → state */
-        const qParams = BruContent.findLast((b) => b.blockName === "params:query");
+        const qParams = bruContent?.findLast((b) => b.blockName === "params:query");
         if (qParams?.data) {
             const transformed: Entry[] = Object.keys(qParams.data).map((key) => ({
                 method: key.replace(/^~/, ""),
@@ -130,7 +130,7 @@ function App() {
 
         /* method block → uri + others */
         for (const m of httpMethods) {
-            const blk = BruContent.findLast((b) => b.blockName === m);
+            const blk = bruContent?.findLast((b) => b.blockName === m);
             if (blk) {
                 set_bru_method(blk.blockName.toUpperCase());
                 set_bru_method_uri(blk.data.url || "");
@@ -196,7 +196,7 @@ function App() {
 
     //#region left / right panel rendering
     const renderLeftPanel = () => {
-        const docs = BruContent.find((d) => d.blockName === "docs")?.data._raw;
+        const docs = bruContent?.find((d) => d.blockName === "docs")?.data._raw;
         return (
             <>
                 <div className="flex flex-wrap gap-1 select-none">

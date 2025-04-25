@@ -1,0 +1,111 @@
+meta {
+  name: inventory
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:3001/api/inventory/create?test=ok
+  body: json
+  auth: none
+}
+
+params:query {
+  test: ok
+}
+
+headers {
+  Content-Language: en
+}
+
+body:json {
+  {
+    "mac_address": [],
+    "product": "products:test",
+    "serial": "test"
+  }
+}
+
+body:multipart-form {
+  data: {"brand" : "test", "model_name":"test", "product_name":"test", "type":"test"}
+  image: @file(Z:\ADLX65YCC3A.webp)
+}
+
+vars:pre-request {
+  a: b
+}
+
+vars:post-response {
+  b: c
+}
+
+docs {
+  # `POST` products
+  
+  ### description
+   register a product to the inventory.
+   when the product is created, creates a inventory transaction with `persons:undefined`.
+  
+  ### data body:
+  ```ts
+  //as json
+  {
+    mac_address: {
+      type: string,
+      address: string
+    }[],
+    product: string, // "products:id"
+    serial: string
+  }
+  ```
+  
+  ### returns
+   details of the created product.
+   
+  ### return model:
+  ```ts
+  ProductResponse: {
+    data?: {
+      id: string,
+      mac_address: {
+        type: string,
+        address: string
+      }[],
+      product: {
+        brand: string,
+        id: string,
+        model_name: string,
+        product_name: string,
+        type: string
+      },
+      transactions:{
+        id: string
+        type: string
+        transaction_date: string
+        user: {
+          active: boolean
+          created_at: string
+          email: string
+          fullName: string
+          id: string
+        }
+        external_servide: {
+          id: string,
+          service: string,
+          status: number
+        }[]
+      }[]
+    },
+    status: {
+      code: number,
+      description: string
+    }
+  }
+  ```
+  
+  ### endpoint
+  
+  endpoint        | method | auth?
+  ----------------|--------|------
+  `/api/products` | POST   | true
+}

@@ -6,7 +6,7 @@ meta {
 
 post {
   url: http://localhost:3001/api/products
-  body: json
+  body: multipartForm
   auth: bearer
 }
 
@@ -15,7 +15,7 @@ auth:bearer {
 }
 
 body:json {
-  { 
+  {
     data: {
       brand: "example",
       model_name: "example",
@@ -78,8 +78,4 @@ docs {
   endpoint        | method | auth?
   ----------------|--------|------
   `/api/products` | POST   | true
-}
-
-params:query {
-  method: vv
 }

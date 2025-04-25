@@ -1,22 +1,36 @@
 import * as vscode from "vscode";
 import BruCustomEditorProvider from "./BruCustomEditorProvider";
+import BruCollectionEditorProvider from "./BruCollectionEditorProvider";
 
 export const activate = (context: vscode.ExtensionContext) => {
-  const provider = new BruCustomEditorProvider(context);
-
-  const providerRegistration = vscode.window.registerCustomEditorProvider(
+  const bruProvider = new BruCustomEditorProvider(context);
+  const bruCollectionProvider = new BruCollectionEditorProvider(context);
+  /*custom editor */
+  const bruProviderRegistration = vscode.window.registerCustomEditorProvider(
     'vs-bruno.bruEditor',
-    provider,
+    bruProvider,
     {
       webviewOptions: {
         retainContextWhenHidden: false,
-        enableFindWidget: true
+        enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
     }
   )
 
-  context.subscriptions.push(providerRegistration)
+  const bruCollectionProviderRegistration = vscode.window.registerCustomEditorProvider(
+    'vs-bruno.collectionEditor',
+    bruCollectionProvider,
+    {
+      webviewOptions: {
+        retainContextWhenHidden: false,
+        enableFindWidget: false
+      },
+      supportsMultipleEditorsPerDocument: false,
+    }
+  )
+
+  context.subscriptions.push(bruProviderRegistration, bruCollectionProviderRegistration)
 };
 
 export const deactivate = () => { };

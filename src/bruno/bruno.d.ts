@@ -6,10 +6,16 @@ export interface BruFile {
   /* query / params / headers */
   query?: Record<string, string>;
   params?: {
-    path?: Record<string, string>;
-    query?: Record<string, string>;
-  };
-  headers?: Record<string, string>;
+    enabled: boolean;
+    name: string,
+    type: "query" | "path",
+    value: string
+  }[];
+  headers?: {
+    enabled: boolean,
+    name: string,
+    value: string
+  }[];
 
   /* bodies */
   body?: BruBody;
@@ -46,10 +52,7 @@ export interface BruMeta {
 }
 
 /* ───────────────────── http ───────────────────── */
-export type HttpMethod =
-  | 'get' | 'post' | 'put' | 'delete'
-  | 'patch' | 'options' | 'head'
-  | 'connect' | 'trace';
+export type HttpMethod = | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head' | 'connect' | 'trace';
 
 export interface BruHttp {
   method: HttpMethod;
@@ -63,11 +66,28 @@ export interface AuthBearer { token: string; }
 export interface AuthBasic { username: string; password: string; }
 export interface AuthDigest { username: string; password: string; realm?: string; }
 export interface AuthNTLM { username: string; password: string; domain?: string; workstation?: string; }
-export interface AuthOAuth2 { accessToken: string; tokenType?: string; }
+export interface AuthOAuth2 {
+  grantType?: 'password' | 'authorization_code' | 'client_credentials';
+  username?: string; password?: string;
+  callbackUrl?: string; authorizationUrl?: string;
+  accessTokenUrl?: string; refreshTokenUrl?: string;
+  clientId?: string; clientSecret?: string;
+  scope?: string; state?: string;
+  pkce?: boolean;
+  /** placement / prefixes / auto flags */
+  credentialsPlacement?: 'body' | 'header' | 'query';
+  credentialsId?: string;
+  tokenPlacement?: 'header' | 'query';
+  tokenHeaderPrefix?: string;
+  tokenQueryKey?: string;
+  autoFetchToken?: boolean;
+  autoRefreshToken?: boolean;
+}
 export interface AuthApiKey { key: string; location: 'header' | 'query' | 'cookie'; name: string; }
 export interface AuthAWSSigV4 { accessKey: string; secretKey: string; region: string; service: string; }
 export interface AuthWsse { username: string; password: string; }
 export type BruAuth = Partial<{
+  mode: string;        // set by plain `auth { mode: <value> }`
   bearer: AuthBearer;
   basic: AuthBasic;
   digest: AuthDigest;
@@ -90,6 +110,7 @@ export interface MultipartFormField {
 
 export type BruBody = Partial<{
   json: string;                      // body:json  (raw string)
+  ldjson: string;
   text: string;                      // body:text
   xml: string;                      // body:xml
   sparql: string;                      // body:sparql
@@ -99,3 +120,55 @@ export type BruBody = Partial<{
   multipartForm: MultipartFormField[];        // body:multipart-form
   file: { path: string };            // body:file  (single attachment)
 }>;
+
+/*────────────────────────── meta (collection) ───────────────────── */
+export interface BruCollectionMeta {
+  name: string;
+  type: 'collection';             // Bruno parser hard-codes this
+  /** still a string in the AST (seq is optional in collections) */
+  seq?: string;
+}
+
+/*────────────────────────── shared helpers ─────────────────────────*/
+export interface BruKeyValue {
+  /** actual key without ~ prefix (always trimmed) */
+  name: string;
+  value: string;
+  enabled: boolean;               // false ⇢ key was prefixed with '~'
+}
+
+export interface BruVar extends BruKeyValue {
+  /** true ⇢ key was prefixed with '@' (local-only variable) */
+  local: boolean;
+}
+
+/* ───────────────────── collection ───────────────────── */
+export interface BruCollection {
+  /** mandatory block according to Bruno semantics */
+  meta: BruCollectionMeta;
+
+  /** optional high-level blocks */
+  auth?: BruAuth;
+  query?: BruKeyValue[];
+  headers?: BruKeyValue[];
+
+  vars?: {
+    /** variables set *before* the request (vars:pre-request) */
+    req?: BruVar[];
+    /** variables captured *after* the response (vars:post-response) */
+    res?: BruVar[];
+  };
+
+  script?: {
+    /** script:pre-request - JS code (outdented) */
+    req?: string;
+    /** script:post-response - JS code (outdented) */
+    res?: string;
+  };
+
+  tests?: string;   // block “tests { … }”
+  docs?: string;   // block “docs  { … }”
+
+  /** any future/unknown blocks are still preserved */
+  [unknownBlock: string]: unknown;
+}

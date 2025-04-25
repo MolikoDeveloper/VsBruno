@@ -1,19 +1,22 @@
 import * as React from "react"
-import type { BruFile } from "src/bruno/bruno";
+import type { BruCollection, BruFile } from "src/bruno/bruno";
 
 
 interface BruContextType {
-    bruContent: BruFile,
-    setBruContent: React.Dispatch<React.SetStateAction<BruFile>>;
+    bruContent: BruFile | null,
+    setBruContent: React.Dispatch<React.SetStateAction<BruFile | null>>;
+    bruCollection: BruCollection | null,
+    setBruCollection: React.Dispatch<React.SetStateAction<BruCollection | null>>
 }
 
 const BruContext = React.createContext<BruContextType | undefined>(undefined);
 
 export const BruProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [bruContent, setBruContent] = React.useState<BruFile>({});
+    const [bruContent, setBruContent] = React.useState<BruFile | null>(null);
+    const [bruCollection, setBruCollection] = React.useState<BruCollection | null>(null);
 
     return (
-        <BruContext.Provider value={{ bruContent, setBruContent }}>
+        <BruContext.Provider value={{ bruContent, setBruContent, bruCollection, setBruCollection }}>
             {children}
         </BruContext.Provider>
     )

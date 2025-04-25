@@ -8,7 +8,7 @@ export default function ({ contentType }: { contentType: string }) {
     const [httpbody, setHttpbody] = useState<string>("none");
 
     useEffect(() => {
-        setHttpbody(bruContent.http?.body || "none")
+        setHttpbody(bruContent?.http?.body || "none")
     }, [bruContent])
 
 
@@ -16,7 +16,7 @@ export default function ({ contentType }: { contentType: string }) {
         <div className="w-full overflow-auto">
             {
                 {
-                    "json": <CodeMirror value={bruContent.body?.json} extensions={[json()]} theme={'dark'} lang='json' height='80vh' onChange={(value, viewUpdate) => { console.log('value', value) }} />,
+                    "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height='80vh' onChange={(value, viewUpdate) => { console.log('value', value) }} />,
                     "text": <></>,
                     "xml": <></>,
                     "sparql": <></>,

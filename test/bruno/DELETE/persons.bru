@@ -1,0 +1,52 @@
+meta {
+  name: persons
+  type: http
+  seq: 1
+}
+
+delete {
+  url: http://localhost:3001/api/persons
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: 4ZaF7hdEgNn43KSvyezkTQ==
+}
+
+body:json {
+  {
+    "person": "test" 
+  }
+}
+
+docs {
+  # `GET` active persons
+  
+  returns a list of active persons
+  
+  ### model:
+  ```ts
+  type productTypes = {
+    data?: {
+      active: boolean,
+      created_at: Date,
+      email: string,
+      fullname: string,
+      run: string,
+      id: string
+    }[],
+    status: {
+      code: number,
+      description: string
+    },
+    total: number
+  }
+  ```
+  
+  ### endpoint
+  
+  endpoint        | method | auth?
+  ----------------|--------|------
+  `/api/persons/active` | GET    | true
+}

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import RequestParamsPanel from "./Params_RequestPanel";
 import BodyParamsPanel from "./Body_RequestPanel";
 import { useBruContent } from "src/webview/context/BruProvider";
+import Headers_RequestPanel from "./Headers_RequestPanel";
+import Auth_RequestPanel from "./Auth_RequestPanel";
 
 interface Props {
     className?: string
@@ -25,14 +27,14 @@ const mimes: Mime[] = [
         values: [
             {
                 mime: "multipart/form-data",
-                key: "multipart-form",
+                key: "multipartForm",
                 name: "Multipart Form",
                 active: false
             },
             {
                 mime: "application/x-www-form-urlencoded",
                 key: "form-url-encoded",
-                name: "Form URL Encoded",
+                name: "formUrlEncoded",
                 active: false
             }
         ]
@@ -49,7 +51,7 @@ const mimes: Mime[] = [
             {
                 mime: "application/ld+json",
                 key: "ldjson",
-                name: "JSON-LD",
+                name: "Json-LD (ex)",
                 active: false
             },
             {
@@ -77,7 +79,7 @@ const mimes: Mime[] = [
         values: [
             {
                 mime: "",
-                key: "",
+                key: "none",
                 name: "No Body",
                 active: true
             }
@@ -87,11 +89,11 @@ const mimes: Mime[] = [
 
 export default function ({ className }: Props) {
     const { bruContent } = useBruContent();
-    const [currentTab, setCurrentTab] = useState<string>("Params");
+    const [currentTab, setCurrentTab] = useState<string>("Auth");
     const [contentType, setContentType] = useState<string>("");
 
-    const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]"
-    const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]"
+    const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]";
+    const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]";
 
     return (
         <div className={className}>
@@ -111,7 +113,7 @@ export default function ({ className }: Props) {
                             <div className="inline-flex items-center cursor-pointer">
                                 <div className="text-amber-300 flex items-center justify-center pl-3 py-1 select-none selected-body-mode" aria-expanded="false">
                                     <select className="bg-transparent text-amber-400 py-1 [&>*]:bg-[var(--vscode-input-background)]"
-                                        defaultValue={bruContent.http?.body} onChange={(e) => setContentType(e.currentTarget.value)} style={{ outline: 0 }}>
+                                        defaultValue={bruContent?.http?.body} onChange={(e) => setContentType(e.currentTarget.value)} style={{ outline: 0 }}>
                                         {mimes.map((m, i) => (
                                             <optgroup key={'ctg' + i} label={m.name}>
                                                 {m.values.map((mv, iv) => (
@@ -131,8 +133,8 @@ export default function ({ className }: Props) {
                         {
                             "Params": <RequestParamsPanel></RequestParamsPanel>,
                             "Body": <BodyParamsPanel contentType={contentType}></BodyParamsPanel>,
-                            "Headers": <>WIP</>,
-                            "Auth": <>WIP</>,
+                            "Headers": <Headers_RequestPanel />,
+                            "Auth": <Auth_RequestPanel />,
                             "Vars": <>WIP</>,
                             "Script": <>WIP</>,
                             "Assert": <>WIP</>,
