@@ -20,6 +20,11 @@ body {
     padding: 0;
 }
 
+.w-available {
+    width: -webkit-fill-available;
+    width: -fill-available;
+}
+
 .markdown {
     all: initial;
 }
@@ -40,4 +45,39 @@ body {
 
 .markdown td {
     @apply border p-2;
+}
+
+.flex-1 {
+    flex: 1 1 0%;
+}
+
+.br-table table {
+    border-collapse: collapse;
+    font-weight: 600;
+    table-layout: fixed;
+    text-indent: 0;
+    border-color: inherit;
+}
+
+.br-table thead {
+    user-select: none;
+    font-size: 0.8125rem;
+    border: 1px solid var(--vscode-editorWidget-border);
+    font-weight: 400;
+}
+
+.br-table td {
+    padding: 6px 10px;
+    border: 1px solid var(--vscode-editorWidget-border);
+}
+
+.br-table tbody {
+    display: table-row-group;
+    vertical-align: middle;
+    unicode-bidi: isolate;
+    border-color: var(--vscode-editorWidget-border);
+}
+
+.CM-Table .ͼ2 .cm-content {
+    caret-color: aqua;
 }

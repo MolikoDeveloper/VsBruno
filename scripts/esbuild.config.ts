@@ -30,7 +30,7 @@ SOFTWARE.
 const config: BuildOptions = {
   entryPoints: [
     "./src/extension.ts",
-    "./src/webview/App.tsx",
+    "./src/webview/Hydrate.tsx",
     "./src/tailwind.css",
     "./src/common/highlight.min.cjs"
   ],
@@ -60,7 +60,6 @@ const config: BuildOptions = {
   logLevel: "info",
   sourcemap: "inline",
   define: {
-    // Reemplaza process.env.NODE_ENV por "production" (o "development")
     "process.env.NODE_ENV": "\"production\""
   },
   plugins: [
@@ -69,7 +68,10 @@ const config: BuildOptions = {
         plugins: [require('@tailwindcss/postcss')],
       }
     }),
-  ]
+  ],
+  alias: {
+    "style-mod": require.resolve("src/vendor/style-mod/src/style-mod.js")
+  }
 };
 
 export default config;

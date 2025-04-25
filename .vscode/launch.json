@@ -10,7 +10,9 @@
       "request": "launch",
       "args": [
         "--folder-uri=${workspaceFolder}/test/bruno",
-        "--extensionDevelopmentPath=${workspaceFolder}"
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extensions",
+        "--user-data-dir=${workspaceFolder}/.vscode/test-user-data"
       ],
       "outFiles": [
         "${workspaceFolder}/dist/**/*.cjs"

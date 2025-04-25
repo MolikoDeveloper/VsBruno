@@ -5,6 +5,7 @@
       "DOM"
     ],
     "target": "ESNext",
+    "baseUrl": ".",
     "module": "ESNext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
