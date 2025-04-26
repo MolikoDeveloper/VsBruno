@@ -1,9 +1,9 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
-import { xml } from '@codemirror/lang-xml';
 import { useBruContent } from 'src/webview/context/BruProvider';
-import { useEffect, useState } from 'react';
 import type { BruBody } from 'src/bruno/bruno';
+import { xmlLanguage } from '@codemirror/lang-xml';
+import { LanguageSupport } from '@codemirror/language';
 
 type Mime = {
     name: string,
@@ -84,13 +84,8 @@ const mimes: Mime[] = [
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
-    const [httpbody, setHttpbody] = useState<string>("none");
-    const [contentType, setContentType] = useState<string>("");
-    let upgrade = bruContent;
 
-    useEffect(() => {
-        setHttpbody(bruContent?.http?.body || "none")
-    }, [bruContent])
+    const xmlBare = new LanguageSupport(xmlLanguage);
 
     return (
         <section className='w-full h-full'>
@@ -127,14 +122,15 @@ export default function () {
                     {
                         "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,
                         "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={'dark'} lang='plainText' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
-                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xml()]} theme={'dark'} lang='xml' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
+                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={'dark'} lang='xml' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
                         "sparql": <></>,
                         "graphql": <></>,
                         "graphqlVars": <></>,
                         "formUrlEncoded": <></>,
                         "multipartForm": <></>,
                         "file": <></>,
-                    }[httpbody]
+                        "none": <></>
+                    }[bruContent?.http?.body as string]
                 }
             </div>
         </section>

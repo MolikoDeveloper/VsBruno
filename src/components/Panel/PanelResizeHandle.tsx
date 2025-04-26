@@ -36,15 +36,12 @@ export const PanelResizeHandle: React.FC<PanelResizeHandleProps> = ({ index }) =
         const onMouseUp = () => {
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("mouseup", onMouseUp);
-            window.removeEventListener("mouseleave", onMouseUp);
-            window.removeEventListener("dragleave", onMouseUp);
+
             lastPosRef.current = null;
         };
 
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("mouseup", onMouseUp);
-        window.addEventListener("mouseleave", onMouseUp)
-        window.addEventListener("dragleave", onMouseUp)
     };
 
     return (

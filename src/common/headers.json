@@ -1,0 +1,710 @@
+[
+    {
+        "label": "Content-Encoding",
+        "type": "property",
+        "info": "indicates what content codings have been applied to the representation, beyond those inherent in the media type, and thus what decoding mechanisms have to be applied in order to obtain data in the media type referenced by the Content-Type header field.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-3.1.2.2"
+    },
+    {
+        "label": "Content-Language",
+        "type": "property",
+        "info": "describes the natural language(s) of the intended audience for the representation.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-3.1.3.2"
+    },
+    {
+        "label": "Content-Location",
+        "type": "property",
+        "info": "references a URI that can be used as an identifier for a specific resource corresponding to the representation in this message's payload.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-3.1.4.2"
+    },
+    {
+        "label": "Content-Type",
+        "type": "property",
+        "info": "indicates the media type of the associated representation: either the representation enclosed in the message payload or the selected representation, as determined by the message semantics.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-3.1.1.5"
+    },
+    {
+        "label": "Content-Length",
+        "type": "property",
+        "info": "can provide the anticipated size, as a decimal number of octets, for a potential payload body.",
+        "detail": "https://tools.ietf.org/html/rfc7230#section-3.3.2"
+    },
+    {
+        "label": "Content-Range",
+        "type": "property",
+        "info": "is sent in a single part 206 (Partial Content) response to indicate the partial range of the selected representation enclosed as the message payload, sent in each part of a multipart 206 response to indicate the range enclosed within each body part, and sent in 416 (Range Not Satisfiable) responses to provide information about the selected representation.",
+        "detail": "https://tools.ietf.org/html/rfc7233#section-4.2"
+    },
+    {
+        "label": "Transfer-Encoding",
+        "type": "property",
+        "info": "lists the transfer coding names corresponding to the sequence of transfer codings that have been (or will be) applied to the payload body in order to form the message body.",
+        "detail": "https://tools.ietf.org/html/rfc7230#section-3.3.1"
+    },
+    {
+        "label": "Cache-Control",
+        "type": "property",
+        "info": "is used to specify directives for caches along the request/response chain.",
+        "detail": "https://tools.ietf.org/html/rfc7234#section-7.2"
+    },
+    {
+        "label": "Expect",
+        "type": "property",
+        "info": "is used to indicate that particular server behaviors are required by the client.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.1.1"
+    },
+    {
+        "label": "Host",
+        "type": "property",
+        "info": "provides the host and port information from the target URI, enabling the origin server to distinguish among resources while servicing requests for multiple host names on a single IP address.",
+        "detail": "https://tools.ietf.org/html/rfc7230#section-5.4"
+    },
+    {
+        "label": "HTTP2-Settings",
+        "type": "property",
+        "info": "A request that upgrades from HTTP/1.1 to HTTP/2 MUST include exactly one HTTP2-Settings header field. The HTTP2-Settings header field is a connection-specific header field that includes parameters that govern the HTTP/2 connection, provided in anticipation of the server accepting the request to upgrade.",
+        "detail": "https://tools.ietf.org/html/rfc7540#section-3.2.1"
+    },
+    {
+        "label": "Max-Forwards",
+        "type": "property",
+        "info": "provides a mechanism with the TRACE and OPTIONS methods to limit the number of times that the request is forwarded by proxies.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.1.2"
+    },
+    {
+        "label": "Pragma",
+        "type": "property",
+        "info": "allows backwards compatibility with HTTP/1.0 caches, so that clients can specify a no-cache request that they will understand (as Cache-Control was not defined until HTTP/1.1).",
+        "detail": "https://tools.ietf.org/html/rfc7234#section-7.4"
+    },
+    {
+        "label": "Range",
+        "type": "property",
+        "info": "modifies the method semantics to request transfer of only one or more subranges of the selected representation data, rather than the entire selected representation data.",
+        "detail": "https://tools.ietf.org/html/rfc7233#section-3.1"
+    },
+    {
+        "label": "TE",
+        "type": "property",
+        "info": "indicates what transfer codings, besides chunked, the client is willing to accept in response, and whether or not the client is willing to accept trailer fields in a chunked transfer coding.",
+        "detail": "https://tools.ietf.org/html/rfc7230#section-4.3"
+    },
+    {
+        "label": "If-Match",
+        "type": "property",
+        "info": "can be used to make a request method conditional on the current existence or value of an entity-tag for one or more representations of the target resource.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-3.1"
+    },
+    {
+        "label": "If-Modified-Since",
+        "type": "property",
+        "info": "can be used with GET or HEAD to make the method conditional by modification date: if the selected representation has not been modified since the time specified in this field, then do not perform the request method; instead, respond as detailed below.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-3.3"
+    },
+    {
+        "label": "If-None-Match",
+        "type": "property",
+        "info": "can be used to make a request method conditional on not matching any of the current entity-tag values for representations of the target resource.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-3.2"
+    },
+    {
+        "label": "If-Range",
+        "type": "property",
+        "info": "Informally, its meaning is: if the representation is unchanged, send me the part(s) that I am requesting in Range; otherwise, send me the entire representation.",
+        "detail": "https://tools.ietf.org/html/rfc7233#section-3.2"
+    },
+    {
+        "label": "If-Unmodified-Since",
+        "type": "property",
+        "info": "can be used to make a request method conditional by modification date: if the selected representation has been modified since the time specified in this field, then the server MUST NOT perform the requested operation and MUST instead respond with the 412 (Precondition Failed) status code.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-3.4"
+    },
+    {
+        "label": "Accept",
+        "type": "property",
+        "info": "can be used to specify certain media types which are acceptable for the response.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.3.2"
+    },
+    {
+        "label": "Accept-Charset",
+        "type": "property",
+        "info": "can be sent by a user agent to indicate what charsets are acceptable in textual response content.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.3.3"
+    },
+    {
+        "label": "Accept-Encoding",
+        "type": "property",
+        "info": "can be used by user agents to indicate what response content-codings are acceptable in the response.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.3.4"
+    },
+    {
+        "label": "Accept-Language",
+        "type": "property",
+        "info": "can be used by user agents to indicate the set of natural languages that are preferred in the response.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.3.5"
+    },
+    {
+        "label": "Authorization",
+        "type": "property",
+        "info": "allows a user agent to authenticate itself with a server -- usually, but not necessarily, after receiving a 401 (Unauthorized) response.",
+        "detail": "https://tools.ietf.org/html/rfc7235#section-4.1"
+    },
+    {
+        "label": "Proxy-Authorization",
+        "type": "property",
+        "info": "allows the client to identify itself (or its user) to a proxy that requires authentication.",
+        "detail": "https://tools.ietf.org/html/rfc7235#section-4.3"
+    },
+    {
+        "label": "DNT",
+        "type": "property",
+        "info": "defined as the means for expressing a user's tracking preference via HTTP.",
+        "detail": "https://www.w3.org/TR/tracking-dnt/#dnt-header-field"
+    },
+    {
+        "label": "From",
+        "type": "property",
+        "info": "contains an Internet email address for a human user who controls the requesting user agent.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.5.1"
+    },
+    {
+        "label": "Referer",
+        "type": "property",
+        "info": "allows the user agent to specify a URI reference for the resource from which the target URI was obtained (i.e., the referrer, though the field name is misspelled).",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.5.2"
+    },
+    {
+        "label": "User-Agent",
+        "type": "property",
+        "info": "contains information about the user agent originating the request, which is often used by servers to help identify the scope of reported interoperability problems, to work around or tailor responses to avoid particular user agent limitations, and for analytics regarding browser or operating system use.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-5.5.3"
+    },
+    {
+        "label": "Age",
+        "type": "property",
+        "info": "conveys the sender's estimate of the amount of time since the response was generated or successfully validated at the origin server.",
+        "detail": "https://tools.ietf.org/html/rfc7234#section-5.1"
+    },
+    {
+        "label": "Expires",
+        "type": "property",
+        "info": "gives the date/time after which the response is considered stale.",
+        "detail": "https://tools.ietf.org/html/rfc7234#section-7.3"
+    },
+    {
+        "label": "Date",
+        "type": "property",
+        "info": "represents the date and time at which the message was originated",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.1.1.2"
+    },
+    {
+        "label": "Location",
+        "type": "property",
+        "info": "is used in some responses to refer to a specific resource in relation to the response.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.1.2"
+    },
+    {
+        "label": "Retry-After",
+        "type": "property",
+        "info": "indicates how long the user agent ought to wait before making a follow-up request.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.1.3"
+    },
+    {
+        "label": "Tk",
+        "type": "property",
+        "info": "defined as an OPTIONAL means for indicating the tracking status that applied to the corresponding request and as a REQUIRED means for indicating that a state-changing request has resulted in an interactive change to the tracking status. ",
+        "detail": "https://www.w3.org/TR/tracking-dnt/#response-header-field"
+    },
+    {
+        "label": "Vary",
+        "type": "property",
+        "info": "describes what parts of a request message, aside from the method and request target, might influence the origin server's process for selecting and representing the response.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.1.4"
+    },
+    {
+        "label": "Warning",
+        "type": "property",
+        "info": "is used to carry additional information about the status or transformation of a message that might not be reflected in the message.",
+        "detail": "https://tools.ietf.org/html/rfc7234#section-7.6"
+    },
+    {
+        "label": "ETag",
+        "type": "property",
+        "info": "provides the current entity-tag for the selected representation, as determined at the conclusion of handling the request.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-2.3"
+    },
+    {
+        "label": "Last-Modified",
+        "type": "property",
+        "info": "provides a timestamp indicating the date and time at which the origin server believes the selected representation was last modified, as determined at the conclusion of handling the request.",
+        "detail": "https://tools.ietf.org/html/rfc7232#section-2.2"
+    },
+    {
+        "label": "WWW-Authenticate",
+        "type": "property",
+        "info": "consists of at least one challenge that indicates the authentication scheme(s) and parameters applicable to the effective request URI.",
+        "detail": "https://tools.ietf.org/html/rfc7235#section-4.4"
+    },
+    {
+        "label": "Proxy-Authenticate",
+        "type": "property",
+        "info": "consists of at least one challenge that indicates the authentication scheme(s) and parameters applicable to the proxy for this effective request URI.",
+        "detail": "https://tools.ietf.org/html/rfc7235#section-4.2"
+    },
+    {
+        "label": "Accept-Ranges",
+        "type": "property",
+        "info": "allows a server to indicate that it supports range requests for the target resource.",
+        "detail": "https://tools.ietf.org/html/rfc7233#section-2.3"
+    },
+    {
+        "label": "Allow",
+        "type": "property",
+        "info": "lists the set of methods advertised as supported by the target resource.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.4.1"
+    },
+    {
+        "label": "Server",
+        "type": "property",
+        "info": "contains information about the software used by the origin server to handle the request, which is often used by clients to help identify the scope of reported interoperability problems, to work around or tailor requests to avoid particular server limitations, and for analytics regarding server or operating system use.",
+        "detail": "https://tools.ietf.org/html/rfc7231#section-7.4.2"
+    },
+    {
+        "label": "Accept-Patch",
+        "type": "property",
+        "info": "used to specify the patch document formats accepted by the server.",
+        "detail": "https://tools.ietf.org/html/rfc5789#section-3.1"
+    },
+    {
+        "label": "Accept-Post",
+        "type": "property",
+        "info": "indicates server support for specific media types for entity bodies in HTTP POST requests.",
+        "detail": "https://tools.ietf.org/html/draft-wilde-accept-post"
+    },
+    {
+        "label": "Access-Control-Allow-Credentials",
+        "type": "property",
+        "info": "indicates whether the response to request can be exposed when the omit credentials flag is unset",
+        "detail": "https://www.w3.org/TR/cors/#access-control-allow-credentials-response-header"
+    },
+    {
+        "label": "Access-Control-Allow-Headers",
+        "type": "property",
+        "info": "indicates, as part of the response to a preflight request, which header field names can be used during the actual request",
+        "detail": "https://www.w3.org/TR/cors/#access-control-allow-headers-response-header"
+    },
+    {
+        "label": "Access-Control-Allow-Methods",
+        "type": "property",
+        "info": "indicates, as part of the response to a preflight request, which methods can be used during the actual request",
+        "detail": "https://www.w3.org/TR/cors/#access-control-allow-methods-response-header"
+    },
+    {
+        "label": "Access-Control-Allow-Origin",
+        "type": "property",
+        "info": "indicates whether a resource can be shared",
+        "detail": "https://www.w3.org/TR/cors/#access-control-allow-origin-response-header"
+    },
+    {
+        "label": "Access-Control-Expose-Headers",
+        "type": "property",
+        "info": "indicates which headers are safe to expose to the API of a CORS API specification",
+        "detail": "https://www.w3.org/TR/cors/#access-control-expose-headers-response-header"
+    },
+    {
+        "label": "Access-Control-Max-Age",
+        "type": "property",
+        "info": "indicates how long the results of a preflight request can be cached in a preflight result cache",
+        "detail": "https://www.w3.org/TR/cors/#access-control-max-age-response-header"
+    },
+    {
+        "label": "Access-Control-Request-Headers",
+        "type": "property",
+        "info": "indicates which headers will be used in the actual request as part of the preflight request",
+        "detail": "https://www.w3.org/TR/cors/#access-control-request-headers-request-header"
+    },
+    {
+        "label": "Access-Control-Request-Method",
+        "type": "property",
+        "info": "indicates which method will be used in the actual request as part of the preflight request",
+        "detail": "https://www.w3.org/TR/cors/#access-control-request-method-request-header"
+    },
+    {
+        "label": "Content-Disposition",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6266"
+    },
+    {
+        "label": "Content-Security-Policy",
+        "type": "property",
+        "info": "is the preferred mechanism for delivering a CSP policy",
+        "detail": "https://www.w3.org/TR/CSP/#content-security-policy-header-field"
+    },
+    {
+        "label": "Content-Security-Policy-Report-Only",
+        "type": "property",
+        "info": "lets servers experiment with policies by monitoring (rather than enforcing) a policy",
+        "detail": "https://www.w3.org/TR/CSP/#content-security-policy-report-only-header-field"
+    },
+    {
+        "label": "Cookie",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6265"
+    },
+    {
+        "label": "Forwarded",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc7239"
+    },
+    {
+        "label": "Link",
+        "type": "property",
+        "info": "provides a means for serialising one or more links in HTTP headers.",
+        "detail": "https://tools.ietf.org/html/rfc5988#section-5"
+    },
+    {
+        "label": "Origin",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6454"
+    },
+    {
+        "label": "Prefer",
+        "type": "property",
+        "info": "is used to indicate that particular server behaviors are preferred by the client, but not required for successful completion of the request.",
+        "detail": "https://tools.ietf.org/html/rfc7240#section-2"
+    },
+    {
+        "label": "Preference-Applied",
+        "type": "property",
+        "info": "MAY be included within a response message as an indication as to which Prefer tokens were honored by the server and applied to the processing of a request.",
+        "detail": "https://tools.ietf.org/html/rfc7240#section-3"
+    },
+    {
+        "label": "Set-Cookie",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6265"
+    },
+    {
+        "label": "Strict-Transport-Security",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6797"
+    },
+    {
+        "label": "Via",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc7230#section-5.7.1"
+    },
+    {
+        "label": "A-IM",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc3229#section-10.5.3"
+    },
+    {
+        "label": "Accept-CH",
+        "type": "property",
+        "info": "advertise support for Client Hints",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Accept-Features",
+        "type": "property",
+        "info": "can be used by a user agent to give information about the presence or absence of certain features in the feature set of the current request.",
+        "detail": "https://tools.ietf.org/html/rfc2295#section-8.2"
+    },
+    {
+        "label": "ALPN",
+        "type": "property",
+        "info": "indicates the application-layer protocol that a client intends to use within the tunnel, or a set of protocols that might be used within the tunnel.",
+        "detail": "https://tools.ietf.org/html/rfc7639#section-2"
+    },
+    {
+        "label": "Alt-Svc",
+        "type": "property",
+        "info": "is advertising the availability of alternate services to HTTP/1.1 and HTTP/2.0 clients by adding an Alt-Svc header field to responses.",
+        "detail": "https://tools.ietf.org/html/draft-nottingham-httpbis-alt-svc"
+    },
+    {
+        "label": "Alternates",
+        "type": "property",
+        "info": "is used to convey the list of variants bound to a negotiable resource.",
+        "detail": "https://tools.ietf.org/html/rfc2295#section-8.3"
+    },
+    {
+        "label": "Apply-To-Redirect-Ref",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc4437"
+    },
+    {
+        "label": "CH",
+        "type": "property",
+        "info": "describes an example list of client preferences that the server can use to adapt and optimize the resource to satisfy a given request.",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Content-Base",
+        "type": "property",
+        "info": "obsoleted",
+        "detail": "https://tools.ietf.org/html/rfc2068"
+    },
+    {
+        "label": "Content-DPR",
+        "type": "property",
+        "info": "is a number that indicates the ratio between physical pixels over CSS px of the selected image response.",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Cookie2",
+        "type": "property",
+        "info": "obsoleted",
+        "detail": "https://tools.ietf.org/html/rfc2965"
+    },
+    {
+        "label": "DASL",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc5323"
+    },
+    {
+        "label": "DAV",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "Delta-Base",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc3229#section-10.5.1"
+    },
+    {
+        "label": "Depth",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "Destination",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "DPR",
+        "type": "property",
+        "info": "is a number that, in requests, indicates the client’s current Device Pixel Ratio (DPR), which is the ratio of physical pixels over CSS px of the layout viewport on the device.",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Encryption",
+        "type": "property",
+        "info": "describes the encrypted content encoding(s) that have been applied to a payload body, and therefore how those content encoding(s) can be removed.",
+        "detail": "https://tools.ietf.org/html/draft-thomson-http-encryption#section-3"
+    },
+    {
+        "label": "Encryption-Key",
+        "type": "property",
+        "info": "can be used to describe the input keying material used in the Encryption header field.",
+        "detail": "https://tools.ietf.org/html/draft-thomson-http-encryption#section-4"
+    },
+    {
+        "label": "IM",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc3229#section-10.5.2"
+    },
+    {
+        "label": "If",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "If-Schedule-Tag-Match",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6638"
+    },
+    {
+        "label": "Key",
+        "type": "property",
+        "info": "allows an origin server to describe the cache key for a negotiated response: a short algorithm that can be used upon later requests to determine if the same response is reusable.",
+        "detail": "https://tools.ietf.org/html/draft-fielding-http-key"
+    },
+    {
+        "label": "Last-Event-ID",
+        "type": "property",
+        "info": "The value of the event source's last event ID string, encoded as UTF-8.",
+        "detail": "https://www.w3.org/TR/eventsource/#last-event-id"
+    },
+    {
+        "label": "Link-Template",
+        "type": "property",
+        "info": "provides a means for serialising one or more links into HTTP headers.",
+        "detail": "https://tools.ietf.org/html/draft-nottingham-link-template"
+    },
+    {
+        "label": "Lock-Token",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "MD",
+        "type": "property",
+        "info": "is a number that, in requests, indicates the client’s maximum downlink speed in megabits per second (Mbps), which is the standardized, or generally accepted, maximum download data rate for the underlying connection technology in use by the client.",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Negotiate",
+        "type": "property",
+        "info": "can contain directives for any content negotiation process initiated by the request.",
+        "detail": "https://tools.ietf.org/html/rfc2295#section-8.4"
+    },
+    {
+        "label": "Nice",
+        "type": "property",
+        "info": "indicates that a request is less important than a request that doesn't bear this header.",
+        "detail": "https://tools.ietf.org/html/draft-thomson-http-nice"
+    },
+    {
+        "label": "Overwrite",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "POE",
+        "type": "property",
+        "info": "The POE HTTP header is a request-header field whose field-value indicates the version of POE that a client supports.",
+        "detail": "https://tools.ietf.org/html/draft-nottingham-http-poe"
+    },
+    {
+        "label": "POE-Links",
+        "type": "property",
+        "info": "The POE-Links HTTP header is an entity-header field whose field-value is a comma-separated list of quoted URI-references (without fragment identifiers) that the origin server asserts to be POE resources. The contents of the POE-Links response header SHOULD correspond to links found in the content of the response body.",
+        "detail": "https://tools.ietf.org/html/draft-nottingham-http-poe"
+    },
+    {
+        "label": "Redirect-Ref",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc4437"
+    },
+    {
+        "label": "RW",
+        "type": "property",
+        "info": "is a number that, in requests, indicates the Resource Width (RW) in CSS px, which is either the display width of the requested resource (e.g. display width of an image), or the layout viewport width if the resource does not have a display width (e.g. a non-image asset).",
+        "detail": "https://tools.ietf.org/html/draft-grigorik-http-client-hints"
+    },
+    {
+        "label": "Schedule-Reply",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6638"
+    },
+    {
+        "label": "Schedule-Tag",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6638"
+    },
+    {
+        "label": "Sec-WebSocket-Accept",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6455"
+    },
+    {
+        "label": "Sec-WebSocket-Extensions",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6455"
+    },
+    {
+        "label": "Sec-WebSocket-Key",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6455"
+    },
+    {
+        "label": "Sec-WebSocket-Protocol",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6455"
+    },
+    {
+        "label": "Sec-WebSocket-Version",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc6455"
+    },
+    {
+        "label": "Set-Cookie2",
+        "type": "property",
+        "info": "obsoleted",
+        "detail": "https://tools.ietf.org/html/rfc2965"
+    },
+    {
+        "label": "SLUG",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc5023"
+    },
+    {
+        "label": "Status-URI",
+        "type": "property",
+        "info": "",
+        "detail": "https://tools.ietf.org/html/rfc2518#section-9.7"
+    },
+    {
+        "label": "Sunset",
+        "type": "property",
+        "info": "allows a server to communicate the fact that a resource is expected to become unresponsive at a specific point in time.",
+        "detail": "https://tools.ietf.org/html/draft-wilde-sunset-header"
+    },
+    {
+        "label": "Surrogate-Capability",
+        "type": "property",
+        "info": "",
+        "detail": "https://www.w3.org/TR/edge-arch"
+    },
+    {
+        "label": "Surrogate-Control",
+        "type": "property",
+        "info": "",
+        "detail": "https://www.w3.org/TR/edge-arch"
+    },
+    {
+        "label": "TCN",
+        "type": "property",
+        "info": "is used by a server to signal that the resource is transparently negotiated.",
+        "detail": "https://tools.ietf.org/html/rfc2295#section-8.5"
+    },
+    {
+        "label": "Timeout",
+        "type": "property",
+        "info": "standard",
+        "detail": "https://tools.ietf.org/html/rfc4918"
+    },
+    {
+        "label": "Variant-Vary",
+        "type": "property",
+        "info": "can be used in a choice response to record any vary information which applies to the variant data (the entity body combined with some of the entity headers) contained in the response, rather than to the response as a whole.",
+        "detail": "https://tools.ietf.org/html/rfc2295#section-8.6"
+    },
+    {
+        "label": "X-Frame-Options",
+        "type": "property",
+        "info": "indicates a policy that specifies whether the browser should render the transmitted resource within a &lt;frame&gt; or an &lt;iframe&gt;. Servers can declare this policy in the header of their HTTP responses to prevent clickjacking attacks, which ensures that their content is not embedded into other pages or frames.",
+        "detail": "https://tools.ietf.org/html/rfc7034"
+    }
+]

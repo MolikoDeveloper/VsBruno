@@ -9,9 +9,10 @@ import type { SerializedResponse } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/components/ResponsePanels/ResponsePanel";
 import type { BruCollection, BruFile } from "src/bruno/bruno";
+import type { LogEntry } from "src/sandbox/types";
 
 type msg = {
-    type: "update" | "open" | "fetch" | "collection"
+    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result"
     data: unknown
 }
 
@@ -21,6 +22,7 @@ export default function () {
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
+        //window.addEventListener("click", (e) => console.log(e?.target?.tagName as any, typeof e.target.tagName))
 
         const listener = (event: MessageEvent) => {
             const message: msg = event.data;
@@ -37,12 +39,65 @@ export default function () {
                 case "collection":
                     setBruCollection(message.data as BruCollection)
                     break;
+                case "script-result":
+                    const logs = ((message.data as any).logs as LogEntry[]);
+                    console.log(logs)
+                    console.log("exports →", (message.data as any).exports); // función getUserById
+
+                    logs.forEach((log) => {
+                        switch (log.kind) {
+                            case "log":
+                                console.log(log.values);
+                                break;
+                            case "info":
+                                console.info(log.values);
+                                break;
+                            case "error":
+                                console.error(log.values)
+                                break
+                            case "warn":
+                                console.warn(log.values)
+                                break
+                            default:
+                                console.log(log)
+                                break
+                        }
+                    })
+
+                    break;
+                case "script-error":
+                    console.log('error', message.data);
+                    break;
                 default:
                     console.log(message.type);
                     break;
             }
         }
         window.addEventListener("message", listener);
+
+        vscode.postMessage({
+            type: "run-script",
+            data: {
+                entryRel: "scripts/getuser.js",
+                code: `
+const users = [
+    {id: 1, name: "John Doe"},
+    {id: 2, name: "Jane Smith"},
+    {id: 3, name: "Sam Brown"}
+]
+
+const getUserById = (id) => {
+    return users.find(user => user.id === id);
+}
+
+console.log(getUserById(2));
+console.log("Hola!");
+
+module.exports = getUserById;
+                `,
+                args: { id: 1 }
+            }
+        });
 
         return () => {
             window.removeEventListener("message", listener)

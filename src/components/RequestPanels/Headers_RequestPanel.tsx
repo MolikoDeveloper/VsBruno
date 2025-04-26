@@ -1,5 +1,6 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import type { BruHeaders } from "src/bruno/bruno";
+import { headersAutocomplete } from "src/common/headersCompletion";
 import { useBruContent } from "src/webview/context/BruProvider"
 
 export default function () {
@@ -41,10 +42,7 @@ export default function () {
                         {bruContent?.headers?.map((h, i) => (
                             <tr>
                                 <td className="w-[30%]">
-                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal" style={{ outline: "0px" }}
-                                        type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={h.name}
-                                        onChange={(e) => { updateParam(i, "name", e.currentTarget.value) }}
-                                    ></input>
+                                    <ReactCodeMirror value={h.name} extensions={headersAutocomplete} theme="none" basicSetup={false} editable className="CM-Table w-available" onChange={(e) => updateParam(i, 'name', e)} />
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">

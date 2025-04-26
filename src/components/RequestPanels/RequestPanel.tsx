@@ -25,7 +25,7 @@ export default function ({ className }: Props) {
                     {tabs.map((t, index) => (
                         <div key={"Reqtab" + index}
                             className={`select-none px-0 py-[6px] cursor-pointer mr-5 ${currentTab === t ? activeStyle : inactiveStyle}`}
-                            onClick={() => setCurrentTab(t)}
+                            onClick={(e) => setCurrentTab(t)}
                         >
                             {t}
                             <>{

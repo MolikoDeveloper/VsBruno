@@ -56,8 +56,6 @@ const authOptions = [
 export default function () {
     const { bruContent, setBruContent } = useBruContent()
 
-    console.log(bruContent?.http?.auth)
-
     return <section className="flex w-full flex-1">
         <div className="w-full mt-1 overflow-y-scroll">
             <div className="flex flex-grow items-center justify-start">

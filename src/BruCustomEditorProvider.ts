@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import type { SerializedResponse } from "src/types/shared";
 //@ts-ignore
 import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru } from '@usebruno/lang';
+import type { RunOptions } from "./sandbox/types";
+import { SandboxImpl } from "./sandbox";
 
 class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     constructor(private readonly context: vscode.ExtensionContext) { }
@@ -74,6 +76,29 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                 case "fetch":
                     await this.handleFetchMessage(message, webview);
                     break;
+                case "run-script":
+                    if (!currentCollectionUri) {
+                        webview.postMessage({ type: "script-error", data: "collection.bru not found." })
+                        break;
+                    }
+
+                    const { code, entryRel, args } = message.data as { code: string, entryRel: string, args?: any };
+
+                    const opt: RunOptions = {
+                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), '..'),
+                        code,
+                        entryRel,
+                        args
+                    }
+
+                    try {
+                        const { exports, logs } = await SandboxImpl.run(opt);
+                        webview.postMessage({ type: "script-result", data: { exports, logs } });
+                    }
+                    catch (err) {
+                        webview.postMessage({ type: "script-error", data: String(err) });
+                    }
+                    break;
 
             }
         });
@@ -139,8 +164,7 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     }
 
     private getHtmlForWebView(webview: vscode.Webview): string {
-        const getUri = (path: string[]) =>
-            webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
+        const getUri = (path: string[]) => webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
 
         const cssUri = getUri(["dist", "tailwind.css"]);
         const scriptUri = getUri(["dist", "webview", "HydrateBruno.cjs"]);

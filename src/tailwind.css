@@ -81,3 +81,11 @@ body {
 .CM-Table .ͼ2 .cm-content {
     caret-color: aqua;
 }
+
+.CM-Table .cm-tooltip {
+    background-color: var(--vscode-editorWidget-background);
+    color: var(--vscode-menu-selectionForeground);
+    border: none;
+    border-color: var(--vscode-editorWidget-border);
+
+}
