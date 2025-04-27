@@ -1,18 +1,18 @@
 import * as vscode from "vscode"
 
+// src/sandbox/types.ts
+export type LogEntry = { kind: "log" | "warn" | "error" | "info"; values: any[] };
+
 export interface RunOptions {
-    /** collection.bru path */
-    collectionRoot: vscode.Uri;
-    /** script content */
-    code: string;
-    /** relative path of the main script @example "scripts/getuser.js"*/
-    entryRel: string;
-    /** Datos arbitrarios que el host quiere pasarle al script */
-    args?: any;
+  collectionRoot: vscode.Uri;
+  code: string;
+  /** Nombre lógico del archivo inline: scripts/getuser.js, users/foo.ts…  opcional  */
+  virtualPath?: string;
+  args?: any;
 }
 
 export interface Sandbox {
-    run(opts: RunOptions): Promise<any>;
+  run(opts: RunOptions): Promise<{ exports: any; logs: LogEntry[] }>;
 }
 
-export type LogEntry = { kind: "log" | "warn" | "error" | "info"; values: any[] };
+export type ScriptResult = { exports: any; logs: LogEntry[] };

@@ -76,29 +76,26 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                 case "fetch":
                     await this.handleFetchMessage(message, webview);
                     break;
-                case "run-script":
+                case "run-script": {
                     if (!currentCollectionUri) {
-                        webview.postMessage({ type: "script-error", data: "collection.bru not found." })
+                        webview.postMessage({ type: "script-error", data: "collection.bru not found" });
                         break;
                     }
-
-                    const { code, entryRel, args } = message.data as { code: string, entryRel: string, args?: any };
-
+                    const { code, virtualPath, args } = message.data;
                     const opt: RunOptions = {
-                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), '..'),
+                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), ".."),
                         code,
-                        entryRel,
+                        virtualPath,   // opcional — si no se envía => "inline.js"
                         args
-                    }
-
+                    };
                     try {
                         const { exports, logs } = await SandboxImpl.run(opt);
                         webview.postMessage({ type: "script-result", data: { exports, logs } });
-                    }
-                    catch (err) {
-                        webview.postMessage({ type: "script-error", data: String(err) });
+                    } catch (e) {
+                        webview.postMessage({ type: "script-error", data: String(e) });
                     }
                     break;
+                }
 
             }
         });

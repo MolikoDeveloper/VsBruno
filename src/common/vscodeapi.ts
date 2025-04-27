@@ -1,4 +1,3 @@
-// src/vscodeApi.ts
 export const vscode = acquireVsCodeApi<{
     activetab?: {
         active_L_Tab?: string;

@@ -1,13 +1,13 @@
-import BottomBar from "src/components/BottomBar";
-import { Panel } from "src/components/Panel/Panel";
-import { PanelGroup } from "src/components/Panel/PanelGroup";
-import RequestPanel from "src/components/RequestPanels/RequestPanel";
-import TopBar from "src/components/TopBar";
+import BottomBar from "src/webview/components/BottomBar";
+import { Panel } from "src/webview/components/Panel/Panel";
+import { PanelGroup } from "src/webview/components/Panel/PanelGroup";
+import RequestPanel from "src/webview/components/RequestPanels/RequestPanel";
+import TopBar from "src/webview/components/TopBar";
 import { useBruContent } from "./context/BruProvider";
 import { useEffect, useState } from "react";
 import type { SerializedResponse } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
-import ResponsePanel from "src/components/ResponsePanels/ResponsePanel";
+import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruCollection, BruFile } from "src/bruno/bruno";
 import type { LogEntry } from "src/sandbox/types";
 
@@ -43,30 +43,9 @@ export default function () {
                     const logs = ((message.data as any).logs as LogEntry[]);
                     console.log(logs)
                     console.log("exports →", (message.data as any).exports); // función getUserById
-
-                    logs.forEach((log) => {
-                        switch (log.kind) {
-                            case "log":
-                                console.log(log.values);
-                                break;
-                            case "info":
-                                console.info(log.values);
-                                break;
-                            case "error":
-                                console.error(log.values)
-                                break
-                            case "warn":
-                                console.warn(log.values)
-                                break
-                            default:
-                                console.log(log)
-                                break
-                        }
-                    })
-
                     break;
                 case "script-error":
-                    console.log('error', message.data);
+                    console.log(message.data)
                     break;
                 default:
                     console.log(message.type);
@@ -78,22 +57,11 @@ export default function () {
         vscode.postMessage({
             type: "run-script",
             data: {
-                entryRel: "scripts/getuser.js",
                 code: `
-const users = [
-    {id: 1, name: "John Doe"},
-    {id: 2, name: "Jane Smith"},
-    {id: 3, name: "Sam Brown"}
-]
-
-const getUserById = (id) => {
-    return users.find(user => user.id === id);
-}
-
-console.log(getUserById(2));
-console.log("Hola!");
-
-module.exports = getUserById;
+import users from "./getuser.js"
+console.log(users())
+const a = 1
+module.exports = a
                 `,
                 args: { id: 1 }
             }

@@ -2,7 +2,13 @@ import * as vscode from "vscode";
 import BruCustomEditorProvider from "./BruCustomEditorProvider";
 import BruCollectionEditorProvider from "./BruCollectionEditorProvider";
 
+let scriptChannel: vscode.OutputChannel;
+
 export const activate = (context: vscode.ExtensionContext) => {
+  scriptChannel = vscode.window.createOutputChannel(
+    "VsBruno · Script"
+  );
+
   const bruProvider = new BruCustomEditorProvider(context);
   const bruCollectionProvider = new BruCollectionEditorProvider(context);
   /*custom editor */
@@ -34,3 +40,11 @@ export const activate = (context: vscode.ExtensionContext) => {
 };
 
 export const deactivate = () => { };
+
+export function Print(channel: "script" | "request", msg: string){
+  switch(channel){
+    case "script":
+      scriptChannel.appendLine(msg)
+      break;
+  }
+}
