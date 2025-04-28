@@ -2,7 +2,12 @@
   "compilerOptions": {
     "lib": [
       "ESNext",
-      "DOM"
+      "DOM",
+      "WebWorker"
+    ],
+    "types": [
+      "node",
+      "vscode"
     ],
     "target": "ESNext",
     "baseUrl": ".",

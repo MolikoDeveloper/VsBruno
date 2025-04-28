@@ -1,4 +1,10 @@
 import esbuild from "esbuild";
-import config from "./esbuild.config";
+import main from "./esbuild.main.js";
+import worker from "./esbuild.worker.js";
 
-esbuild.build(config).catch(() => process.exit(1));
+await Promise.all([esbuild.build(main), esbuild.build(worker)]).catch((err) => {
+    console.log(err)
+
+    process.exit(1)
+}
+);
