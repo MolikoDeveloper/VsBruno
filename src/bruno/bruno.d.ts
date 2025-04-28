@@ -16,15 +16,15 @@ export interface BruFile {
 
   /* variables & asserts */
   vars?: {
-    preRequest?: Record<string, string>;
-    postResponse?: Record<string, string>;
+    req?: BruVars[];
+    res?: BruVars[];
   };
   assert?: Record<string, string>;
 
   /* scripts, tests, docs */
   script?: {
-    preRequest?: string;
-    postResponse?: string;
+    req?: string;
+    res?: string;
   };
   tests?: string;
   docs?: string;
@@ -43,6 +43,13 @@ export interface BruParams {
   enabled: boolean;
   name: string,
   type: "query" | "path",
+  value: string
+}
+
+export interface BruVars {
+  enabled: boolean;
+  local: boolean;
+  name: string,
   value: string
 }
 

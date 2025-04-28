@@ -49,8 +49,7 @@ export default class BruCollectionEditorProvider
     }
 
     private html(webview: vscode.Webview) {
-        const getUri = (path: string[]) =>
-            webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
+        const getUri = (path: string[]) => webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
 
         const cssUri = getUri(["dist", "tailwind.css"]);
         const scriptUri = getUri(["dist", "webview", "HydrateCollection.cjs"]);

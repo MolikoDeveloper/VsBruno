@@ -4,6 +4,7 @@ import type { SerializedResponse } from "src/types/shared";
 import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru } from '@usebruno/lang';
 import type { RunOptions } from "./sandbox/types";
 import { SandboxImpl } from "./sandbox";
+import { Print } from "./extension";
 
 class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     constructor(private readonly context: vscode.ExtensionContext) { }
@@ -19,6 +20,10 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
 
         const nearest = await this.findNearestCollection(document.uri);
         let currentCollectionUri: string | null = nearest?.uri ?? null;
+
+        const bruno_config = await this.findNearestJsonConfig(document.uri);
+        let currentbruno_config: string | null = bruno_config?.uri ?? null;
+
 
         const changeDoc = vscode.workspace.onDidChangeTextDocument(async (e) => {
             const uriStr = e.document.uri.toString();
@@ -38,6 +43,14 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                     type: "collection",
                     data: collectionBruToJson(e.document.getText()),
                 });
+            }
+
+            /** cambios en bruno.json, solo aplica al guardar. */
+            if (uriStr === currentbruno_config) {
+                webview.postMessage({
+                    type: "bruno-config",
+                    data: await this.findNearestJsonConfig(e.document.uri)
+                })
             }
         });
 
@@ -72,6 +85,10 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                         type: "collection",
                         data: await this.findNearestCollection(document.uri) ?? null
                     });
+                    webview.postMessage({
+                        type: "bruno-config",
+                        data: await this.findNearestJsonConfig(document.uri) ?? null
+                    });
                     break;
                 case "fetch":
                     await this.handleFetchMessage(message, webview);
@@ -81,18 +98,22 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                         webview.postMessage({ type: "script-error", data: "collection.bru not found" });
                         break;
                     }
-                    const { code, virtualPath, args } = message.data;
-                    const opt: RunOptions = {
-                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), ".."),
-                        code,
-                        virtualPath,   // opcional — si no se envía => "inline.js"
-                        args
-                    };
+
                     try {
-                        const { exports, logs } = await SandboxImpl.run(opt);
+                        const { code, virtualPath, args } = message.data;
+                        const opt: RunOptions = {
+                            collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), ".."),
+                            code,
+                            virtualPath,
+                            resolveDir: vscode.Uri.joinPath(document.uri, "..").fsPath,   // ★
+                            args
+                        };
+                        const emit = (evt: any) => webview.postMessage({ type: "bru-event", data: evt }); // ★
+                        const { exports, logs } = await SandboxImpl.run(opt, emit);
                         webview.postMessage({ type: "script-result", data: { exports, logs } });
                     } catch (e) {
-                        webview.postMessage({ type: "script-error", data: String(e) });
+                        Print('script', String((e as Error).message))
+                        webview.postMessage({ type: "script-error", data: e });
                     }
                     break;
                 }
@@ -213,6 +234,41 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                 return {
                     uri: candidate.toString(),
                     data: collectionBruToJson(text),
+                };
+            } catch {
+                /* no existe aquí: seguimos subiendo */
+            }
+
+            const next = this.parentUri(current);
+            if (next.path === current.path) break;              // ya estábamos en la raíz
+            current = next;
+        }
+
+        return null;                                          // no se encontró ninguna
+    }
+
+    private async findNearestJsonConfig(
+        docUri: vscode.Uri
+    ): Promise<{ uri: string; data: any } | null> {
+        const wsFolder = vscode.workspace.getWorkspaceFolder(docUri);
+        if (!wsFolder) return null;                           // archivo fuera del workspace
+
+        // ① Dir actual donde está el documento
+        let current = this.parentUri(docUri);                 // carpeta que contiene al .bru
+
+        // ② Mientras sigamos dentro del workspace
+        while (current.path.startsWith(wsFolder.uri.path)) {
+            const candidate = vscode.Uri.joinPath(current, "bruno.json");
+
+            try {
+                // Si existe -> la devolvemos
+                await vscode.workspace.fs.stat(candidate);
+
+                const bytes = await vscode.workspace.fs.readFile(candidate);
+                const text = Buffer.from(bytes).toString("utf-8");
+                return {
+                    uri: candidate.toString(),
+                    data: JSON.parse(text),
                 };
             } catch {
                 /* no existe aquí: seguimos subiendo */

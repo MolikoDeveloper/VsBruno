@@ -80,7 +80,7 @@ export default function () {
                             ...prev,
                             headers: [...(prev?.headers ?? []), blank]
                         }))
-                    }}>+&nbsp;<span>Add Param</span></button>
+                    }}>+&nbsp;<span>Add Header</span></button>
             </div>
         </div>
     )

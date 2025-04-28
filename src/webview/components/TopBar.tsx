@@ -1,9 +1,22 @@
+import { useCallback } from "react";
 import type { HttpMethod } from "src/bruno/bruno";
+import { vscode } from "src/common/vscodeapi";
 import { useBruContent } from "src/webview/context/BruProvider";
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
     const httpMethods = ["get", "post", "put", "delete", "patch", "options", "head", "connect", "trace"];
+
+    const runRequestScript = useCallback(() => {
+        if (!bruContent?.script?.req) return;
+        vscode.postMessage({
+            type: "run-script",
+            data: {
+                code: bruContent.script.req,
+                args: null
+            }
+        })
+    }, [bruContent])
 
     return (
         <div className="bg-[var(--vscode-input-background)] h-[30px] text-[15px] font-bold flex m-0 rounded-[10px]">
@@ -44,6 +57,15 @@ export default function () {
                     }))
                 }}
             />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-full m-0 mr-2 icon icon-tabler icon-tabler-arrow-right cursor-pointer"
+                width="24" height="24" viewBox="0 0 24 24" strokeWidth="1.5" stroke="rgb(204, 204, 204)"
+                fill="none" strokeLinecap="round" strokeLinejoin="round"
+                onClick={() => runRequestScript()}>
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <line x1="13" y1="18" x2="19" y2="12"></line>
+                <line x1="13" y1="6" x2="19" y2="12"></line>
+            </svg>
         </div>
     );
 }

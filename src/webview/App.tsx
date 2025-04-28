@@ -10,14 +10,15 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruCollection, BruFile } from "src/bruno/bruno";
 import type { LogEntry } from "src/sandbox/types";
+import type { BrunoConfig } from "src/bruno/bruno.config";
 
 type msg = {
-    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result"
+    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event"
     data: unknown
 }
 
 export default function () {
-    const { bruContent, setBruContent, bruCollection, setBruCollection } = useBruContent();
+    const { bruContent, setBruContent, bruCollection, setBruCollection, bruConfig, setBruConfig } = useBruContent();
     const [response, setResponse] = useState<SerializedResponse | null>(null)
 
     useEffect(() => {
@@ -40,11 +41,17 @@ export default function () {
                     setBruCollection(message.data as BruCollection)
                     break;
                 case "script-result":
-                    const logs = ((message.data as any).logs as LogEntry[]);
-                    console.log(logs)
-                    console.log("exports →", (message.data as any).exports); // función getUserById
+                    //const logs = ((message.data as any).logs as LogEntry[]);
+                    //console.log(logs)
+                    //console.log("exports →", (message.data as any).exports); // función getUserById
                     break;
                 case "script-error":
+                    console.log(message.data)
+                    break;
+                case "bruno-config":
+                    setBruConfig(message.data as BrunoConfig)
+                    break;
+                case "bru-event":
                     console.log(message.data)
                     break;
                 default:
@@ -53,19 +60,6 @@ export default function () {
             }
         }
         window.addEventListener("message", listener);
-
-        vscode.postMessage({
-            type: "run-script",
-            data: {
-                code: `
-import users from "./getuser.js"
-console.log(users())
-const a = 1
-module.exports = a
-                `,
-                args: { id: 1 }
-            }
-        });
 
         return () => {
             window.removeEventListener("message", listener)
@@ -88,8 +82,7 @@ module.exports = a
                 </div>
             </div>
             <BottomBar>
-                <a className="cursor-default">{bruContent?.meta?.type}</a>
-                <a className="cursor-default">{bruContent?.meta?.name}</a>
+
             </BottomBar>
         </div>
     )

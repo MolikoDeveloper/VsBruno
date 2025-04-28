@@ -5,7 +5,28 @@ meta {
 }
 
 get {
-  url: https://pokeapi.co/api/v2/pokemon/ditto
+  url: {{host}}
   body: none
   auth: inherit
+}
+
+vars:pre-request {
+  aa: aa
+}
+
+vars:post-response {
+  bb: bb
+}
+
+assert {
+  a: eq 2
+}
+
+script:pre-request {
+  
+  console.log(bru.getEnvVar("host"))
+}
+
+script:post-response {
+  console.log("b")
 }

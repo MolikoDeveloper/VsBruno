@@ -8,11 +8,12 @@ export interface RunOptions {
   code: string;
   /** Nombre lógico del archivo inline: scripts/getuser.js, users/foo.ts…  opcional  */
   virtualPath?: string;
+  resolveDir: string;
   args?: any;
 }
 
 export interface Sandbox {
-  run(opts: RunOptions): Promise<{ exports: any; logs: LogEntry[] }>;
+  run(opts: RunOptions, emit: (evt: any) => void): Promise<ScriptResult>;
 }
 
 export type ScriptResult = { exports: any; logs: LogEntry[] };
