@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{host}}
+  url: localhost
   body: none
   auth: inherit
 }
@@ -23,8 +23,9 @@ assert {
 }
 
 script:pre-request {
+  import aa from "./getuser.js"
   
-  console.log(bru.getEnvVar("host"))
+  console.log(aa());
 }
 
 script:post-response {

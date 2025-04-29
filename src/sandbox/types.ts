@@ -1,19 +1,20 @@
-import * as vscode from "vscode"
+import * as vscode from "vscode";
 
-// src/sandbox/types.ts
 export type LogEntry = { kind: "log" | "warn" | "error" | "info"; values: any[] };
 
 export interface RunOptions {
-  collectionRoot: vscode.Uri;
-  code: string;
-  /** Nombre lógico del archivo inline: scripts/getuser.js, users/foo.ts…  opcional  */
-  virtualPath?: string;
-  resolveDir: string;
-  args?: any;
+    collectionRoot: vscode.Uri;
+    resolveDir: string;        // carpeta del .bru activo
+    code: string;              // código inline o TS/JS
+    virtualPath?: string;      // nombre lógico, p.ej. "script.ts"
+    args?: any;
+}
+
+export interface ScriptResult {
+    exports: any;
+    logs: LogEntry[];
 }
 
 export interface Sandbox {
-  run(opts: RunOptions, emit: (evt: any) => void): Promise<ScriptResult>;
+    run(opts: RunOptions, emit: (evt: any) => void): Promise<ScriptResult>;
 }
-
-export type ScriptResult = { exports: any; logs: LogEntry[] };

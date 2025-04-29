@@ -1,169 +1,189 @@
 import * as vscode from "vscode";
 import type { SerializedResponse } from "src/types/shared";
-//@ts-ignore
-import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru } from '@usebruno/lang';
+// @ts-ignore – tipo externo sin d.ts
+import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru, } from "@usebruno/lang";
+import { readFileSync } from "fs";
+import * as path from "path";
 import type { RunOptions } from "./sandbox/types";
 import { SandboxImpl } from "./sandbox";
-import { Print } from "./extension";
 
-class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
-    constructor(private readonly context: vscode.ExtensionContext) { }
+/* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
+type BruStateKind = "state" | "console" | "evt" | "get";
+type WebviewMsg =
+    | { type: "edit"; text: string }
+    | { type: "init" }
+    | { type: "fetch"; data: { uri: string; init?: RequestInit } }
+    | { type: "run-script"; data: { code: string; virtualPath?: string; args: any } }
+    | { type: "bru-get-reply"; data: { id: string; payload: any } }
+    | { type: "stop-script" };
 
+type ScriptState =
+    | "idle"      // no hay ejecución en curso  
+    | "starting"  // justo al recibir run-script  
+    | "running"   // dentro de Sandbox.run(...)  
+    | "stopping"  // al recibir stop-script  
+    | "stopped";  // ejecución finalizada o interrumpida  
+
+/* ──────────────────────── Clase principal del editor ─────────────────────── */
+export default class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
+    private scriptState: ScriptState = "idle";
+
+    constructor(private readonly ctx: vscode.ExtensionContext) { }
+
+    /* ───────────── API de CustomTextEditorProvider ───────────── */
     public async resolveCustomTextEditor(
-        document: vscode.TextDocument,
+        doc: vscode.TextDocument,
         panel: vscode.WebviewPanel,
-        token: vscode.CancellationToken
     ): Promise<void> {
         const { webview } = panel;
         webview.options = { enableScripts: true };
-        webview.html = this.getHtmlForWebView(webview);
+        webview.html = this.html(webview);
 
-        const nearest = await this.findNearestCollection(document.uri);
-        let currentCollectionUri: string | null = nearest?.uri ?? null;
+        /* Rutas de proyecto */
+        let collectionUri = (await this.findNearestCollection(doc.uri))?.uri ?? null;
+        let configUri = (await this.findNearestJsonConfig(doc.uri))?.uri ?? null;
 
-        const bruno_config = await this.findNearestJsonConfig(document.uri);
-        let currentbruno_config: string | null = bruno_config?.uri ?? null;
+        /* Watchers ------------------------------------------------------------- */
+        const disposables: vscode.Disposable[] = [];
 
+        /* Cambios en cualquier .bru, collection.bru o bruno.json */
+        disposables.push(
+            vscode.workspace.onDidChangeTextDocument(async (e) => {
+                const uri = e.document.uri.toString();
 
-        const changeDoc = vscode.workspace.onDidChangeTextDocument(async (e) => {
-            const uriStr = e.document.uri.toString();
-
-            /* ① Cambios en el .bru que el usuario edita */
-            if (uriStr === document.uri.toString()) {
-                webview.postMessage({
-                    type: "update",
-                    data: bruToJsonV2(e.document.getText()),
-                });
-                return;
-            }
-
-            /* ② Cambios en la colección actualmente seleccionada */
-            if (uriStr === currentCollectionUri) {
-                webview.postMessage({
-                    type: "collection",
-                    data: collectionBruToJson(e.document.getText()),
-                });
-            }
-
-            /** cambios en bruno.json, solo aplica al guardar. */
-            if (uriStr === currentbruno_config) {
-                webview.postMessage({
-                    type: "bruno-config",
-                    data: await this.findNearestJsonConfig(e.document.uri)
-                })
-            }
-        });
-
-        /* ───── ② Creación / borrado / renombrado de collection.bru ───── */
-        const watcher = vscode.workspace.createFileSystemWatcher("**/collection.bru");
-        const refreshNearest = async () => {
-            const nearestNow = await this.findNearestCollection(document.uri);
-            const newUri = nearestNow?.uri ?? null;
-
-            if (newUri !== currentCollectionUri) {
-                currentCollectionUri = newUri;
-                webview.postMessage({
-                    type: "collection",
-                    data: nearestNow?.data ?? null,   // puede ser null si ya no hay colección
-                });
-            }
-        };
-        watcher.onDidCreate(refreshNearest);
-        watcher.onDidDelete(refreshNearest);
-
-        webview.onDidReceiveMessage(async (message) => {
-            switch (message.type) {
-                case "edit":
-                    this.handleEditMessage(message);
-                    break;
-                case "init":
-                    webview.postMessage({
-                        type: "open",
-                        data: bruToJsonV2(document.getText())
-                    });
-                    webview.postMessage({
-                        type: "collection",
-                        data: await this.findNearestCollection(document.uri) ?? null
-                    });
-                    webview.postMessage({
-                        type: "bruno-config",
-                        data: await this.findNearestJsonConfig(document.uri) ?? null
-                    });
-                    break;
-                case "fetch":
-                    await this.handleFetchMessage(message, webview);
-                    break;
-                case "run-script": {
-                    if (!currentCollectionUri) {
-                        webview.postMessage({ type: "script-error", data: "collection.bru not found" });
-                        break;
-                    }
-
-                    try {
-                        const { code, virtualPath, args } = message.data;
-                        const opt: RunOptions = {
-                            collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(currentCollectionUri), ".."),
-                            code,
-                            virtualPath,
-                            resolveDir: vscode.Uri.joinPath(document.uri, "..").fsPath,   // ★
-                            args
-                        };
-                        const emit = (evt: any) => webview.postMessage({ type: "bru-event", data: evt }); // ★
-                        const { exports, logs } = await SandboxImpl.run(opt, emit);
-                        webview.postMessage({ type: "script-result", data: { exports, logs } });
-                    } catch (e) {
-                        Print('script', String((e as Error).message))
-                        webview.postMessage({ type: "script-error", data: e });
-                    }
-                    break;
+                /* ① Fichero que estamos editando */
+                if (uri === doc.uri.toString()) {
+                    webview.postMessage({ type: "update", data: bruToJsonV2(e.document.getText()) });
+                    return;
                 }
 
+                /* ② Colección */
+                if (uri === collectionUri) {
+                    webview.postMessage({
+                        type: "collection",
+                        data: collectionBruToJson(e.document.getText()),
+                    });
+                    return;
+                }
+
+                /* ③ Config */
+                if (uri === configUri) {
+                    webview.postMessage({
+                        type: "bruno-config",
+                        data: await this.findNearestJsonConfig(e.document.uri),
+                    });
+                }
+            }),
+        );
+
+        /* Nuevas collection.bru creadas/borradas */
+        const watcher = vscode.workspace.createFileSystemWatcher("**/collection.bru");
+        disposables.push(watcher);
+        watcher.onDidCreate(() => refreshNearestCollection(this));
+        watcher.onDidDelete(() => refreshNearestCollection(this));
+
+        /* Mensajes de la Webview ---------------------------------------------- */
+        webview.onDidReceiveMessage((msg: WebviewMsg) => this.handleWebviewMessage(msg, doc, webview));
+
+        /* Limpieza al cerrar el panel ----------------------------------------- */
+        panel.onDidDispose(() => disposables.forEach((d) => d.dispose()));
+
+        /* Helpers ------------------------------------------------------------- */
+        async function refreshNearestCollection(self: any) {
+            const nearest = await self.findNearestCollection(doc.uri);
+            const newUri = nearest?.uri ?? null;
+            if (newUri !== collectionUri) {
+                collectionUri = newUri;
+                webview.postMessage({ type: "collection", data: nearest?.data ?? null });
             }
-        });
-
-        panel.onDidDispose(() => {
-            changeDoc.dispose()
-            watcher.dispose()
-        });
-    }
-
-    private handleEditMessage(message: { text: string }) {
-        try {
-            const data = JSON.parse(message.text);
-            const bru = jsonToBruV2(data);
-            console.log(bru);
-        } catch (err) {
-            console.error("Invalid BRU content", err);
         }
     }
 
-    private async handleFetchMessage(
-        message: { data: { uri: string; init?: RequestInit } },
-        webview: vscode.Webview
-    ) {
-        const { uri, init } = message.data;
-        if (!uri) return;
+    /* ──────────────────────────── Mensajes Webview ─────────────────────────── */
+    private async handleWebviewMessage(msg: WebviewMsg, doc: vscode.TextDocument, webview: vscode.Webview) {
+        switch (msg.type) {
+            case "edit":
+                this.onEdit(msg.text);
+                break;
 
+            case "init":
+                webview.postMessage({ type: "open", data: bruToJsonV2(doc.getText()) });
+                webview.postMessage({ type: "collection", data: await this.findNearestCollection(doc.uri) });
+                webview.postMessage({ type: "bruno-config", data: await this.findNearestJsonConfig(doc.uri) });
+                break;
+
+            case "fetch":
+                await this.handleFetch(msg.data, webview);
+                break;
+
+            case "run-script":
+                this.setScriptState("starting", webview)
+                const nearest = await this.findNearestCollection(doc.uri);
+                if (!nearest) {
+                    webview.postMessage({ type: "script-error", data: "collection.bru not found" });
+                }
+
+                const emitEvent = (evt: any) => webview.postMessage({ type: "bru-event", data: evt });
+
+                try {
+                    const { code, virtualPath, args } = msg.data;
+                    const opt: RunOptions = {
+                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), '..'),
+                        code,
+                        virtualPath,
+                        resolveDir: vscode.Uri.joinPath(doc.uri, '..').fsPath,
+                        args
+                    }
+
+                    this.setScriptState("running", webview);
+                    const { exports, logs } = await SandboxImpl.run(opt, emitEvent);
+                    webview.postMessage({ type: "script-result", data: { exports, logs } });
+                    this.setScriptState("stopped", webview);
+                }
+                catch (err) {
+                    webview.postMessage({ type: "script-error", data: String(err) })
+                    this.setScriptState("stopped", webview)
+                }
+
+                break;
+
+            case "bru-get-reply":
+
+                break;
+
+            case "stop-script":
+
+                break;
+        }
+    }
+
+    /* ──────────────────────────── Helpers de negocio ──────────────────────── */
+    private onEdit(text: string) {
         try {
-            const res = await fetch(uri.toString(), init);
+            const bru = jsonToBruV2(JSON.parse(text));
+            console.log(bru);
+        } catch {
+            console.error("Invalid BRU content");
+        }
+    }
+
+    private async handleFetch(
+        req: { uri: string; init?: RequestInit },
+        webview: vscode.Webview,
+    ) {
+        if (!req.uri) return;
+        try {
+            const res = await fetch(req.uri, req.init);
             const headers: Record<string, string> = {};
             res.headers.forEach((v, k) => (headers[k] = v));
 
-            const contentType = headers["content-type"] ?? "";
-            let body: unknown;
-            let parsedAs: "json" | "text" | "binary";
-
-            if (contentType.includes("application/json")) {
-                body = await res.json();
-                parsedAs = "json";
-            } else if (contentType.startsWith("text/")) {
-                body = await res.text();
-                parsedAs = "text";
-            } else {
-                const buffer = Buffer.from(await res.arrayBuffer());
-                body = buffer.toString("base64");
-                parsedAs = "binary";
-            }
+            const ct = headers["content-type"] ?? "";
+            const body =
+                ct.includes("application/json")
+                    ? await res.json()
+                    : ct.startsWith("text/")
+                        ? await res.text()
+                        : Buffer.from(await res.arrayBuffer()).toString("base64");
 
             const payload: SerializedResponse = {
                 ok: res.ok,
@@ -171,126 +191,87 @@ class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
                 statusText: res.statusText,
                 url: res.url,
                 headers,
-                parsedAs,
+                parsedAs: ct.includes("json") ? "json" : ct.startsWith("text/") ? "text" : "binary",
                 body,
             };
-
             webview.postMessage({ type: "fetch", data: payload });
         } catch (err) {
             webview.postMessage({ type: "fetch-error", data: String(err) });
         }
     }
 
-    private getHtmlForWebView(webview: vscode.Webview): string {
-        const getUri = (path: string[]) => webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, ...path));
-
-        const cssUri = getUri(["dist", "tailwind.css"]);
-        const scriptUri = getUri(["dist", "webview", "HydrateBruno.cjs"]);
-        const highlightJsUri = getUri(["dist", "common", "highlight.min.cjs"]);
+    /* ──────────────────────────── Utils UI & FS ───────────────────────────── */
+    private html(webview: vscode.Webview): string {
+        const cssUri = this.getUri(webview, ["dist", "tailwind.css"]);
+        const scriptUri = this.getUri(webview, ["dist", "webview", "HydrateBruno.cjs"]);
+        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.cjs"]);
 
         return /*html*/ `
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'none';
-      img-src ${webview.cspSource} data:;
-      style-src ${webview.cspSource} 'unsafe-inline';
-      script-src ${webview.cspSource};
-    "/>
-    <link rel="stylesheet" href="${cssUri}" />
-    <title>.bru Editor</title>
-</head>
-<body>
-    <div id="root"></div>
-    <script src="${highlightJsUri}" crossorigin></script>
-    <script src="${scriptUri}"></script>
-  </body>
-</html>
-    `;
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    img-src ${webview.cspSource} data:;
+    style-src ${webview.cspSource} 'unsafe-inline';
+    script-src ${webview.cspSource};
+  "/>
+  <link rel="stylesheet" href="${cssUri}" />
+  <title>.bru Editor</title>
+</head><body>
+  <div id="root"></div>
+  <script src="${hlUri}" crossorigin></script>
+  <script src="${scriptUri}"></script>
+</body></html>`;
     }
 
-    /** Devuelve la collection.bru más cercana o null (sin usar 'path') */
-    private async findNearestCollection(
-        docUri: vscode.Uri
+    private getUri(webview: vscode.Webview, path: string[]) {
+        return webview.asWebviewUri(vscode.Uri.joinPath(this.ctx.extensionUri, ...path));
+    }
+
+    private getPath(path: string[]) { return vscode.Uri.joinPath(this.ctx.extensionUri, ...path).fsPath; }
+
+    /* ──── búsqueda up-tree de collection.bru / bruno.json (sin usar 'path') ─── */
+    private async findNearestCollection(doc: vscode.Uri) {
+        return this.findUpTree(doc, "collection.bru", async (txt) => collectionBruToJson(txt));
+    }
+
+    private async findNearestJsonConfig(doc: vscode.Uri) {
+        return this.findUpTree(doc, "bruno.json", JSON.parse);
+    }
+
+    private async findUpTree(
+        doc: vscode.Uri,
+        fileName: string,
+        parse: (text: string) => any,
     ): Promise<{ uri: string; data: any } | null> {
-        const wsFolder = vscode.workspace.getWorkspaceFolder(docUri);
-        if (!wsFolder) return null;                           // archivo fuera del workspace
+        const ws = vscode.workspace.getWorkspaceFolder(doc);
+        if (!ws) return null;
 
-        // ① Dir actual donde está el documento
-        let current = this.parentUri(docUri);                 // carpeta que contiene al .bru
-
-        // ② Mientras sigamos dentro del workspace
-        while (current.path.startsWith(wsFolder.uri.path)) {
-            const candidate = vscode.Uri.joinPath(current, "collection.bru");
-
+        let dir = this.parentUri(doc);
+        while (dir.path.startsWith(ws.uri.path)) {
+            const candidate = vscode.Uri.joinPath(dir, fileName);
             try {
-                // Si existe -> la devolvemos
                 await vscode.workspace.fs.stat(candidate);
-
-                const bytes = await vscode.workspace.fs.readFile(candidate);
-                const text = Buffer.from(bytes).toString("utf8");
-                return {
-                    uri: candidate.toString(),
-                    data: collectionBruToJson(text),
-                };
+                const txt = Buffer.from(await vscode.workspace.fs.readFile(candidate)).toString("utf8");
+                return { uri: candidate.toString(), data: parse(txt) };
             } catch {
-                /* no existe aquí: seguimos subiendo */
+                /* sigue subiendo */
             }
-
-            const next = this.parentUri(current);
-            if (next.path === current.path) break;              // ya estábamos en la raíz
-            current = next;
+            const next = this.parentUri(dir);
+            if (next.path === dir.path) break;
+            dir = next;
         }
-
-        return null;                                          // no se encontró ninguna
+        return null;
     }
 
-    private async findNearestJsonConfig(
-        docUri: vscode.Uri
-    ): Promise<{ uri: string; data: any } | null> {
-        const wsFolder = vscode.workspace.getWorkspaceFolder(docUri);
-        if (!wsFolder) return null;                           // archivo fuera del workspace
-
-        // ① Dir actual donde está el documento
-        let current = this.parentUri(docUri);                 // carpeta que contiene al .bru
-
-        // ② Mientras sigamos dentro del workspace
-        while (current.path.startsWith(wsFolder.uri.path)) {
-            const candidate = vscode.Uri.joinPath(current, "bruno.json");
-
-            try {
-                // Si existe -> la devolvemos
-                await vscode.workspace.fs.stat(candidate);
-
-                const bytes = await vscode.workspace.fs.readFile(candidate);
-                const text = Buffer.from(bytes).toString("utf-8");
-                return {
-                    uri: candidate.toString(),
-                    data: JSON.parse(text),
-                };
-            } catch {
-                /* no existe aquí: seguimos subiendo */
-            }
-
-            const next = this.parentUri(current);
-            if (next.path === current.path) break;              // ya estábamos en la raíz
-            current = next;
-        }
-
-        return null;                                          // no se encontró ninguna
-    }
-
-    /* Helper pequeñito para subir un nivel usando sólo vscode.Uri */
-    private parentUri(uri: vscode.Uri): vscode.Uri {
+    private parentUri(uri: vscode.Uri) {
         const segments = uri.path.split("/");
-        if (segments.length <= 2)               // ['', '']  ó ['', 'folder']
-            return uri;                           // ya no podemos subir más
+        if (segments.length <= 2) return uri;
+        return uri.with({ path: segments.slice(0, -1).join("/") || "/" });
+    }
 
-        const parentPath = segments.slice(0, -1).join("/") || "/";
-        return uri.with({ path: parentPath });
+    private setScriptState(state: ScriptState, webview: vscode.Webview) {
+        this.scriptState = state;
+        webview.postMessage({ type: "script-state", data: state });
     }
 }
-
-export default BruCustomEditorProvider;

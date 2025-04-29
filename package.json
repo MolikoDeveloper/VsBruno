@@ -12,6 +12,9 @@
     "@codemirror/lang-javascript": "6.2.3",
     "@codemirror/lang-json": "6.0.1",
     "@codemirror/lang-xml": "6.1.0",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/pluginutils": "^5.1.4",
     "@tailwindcss/postcss": "4.1.4",
     "@types/vscode": "1.99.1",
     "@types/vscode-webview": "1.57.5",
@@ -25,6 +28,7 @@
     "markdown-to-jsx": "7.7.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "rollup": "^4.40.1",
     "style-mod": "4.1.2",
     "tailwindcss": "4.1.4"
   },
@@ -64,8 +68,7 @@
         "priority": "default",
         "selector": [
           {
-            "filenamePattern": "**/*.bru",
-            "excludePattern": "**/collection.bru"
+            "filenamePattern": "{**/[!c][!o][!l][!l][!e][!c][!t][!i][!o][!n].bru,**/*.bru}"
           }
         ],
         "retainContextWhenHidden": true

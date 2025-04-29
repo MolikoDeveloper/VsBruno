@@ -9,11 +9,10 @@ import type { SerializedResponse } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruCollection, BruFile } from "src/bruno/bruno";
-import type { LogEntry } from "src/sandbox/types";
 import type { BrunoConfig } from "src/bruno/bruno.config";
 
 type msg = {
-    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event"
+    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
     data: unknown
 }
 
@@ -52,6 +51,9 @@ export default function () {
                     setBruConfig(message.data as BrunoConfig)
                     break;
                 case "bru-event":
+                    console.log(message.data)
+                    break;
+                case "script-state":
                     console.log(message.data)
                     break;
                 default:

@@ -33,8 +33,7 @@ const config: BuildOptions = {
     "./src/webview/HydrateBruno.tsx",
     "./src/webview/HydrateCollection.tsx",
     "./src/tailwind.css",
-    "./src/common/highlight.min.cjs",
-    "./src/sandbox/prelude.ts"
+    "./src/common/highlight.min.cjs"
   ],
   //minify: true,
   bundle: true,
