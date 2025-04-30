@@ -1,75 +1,51 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { useBruContent } from "src/webview/context/BruProvider";
+import { AssertionOperators, ParseAssertToValue, ParseValueToAssert } from "./utils/assertUtils";
+import { useCallback } from "react";
 
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
-    /* ───────── helpers ───────── */
-    const asEntries = (obj: Record<string, string> | undefined) =>
-        Object.entries(obj ?? {});                            // -> [ [key,value], ... ]
 
-    const toRecord = (entries: [string, string][]) =>
-        Object.fromEntries(entries) as Record<string, string>;
-
-    const isValidIdx = (arr: unknown[], i: number) =>
-        Number.isInteger(i) && i >= 0 && i < arr.length;
-
-    const updateAssertAt = (
+    const updateAssertAt = useCallback((
         index: number,
-        { newKey, newValue }: { newKey?: string; newValue?: any }
+        payload: { newKey: "name" | "value" | "enabled"; newValue: string | boolean }
     ) => {
         setBruContent(prev => {
-            const entries = asEntries(prev?.assert);
-            if (!isValidIdx(entries, index)) return prev;
+            const assertions = [...(prev?.assertions ?? [])];
+            const current = { ...assertions[index] };
 
-            const [oldKey, oldVal] = entries[index];
-            entries[index] = [
-                newKey ?? oldKey,
-                newValue ?? oldVal,
-            ];
+            if (payload.newKey === "value" && typeof payload.newValue === "string") {
+                // re-parse & re-serialize to keep operator/operand split correct
+                const parsed = ParseAssertToValue(current.value);
+                parsed.operand = payload.newValue;
+                current.value = ParseValueToAssert(parsed);
+            } else if (payload.newKey === "name") {
+                current.name = payload.newValue as string;
+            } else if (payload.newKey === "enabled") {
+                current.enabled = Boolean(payload.newValue);
+            }
 
-            return { ...prev, assert: toRecord(entries) };
+            assertions[index] = current;
+            return { ...prev, assertions };
         });
-    };
+    }, [setBruContent]);
 
-
-    const removeAssertAt = (index: number) => {
+    const removeAssertAt = useCallback((index: number) => {
         setBruContent(prev => {
-            const entries = asEntries(prev?.assert);
-            if (!isValidIdx(entries, index)) return prev;
-
-            entries.splice(index, 1);
-            return { ...prev, assert: toRecord(entries) };
+            const assertions = [...(prev?.assertions ?? [])];
+            assertions.splice(index, 1);
+            return { ...prev, assertions };
         });
-    };
+    }, [setBruContent]);
 
-    const addEmptyAssert = (index?: number) => {
+    const addEmptyAssert = useCallback(() => {
         setBruContent(prev => {
-            const entries = Object.entries(prev?.assert ?? {});      // ← mantiene orden
-            const newEntry: [string, string] = ["", ""];            // ← slot vacío
-
-            const pos =
-                index !== undefined && index >= 0 && index <= entries.length
-                    ? index
-                    : entries.length;                                   // fuera de rango → push
-
-            entries.splice(pos, 0, newEntry);                       // inserta
-
-            return { ...prev, assert: Object.fromEntries(entries) };
+            const assertions = [...(prev?.assertions ?? [])];
+            assertions.push({ name: "", value: "", enabled: true });
+            return { ...prev, assertions };
         });
-    };
-
-    const moveAssert = (from: number, to: number) => {
-        setBruContent(prev => {
-            const entries = asEntries(prev?.assert);
-            if (!isValidIdx(entries, from) || !isValidIdx(entries, to)) return prev;
-
-            const [item] = entries.splice(from, 1);
-            entries.splice(to, 0, item);
-
-            return { ...prev, assert: toRecord(entries) };
-        });
-    };
+    }, [setBruContent]);
 
     return (
         <section className="w-full h-full">
@@ -78,12 +54,13 @@ export default function () {
                     <thead>
                         <tr>
                             <td className="w-[30%]">Name</td>
+                            <td className="w-[30%]">operator</td>
                             <td>Value</td>
                             <td className="w-[70px]"></td>
                         </tr>
                     </thead>
                     <tbody>
-                        {bruContent?.vars?.req?.map((e, i) => <>
+                        {bruContent?.assertions?.map((e, i) => <>
                             <tr key={`requestVars-${i}`}>
                                 <td className="w-[30%]">
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
@@ -93,8 +70,17 @@ export default function () {
                                         }}></input>
                                 </td>
                                 <td>
+                                    <select>
+                                        {AssertionOperators.map((op, ind) => (
+                                            <option value={op.value}>{op.label}</option>
+                                        ))
+
+                                        }
+                                    </select>
+                                </td>
+                                <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available"
+                                        <ReactCodeMirror value={ParseAssertToValue(e.value).operand} theme="none" basicSetup={false} editable className="CM-Table w-available"
                                             onChange={(val) => {
                                                 updateAssertAt(i, { newKey: "value", newValue: val })
                                             }} />
