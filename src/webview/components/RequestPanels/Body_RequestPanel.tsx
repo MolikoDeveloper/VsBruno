@@ -1,9 +1,9 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { useBruContent } from 'src/webview/context/BruProvider';
-import type { BruBody } from 'src/bruno/bruno';
 import { xmlLanguage } from '@codemirror/lang-xml';
 import { LanguageSupport } from '@codemirror/language';
+import type { BruBody } from 'src/types/bruno/bruno';
 
 type Mime = {
     name: string,

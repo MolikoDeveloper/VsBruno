@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import type { HttpMethod } from "src/bruno/bruno";
 import { vscode } from "src/common/vscodeapi";
+import type { HttpMethod } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider";
 
 export default function () {

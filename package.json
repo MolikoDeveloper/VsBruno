@@ -21,15 +21,12 @@
     "@uiw/codemirror-theme-vscode": "4.23.11",
     "@uiw/react-codemirror": "4.23.11",
     "@usebruno/lang": "0.22.0",
-    "bun-plugin-tailwind": "0.0.15",
     "dompurify": "3.2.5",
-    "esbuild": "^0.25.3",
     "markdown-to-jsx": "7.7.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "rollup": "^4.40.1",
-    "style-mod": "4.1.2",
-    "tailwindcss": "4.1.4"
+    "style-mod": "4.1.2"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -38,7 +35,10 @@
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
     "@vscode/vsce": "3.3.2",
-    "esbuild-style-plugin": "1.6.3"
+    "esbuild-style-plugin": "1.6.3",
+    "esbuild": "^0.25.3",
+    "bun-plugin-tailwind": "0.0.15",
+    "tailwindcss": "4.1.4"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
@@ -57,31 +57,44 @@
     "type": "git",
     "url": "https://github.com/MolikoDeveloper/VsBruno"
   },
+  "activationEvents": [
+    "onCustomEditor:vs-bruno.collectionEditor",
+    "onCustomEditor:vs-bruno.environmentEditor",
+    "onCustomEditor:vs-bruno.bruEditor"
+  ],
   "contributes": {
     "commands": [],
     "keybindings": [],
     "customEditors": [
+      {
+        "viewType": "vs-bruno.collectionEditor",
+        "displayName": "Bruno Collection Editor",
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "**/collection.bru"
+          }
+        ]
+      },
+      {
+        "viewType": "vs-bruno.environmentEditor",
+        "displayName": "Bruno environment Editor",
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "**/environments/**/*.bru"
+          }
+        ]
+      },
       {
         "viewType": "vs-bruno.bruEditor",
         "displayName": "Bruno Editor",
         "priority": "default",
         "selector": [
           {
-            "filenamePattern": "**/*.bru,{**/[!c]ollection.bru,**/[!e]nvironments/**/*.bru}"
+            "filenamePattern": "**/*.bru"
           }
-        ],
-        "retainContextWhenHidden": true
-      },
-      {
-        "viewType": "vs-bruno.collectionEditor",
-        "displayName": "Bruno Collection Editor",
-        "priority": "default",
-        "selector": [
-          {
-            "filenamePattern": "**/collection.bru"
-          }
-        ],
-        "retainContextWhenHidden": true
+        ]
       }
     ],
     "languages": [

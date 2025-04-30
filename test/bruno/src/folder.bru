@@ -5,3 +5,46 @@ meta {
 headers {
   a: a
 }
+
+auth {
+  mode: oauth2
+}
+
+auth:oauth2 {
+  grant_type: authorization_code
+  callback_url: 
+  authorization_url: 
+  access_token_url: 
+  refresh_token_url: 
+  client_id: 
+  client_secret: 
+  scope: 
+  state: 
+  pkce: false
+  credentials_placement: body
+  credentials_id: credentials
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: false
+}
+
+vars:pre-request {
+  a: a
+}
+
+script:pre-request {
+  a
+}
+
+script:post-response {
+  a
+}
+
+tests {
+  a
+}
+
+docs {
+  aa
+}

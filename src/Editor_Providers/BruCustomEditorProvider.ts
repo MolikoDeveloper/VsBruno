@@ -1,11 +1,8 @@
 import * as vscode from "vscode";
-import type { SerializedResponse } from "src/types/shared";
-// @ts-ignore – tipo externo sin d.ts
-import { bruToJsonV2, jsonToBruV2, collectionBruToJson, jsonToCollectionBru, } from "@usebruno/lang";
-import { readFileSync } from "fs";
-import * as path from "path";
-import type { RunOptions } from "./sandbox/types";
-import { SandboxImpl } from "./sandbox";
+import type { SerializedResponse } from "../types/shared";
+import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
+import type { RunOptions } from "../sandbox/types";
+import { SandboxImpl } from "../sandbox";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type BruStateKind = "state" | "console" | "evt" | "get";
@@ -35,6 +32,26 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         doc: vscode.TextDocument,
         panel: vscode.WebviewPanel,
     ): Promise<void> {
+
+        const path = doc.uri.path;
+        if (/collection\.bru$/.test(path)) {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.collectionEditor');
+            return;
+        }
+
+        if (/\/environments\//.test(path)) {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.environmentEditor');
+            return;
+        }
+
+        if (/folder\.bru$/.test(path)) {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            //await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.environmentEditor');
+            return;
+        }
+
         const { webview } = panel;
         webview.options = { enableScripts: true };
         webview.html = this.html(webview);

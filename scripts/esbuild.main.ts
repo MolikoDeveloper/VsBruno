@@ -32,6 +32,7 @@ const config: BuildOptions = {
     "./src/extension.ts",
     "./src/webview/HydrateBruno.tsx",
     "./src/webview/HydrateCollection.tsx",
+    "./src/webview/HydrateEnvironments.tsx",
     "./src/tailwind.css",
     "./src/common/highlight.min.cjs"
   ],

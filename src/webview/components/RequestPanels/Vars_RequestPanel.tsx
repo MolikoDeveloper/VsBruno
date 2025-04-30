@@ -1,5 +1,6 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
-import type { BruParams, BruVars } from "src/bruno/bruno";
+import type { BruVars } from "src/types/bruno/bruno";
+
 import { useBruContent } from "src/webview/context/BruProvider"
 
 export default function () {

@@ -1,6 +1,6 @@
 // JsonSchemaViewer.tsx
 import React, { type JSX } from "react";
-import { vscode } from "../../common/vscodeapi";
+import { vscode } from "src/common/vscodeapi";
 
 export interface JsonSchemaViewerProps { data: unknown; }
 

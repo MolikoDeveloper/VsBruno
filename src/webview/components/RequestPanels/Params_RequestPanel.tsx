@@ -1,5 +1,5 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
-import type { BruParams } from "src/bruno/bruno";
+import type { BruParams } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider"
 
 export interface ParamEntry { method: string; value: string; active: boolean; }

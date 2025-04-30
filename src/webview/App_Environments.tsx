@@ -1,16 +1,15 @@
 import { useEffect } from "react";
 import { useBruContent } from "./context/BruProvider"
 import { vscode } from "src/common/vscodeapi";
-import type { BruCollection } from "src/types/bruno/bruno";
-
+import type { BruEnvFile } from "src/types/bruno/bruno";
 
 type msg = {
-    type: "update" | "open" | "fetch" | "collections"
+    type: "update" | "init" | "fetch" | "collections"
     data: unknown
 }
 
 export default function () {
-    const { bruCollection, setBruCollection } = useBruContent();
+    const { bruEnvironment, setBruEnvironment } = useBruContent();
 
     useEffect(() => {
         vscode.postMessage({ type: 'init' })
@@ -19,11 +18,11 @@ export default function () {
             const message: msg = event.data;
 
             switch (message.type) {
-                case "open":
-                    setBruCollection(message.data as BruCollection)
+                case "init":
+                    setBruEnvironment(message.data as BruEnvFile)
                     break;
                 case "update":
-                    setBruCollection(message.data as BruCollection)
+                    setBruEnvironment(message.data as BruEnvFile)
                     break;
             }
         }
@@ -34,5 +33,5 @@ export default function () {
         }
     }, [])
 
-    return <>{JSON.stringify(bruCollection, null, 1)}</>
+    return <>{JSON.stringify(bruEnvironment, null, 1)}</>
 }

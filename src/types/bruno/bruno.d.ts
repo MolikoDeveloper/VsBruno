@@ -143,14 +143,12 @@ export interface BruCollectionMeta {
 
 /*────────────────────────── shared helpers ─────────────────────────*/
 export interface BruKeyValue {
-  /** actual key without ~ prefix (always trimmed) */
   name: string;
   value: string;
-  enabled: boolean;               // false ⇢ key was prefixed with '~'
+  enabled: boolean;
 }
 
 export interface BruVar extends BruKeyValue {
-  /** true ⇢ key was prefixed with '@' (local-only variable) */
   local: boolean;
 }
 
@@ -182,5 +180,24 @@ export interface BruCollection {
   docs?: string;   // block “docs  { … }”
 
   /** any future/unknown blocks are still preserved */
+  [unknownBlock: string]: unknown;
+}
+
+/* ───────────────────── environment AST ───────────────────── */
+export interface BruEnvFile {
+  /**
+   * `vars { … }`
+   * Parsed as a dictionary of key:value pairs;
+   * keys beginning with `~` become `enabled = false`.
+   */
+  vars?: BruKeyValue[];
+
+  /**
+   * `vars:secret [ … ]`
+   * Parsed as a simple array of secret‐variable names/values.
+   */
+  secretvars?: string[];
+
+  /** Catch any future/unknown blocks */
   [unknownBlock: string]: unknown;
 }

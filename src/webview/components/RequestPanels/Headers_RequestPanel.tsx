@@ -1,6 +1,6 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
-import type { BruHeaders } from "src/bruno/bruno";
 import { headersAutocomplete } from "src/common/headersCompletion";
+import type { BruHeaders } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider"
 
 export default function () {

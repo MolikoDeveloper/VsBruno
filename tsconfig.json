@@ -9,6 +9,10 @@
       "node",
       "vscode"
     ],
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types"
+    ],
     "target": "ESNext",
     "baseUrl": ".",
     "module": "ESNext",
@@ -28,7 +32,14 @@
     "paths": {
       "vscode": [
         "./mocks/vscode.ts"
+      ],
+      "@usebruno/lang": [
+        "src/types/usebruno-lang.d.ts"
       ]
     }
-  }
+  },
+  "include": [
+    "src/**/*",
+    "src/types/**/*.d.ts"
+  ]
 }

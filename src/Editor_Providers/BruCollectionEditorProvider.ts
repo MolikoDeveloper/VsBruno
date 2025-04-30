@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-//@ts-ignore
 import { collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 
 export default class BruCollectionEditorProvider
@@ -13,12 +12,6 @@ export default class BruCollectionEditorProvider
         const { webview } = panel;
         webview.options = { enableScripts: true };
         webview.html = this.html(webview);
-
-        /* Apertura */
-        webview.postMessage({
-            type: "open",
-            data: collectionBruToJson(document.getText()),
-        });
 
         /* Cambios en el archivo */
         const change = vscode.workspace.onDidChangeTextDocument((e) => {
@@ -67,6 +60,7 @@ export default class BruCollectionEditorProvider
           <link rel="stylesheet" href="${cssUri}" />
         </head>
         <body>
+            WIP
           <div id="root"></div>
           <script src="${highlightJsUri}"></script>
           <script src="${scriptUri}"></script>
