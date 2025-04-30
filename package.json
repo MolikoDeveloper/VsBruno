@@ -24,7 +24,6 @@
     "bun-plugin-tailwind": "0.0.15",
     "dompurify": "3.2.5",
     "esbuild": "^0.25.3",
-    "esbuild-wasm": "^0.25.3",
     "markdown-to-jsx": "7.7.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -68,7 +67,7 @@
         "priority": "default",
         "selector": [
           {
-            "filenamePattern": "{**/[!c][!o][!l][!l][!e][!c][!t][!i][!o][!n].bru,**/*.bru}"
+            "filenamePattern": "**/*.bru,{**/[!c]ollection.bru,**/[!e]nvironments/**/*.bru}"
           }
         ],
         "retainContextWhenHidden": true
