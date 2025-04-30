@@ -18,7 +18,8 @@ type msg = {
 
 export default function () {
     const { bruContent, setBruContent, bruCollection, setBruCollection, bruConfig, setBruConfig } = useBruContent();
-    const [response, setResponse] = useState<SerializedResponse | null>(null)
+    const [response, setResponse] = useState<SerializedResponse | null>(null);
+    const [firstLoad, setFirstLoad] = useState(true);
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
@@ -31,7 +32,8 @@ export default function () {
                     setBruContent(message.data as BruFile)
                     break;
                 case "update":
-                    setBruContent(message.data as BruFile)
+                    setFirstLoad(true);
+                    setBruContent(message.data as BruFile);
                     break;
                 case "fetch":
                     setResponse(message.data as SerializedResponse)
@@ -68,6 +70,16 @@ export default function () {
         }
     }, [])
 
+    useEffect(() => {
+        if (!bruContent) return;
+        console.log(bruContent)
+        if (firstLoad) { setFirstLoad(false); return; }
+        vscode.postMessage({
+            type: "edit",
+            data: bruContent
+        })
+    }, [bruContent])
+
     return (
         <div className="m-0 p-0 relative h-screen w-screen flex flex-col">
             <div className="m-0 p-0 relative h-full w-full flex flex-col px-4">
@@ -83,9 +95,7 @@ export default function () {
                     </PanelGroup>
                 </div>
             </div>
-            <BottomBar>
-
-            </BottomBar>
+            <BottomBar></BottomBar>
         </div>
     )
 }
