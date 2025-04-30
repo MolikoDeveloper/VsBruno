@@ -19,7 +19,11 @@ export interface BruFile {
     req?: BruVars[];
     res?: BruVars[];
   };
-  assert?: Record<string, string>;
+  assertions?: {
+    name: string,
+    value: string,
+    enabled: boolean
+  }[];
 
   /* scripts, tests, docs */
   script?: {
