@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
+import { readBuilderProgram } from "typescript";
 
 export default class BruCollectionEditorProvider
     implements vscode.CustomTextEditorProvider {
@@ -12,14 +13,20 @@ export default class BruCollectionEditorProvider
         const { webview } = panel;
         webview.options = { enableScripts: true };
         webview.html = this.html(webview);
+        let source: "provider" | "react" = "provider"
 
         /* Cambios en el archivo */
         const change = vscode.workspace.onDidChangeTextDocument((e) => {
+            if (source === "react") {
+                source = "provider";
+                return;
+            }
+            console.log("plainText changes.")
             if (e.document.uri.toString() === document.uri.toString()) {
-                webview.postMessage({
+                /*webview.postMessage({
                     type: "update",
                     data: collectionBruToJson(e.document.getText()),
-                });
+                });*/
             }
         });
 
@@ -27,7 +34,8 @@ export default class BruCollectionEditorProvider
         webview.onDidReceiveMessage((msg) => {
             switch (msg.type) {
                 case "edit":
-                    const bru = jsonToCollectionBru(JSON.parse(msg.text));
+                    source = "react"
+                    jsonToCollectionBru(JSON.parse(msg.text));
                     // …guardar/validar si procede
                     break;
                 case "init":
@@ -48,23 +56,22 @@ export default class BruCollectionEditorProvider
         const scriptUri = getUri(["dist", "webview", "HydrateCollection.cjs"]);
         const highlightJsUri = getUri(["dist", "common", "highlight.min.cjs"]);
 
-        return /*html*/ `
-      <!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="UTF-8" />
-          <meta http-equiv="Content-Security-Policy"
-            content="default-src 'none'; img-src ${webview.cspSource} data:;
-                     style-src ${webview.cspSource} 'unsafe-inline';
-                     script-src ${webview.cspSource};" />
-          <link rel="stylesheet" href="${cssUri}" />
-        </head>
-        <body>
-            WIP
-          <div id="root"></div>
-          <script src="${highlightJsUri}"></script>
-          <script src="${scriptUri}"></script>
-        </body>
-      </html>`;
+        return /*html*/ `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; img-src ${webview.cspSource} data:;
+                style-src ${webview.cspSource} 'unsafe-inline';
+                script-src ${webview.cspSource};" />
+    <link rel="stylesheet" href="${cssUri}" />
+</head>
+<body>
+    WIP
+    <div id="root"></div>
+    <script src="${highlightJsUri}"></script>
+    <script src="${scriptUri}"></script>
+</body>
+</html>`;
     }
 }

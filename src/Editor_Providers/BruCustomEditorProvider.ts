@@ -3,11 +3,12 @@ import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 import type { RunOptions } from "../sandbox/types";
 import { SandboxImpl } from "../sandbox";
+import type { BruFile } from "src/types/bruno/bruno";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type BruStateKind = "state" | "console" | "evt" | "get";
 type WebviewMsg =
-    | { type: "edit"; text: string }
+    | { type: "edit"; data: BruFile }
     | { type: "init" }
     | { type: "fetch"; data: { uri: string; init?: RequestInit } }
     | { type: "run-script"; data: { code: string; virtualPath?: string; args: any } }
@@ -24,6 +25,7 @@ type ScriptState =
 /* ──────────────────────── Clase principal del editor ─────────────────────── */
 export default class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     private scriptState: ScriptState = "idle";
+    private source: "provider" | "webview" = "provider"
 
     constructor(private readonly ctx: vscode.ExtensionContext) { }
 
@@ -70,6 +72,10 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
                 /* ① Fichero que estamos editando */
                 if (uri === doc.uri.toString()) {
+                    if (this.source === "webview") {
+                        this.source = "provider";
+                        return;
+                    }
                     webview.postMessage({ type: "update", data: bruToJsonV2(e.document.getText()) });
                     return;
                 }
@@ -120,7 +126,18 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     private async handleWebviewMessage(msg: WebviewMsg, doc: vscode.TextDocument, webview: vscode.Webview) {
         switch (msg.type) {
             case "edit":
-                this.onEdit(msg.text);
+                this.source = "webview"
+                const newString = jsonToBruV2(msg.data);
+
+                const fullRange = new vscode.Range(
+                    doc.positionAt(0),
+                    doc.positionAt(doc.getText().length)
+                )
+
+                const edit = new vscode.WorkspaceEdit();
+                edit.replace(doc.uri, fullRange, newString);
+                await vscode.workspace.applyEdit(edit);
+
                 break;
 
             case "init":
@@ -175,15 +192,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     }
 
     /* ──────────────────────────── Helpers de negocio ──────────────────────── */
-    private onEdit(text: string) {
-        try {
-            const bru = jsonToBruV2(JSON.parse(text));
-            console.log(bru);
-        } catch {
-            console.error("Invalid BRU content");
-        }
-    }
-
     private async handleFetch(
         req: { uri: string; init?: RequestInit },
         webview: vscode.Webview,
