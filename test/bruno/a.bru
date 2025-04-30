@@ -5,27 +5,37 @@ meta {
 }
 
 get {
-  url: localhost
+  url: http://localhost/api/v1?a=22
   body: none
-  auth: inherit
+  auth: none
+}
+
+params:query {
+  a: 22
+}
+
+headers {
+  Content-Base: application/gzip
 }
 
 vars:pre-request {
-  aa: aa
+  a: a
 }
 
 vars:post-response {
-  bb: bb
+  a: a
 }
 
 assert {
-  a: eq 2
+  /a**: eq a
+  b: contains bsa
+  a: neq aa
 }
 
 script:pre-request {
-  import aa from "./getuser.js"
+  import aa from "./src/getuser.js"
   
-  console.log(aa());
+  console.log("que tal mundo!");
 }
 
 script:post-response {
