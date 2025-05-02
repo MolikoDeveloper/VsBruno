@@ -4,7 +4,7 @@ import worker from "./esbuild.worker.js";
 
 await Promise.all([
     esbuild.build(main),
-    //esbuild.build(worker)
+    esbuild.build(worker)
 ]).catch((err) => {
     console.log(err)
 

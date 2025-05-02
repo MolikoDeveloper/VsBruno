@@ -1,9 +1,6 @@
-// src/sandbox/index.ts
-import type { Sandbox } from "./types";
 import { SandboxNode } from "./SandboxNode";
-//import { SandboxWeb } from "./SandboxWeb";
+import { SandboxWeb } from "./SandboxWeb";
+import type { Sandbox } from "./types";
 
 export const SandboxImpl: Sandbox =
-    typeof process !== "undefined" && !!process.versions?.node
-        ? new SandboxNode()
-        : new SandboxNode();
+  typeof window === "undefined" ? SandboxNode : SandboxWeb;

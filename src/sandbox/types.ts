@@ -1,14 +1,17 @@
 import * as vscode from "vscode";
 
+
 export type LogEntry = { kind: "log" | "warn" | "error" | "info"; values: any[] };
 
 export interface RunOptions {
+    code: string;
+    virtualPath?: string;
     collectionRoot: vscode.Uri;
-    resolveDir: string;        // carpeta del .bru activo
-    code: string;              // código inline o TS/JS
-    virtualPath?: string;      // nombre lógico, p.ej. "script.ts"
-    args?: any;
-}
+    resolveDir: string;
+    args: any;
+    extensionUri: vscode.Uri;
+  }
+
 
 export interface ScriptResult {
     exports: any;

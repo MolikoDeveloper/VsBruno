@@ -162,12 +162,13 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 try {
                     const { code, virtualPath, args } = msg.data;
                     const opt: RunOptions = {
-                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), '..'),
                         code,
                         virtualPath,
-                        resolveDir: vscode.Uri.joinPath(doc.uri, '..').fsPath,
-                        args
-                    }
+                        args,
+                        collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), ".."),
+                        resolveDir: vscode.Uri.joinPath(doc.uri, "..").fsPath,
+                        extensionUri: this.ctx.extensionUri
+                      };
 
                     this.setScriptState("running", webview);
                     const { exports, logs } = await SandboxImpl.run(opt, emitEvent);

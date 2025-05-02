@@ -50,7 +50,7 @@ const config: BuildOptions = {
     //js: banner
   },
   format: "cjs",
-  external: ["vscode", "esbuild-wasm", "esbuild", "fsevents"],
+  external: ["vscode", "fsevents"],
   loader: {
     ".ts": "ts",
     ".js": "js",
