@@ -57,11 +57,6 @@
     "type": "git",
     "url": "https://github.com/MolikoDeveloper/VsBruno"
   },
-  "activationEvents": [
-    "onCustomEditor:vs-bruno.collectionEditor",
-    "onCustomEditor:vs-bruno.environmentEditor",
-    "onCustomEditor:vs-bruno.bruEditor"
-  ],
   "contributes": {
     "commands": [],
     "keybindings": [],
