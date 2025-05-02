@@ -2,7 +2,7 @@
 
 **VS-Bruno** es una extensión para Visual Studio Code que ofrece una interfaz gráfica para archivos `.bru`, utilizados por [Bruno](https://usebruno.com/), un cliente HTTP de código abierto. Permite visualizar y editar fácilmente definiciones de API directamente dentro del editor, con una interfaz amigable y editable.
 
-![UI Bruno](./assets/ui-preview.png) <!-- Opcional: Agrega un screenshot -->
+![UI Bruno](./assets/screenshot-1.png) <!-- Opcional: Agrega un screenshot -->
 
 ## ✨ Funcionalidades
 
