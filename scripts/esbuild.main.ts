@@ -60,7 +60,8 @@ const config: BuildOptions = {
     ".ttf": "file"
   },
   logLevel: "info",
-  sourcemap: "inline",
+  minify: true,
+  sourcemap: "linked",
   define: {
     "process.env.NODE_ENV": "\"production\""
   },

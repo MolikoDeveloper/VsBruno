@@ -16,10 +16,3 @@
 1. Abre un archivo `.bru` en VSCode.
 2. Se mostrará automáticamente una interfaz gráfica personalizada.
 3. Presiona `F7` para cambiar a la vista de texto plano.
-
-## 🛠️ Tecnologías
-
-Construido con:
-- React + TailwindCSS
-- TypeScript + Bun + ESBuild
-- API de editores personalizados de VSCode

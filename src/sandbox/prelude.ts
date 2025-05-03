@@ -1,4 +1,4 @@
-export const bruPrelude = /* js */ `
+export const prelude = /* js */ `
 (function(){
   const __queue__ = [];
   function __emit__(type, payload) {

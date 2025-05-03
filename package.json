@@ -16,6 +16,7 @@
     "@codemirror/lang-javascript": "6.2.3",
     "@codemirror/lang-json": "6.0.1",
     "@codemirror/lang-xml": "6.1.0",
+    "@rollup/browser": "^4.40.1",
     "@uiw/codemirror-theme-vscode": "4.23.12",
     "@uiw/react-codemirror": "4.23.12",
     "@usebruno/lang": "0.22.0",
@@ -24,11 +25,13 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "style-mod": "4.1.2",
-    "tar": "7.4.3"
+    "tar": "7.4.3",
+    "rollup": "4.40.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "28.0.3",
     "@rollup/plugin-node-resolve": "16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@rollup/plugin-virtual": "^3.0.2",
     "@rollup/pluginutils": "5.1.4",
     "@tailwindcss/postcss": "4.1.5",
@@ -43,7 +46,6 @@
     "bun-plugin-tailwind": "0.0.15",
     "esbuild": "0.25.3",
     "esbuild-style-plugin": "1.6.3",
-    "rollup": "4.40.1",
     "tailwindcss": "4.1.5"
   },
   "peerDependencies": {
@@ -59,14 +61,20 @@
     "clean": "rm -r ./dist",
     "build-rollup": "bunx rollup -c rollup.config.js",
     "build-all": "bun run build && bun run build-rollup",
-    "package": "bun run build-all && bun run vsce-package"
+    "package": "bun run build && bun run vsce-package"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/MolikoDeveloper/VsBruno"
   },
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "vs-bruno.bundle.req",
+        "title": "Debug Script",
+        "category": "vs-bruno"
+      }
+    ],
     "keybindings": [],
     "customEditors": [
       {

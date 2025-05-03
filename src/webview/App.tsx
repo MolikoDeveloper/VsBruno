@@ -47,7 +47,7 @@ export default function () {
                     //console.log("exports →", (message.data as any).exports); // función getUserById
                     break;
                 case "script-error":
-                    console.log(message.data)
+                    console.log(`error`, message.data)
                     break;
                 case "bruno-config":
                     setBruConfig(message.data as BrunoConfig)

@@ -2,8 +2,7 @@
   "compilerOptions": {
     "lib": [
       "ESNext",
-      "DOM",
-      "WebWorker"
+      "DOM"
     ],
     "types": [
       "node",
@@ -40,6 +39,7 @@
   },
   "include": [
     "src/**/*",
-    "src/types/**/*.d.ts"
+    "src/types/**/*.d.ts",
+    "test"
   ]
 }

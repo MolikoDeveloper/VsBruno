@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
-import type { RunOptions } from "../sandbox/types";
-import { SandboxImpl } from "../sandbox";
 import type { BruFile } from "src/types/bruno/bruno";
+import type { RunOptions } from "src/sandbox/types";
+import { SandboxNode } from "src/sandbox/SandboxNode";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type BruStateKind = "state" | "console" | "evt" | "get";
@@ -156,7 +156,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 if (!nearest) {
                     webview.postMessage({ type: "script-error", data: "collection.bru not found" });
                 }
-
                 const emitEvent = (evt: any) => webview.postMessage({ type: "bru-event", data: evt });
 
                 try {
@@ -168,14 +167,15 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), ".."),
                         resolveDir: vscode.Uri.joinPath(doc.uri, "..").fsPath,
                         extensionUri: this.ctx.extensionUri
-                      };
+                    };
 
                     this.setScriptState("running", webview);
-                    const { exports, logs } = await SandboxImpl.run(opt, emitEvent);
+                    const { exports, logs } = await SandboxNode.run(opt, emitEvent);
                     webview.postMessage({ type: "script-result", data: { exports, logs } });
                     this.setScriptState("stopped", webview);
                 }
                 catch (err) {
+                    console.log(err)
                     webview.postMessage({ type: "script-error", data: String(err) })
                     this.setScriptState("stopped", webview)
                 }

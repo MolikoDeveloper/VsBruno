@@ -1,7 +1,7 @@
 import type { BuildOptions } from "esbuild";
 
 const workerConfig: BuildOptions = {
-    entryPoints: ["./src/sandbox/bruPrelude.ts"],
+    entryPoints: ["./src/sandbox/prelude.ts"],
     outdir: "dist/sandbox",
     bundle: true,
     platform: "browser",
@@ -9,7 +9,7 @@ const workerConfig: BuildOptions = {
     target: "es2020",
     //external: ["esbuild-wasm"],            // se cargará via importScripts
     //plugins: [copyWasm()],                 // copia esbuild.wasm y prelude
-    sourcemap: "inline"
+    sourcemap: "linked"
 };
 
 export default workerConfig;
