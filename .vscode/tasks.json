@@ -3,11 +3,11 @@
   "tasks": [
     {
       "type": "bun",
-      "script": "bun run build-all",
+      "script": "bun run build",
       //"script": "bun run ./scripts/bun.config.ts",
       "problemMatcher": [],
       "label": "bun: build",
-      "detail": "bun run build-all - package.json",
+      "detail": "bun run build - package.json",
       //"detail": "bun run ./scripts/bun.config.ts - package.json",
       "group": {
         "kind": "build",

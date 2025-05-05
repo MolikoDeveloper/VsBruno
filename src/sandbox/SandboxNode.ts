@@ -41,7 +41,7 @@ export const SandboxNode: Sandbox = {
             vscode.window.showErrorMessage(
                 "Rollup no está disponible. Funcionalidades deshabilitadas."
             );
-            return { logs: [], exports: [] };
+            return { logs: [], exports: [], inbound: () => { } };
         }
 
         // 2) fsPlugin para cargar .js desde el workspace y transpilar TS->ESNext
@@ -134,17 +134,25 @@ export const SandboxNode: Sandbox = {
             __bruOutbound: (e: any) => emit(e),
         });
 
+        // give the host a way to push events INTO the sandbox
+        context.__bruInbound = (e: any) => {
+            // run the small dispatcher defined in the prelude
+            vm.runInContext(`globalThis.__bruInbound(${JSON.stringify(e)})`, context);
+        };
+
         // Vacia la cola de prelude
         vm.runInContext(
             "globalThis.__bruQueued?.splice(0).forEach(globalThis.__bruOutbound);",
             context
         );
+
         // Ejecuta el bundle CJS
         new vm.Script(cjs, { filename: virtualPath }).runInContext(context);
 
         return {
             exports: unwrapDefault((context as any).module.exports),
             logs,
+            inbound: (e: any) => (context as any).__bruInbound(e)
         };
     },
 };

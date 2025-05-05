@@ -10,6 +10,7 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
+import { GetRequest } from "src/common/bruEvents";
 
 type msg = {
     type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
@@ -23,7 +24,6 @@ export default function () {
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
-        //window.addEventListener("click", (e) => console.log(e?.target?.tagName as any, typeof e.target.tagName))
 
         const listener = (event: MessageEvent) => {
             const message: msg = event.data;
@@ -42,9 +42,6 @@ export default function () {
                     setBruCollection(message.data as BruCollection)
                     break;
                 case "script-result":
-                    //const logs = ((message.data as any).logs as LogEntry[]);
-                    //console.log(logs)
-                    //console.log("exports →", (message.data as any).exports); // función getUserById
                     break;
                 case "script-error":
                     console.log(`error`, message.data)
@@ -53,7 +50,10 @@ export default function () {
                     setBruConfig(message.data as BrunoConfig)
                     break;
                 case "bru-event":
-                    console.log(message.data)
+                    const evt = message.data as { type: string; payload: any };
+                    if (evt.type === "bru-get") {
+                        GetRequest(evt.payload, { bruContent: bruContent })
+                    }
                     break;
                 case "script-state":
                     console.log(message.data)
@@ -72,7 +72,6 @@ export default function () {
 
     useEffect(() => {
         if (!bruContent) return;
-        console.log(bruContent)
         if (firstLoad) { setFirstLoad(false); return; }
         vscode.postMessage({
             type: "edit",

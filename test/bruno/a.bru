@@ -35,7 +35,7 @@ assert {
 script:pre-request {
   import aa from "./src/getuser.js"
   
-  bru.get("a")
+  console.log(req.method)
 }
 
 script:post-response {

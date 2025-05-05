@@ -10,12 +10,13 @@ export interface RunOptions {
     resolveDir: string;
     args: any;
     extensionUri: vscode.Uri;
-  }
+}
 
 
 export interface ScriptResult {
     exports: any;
     logs: LogEntry[];
+    inbound: (e: any) => any
 }
 
 export interface Sandbox {

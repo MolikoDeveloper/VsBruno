@@ -3,8 +3,6 @@ import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 import type { BruFile } from "src/types/bruno/bruno";
 import type { RunOptions } from "src/sandbox/types";
-import { watchFolders } from "src/common/watcher";
-import * as pat from "path"
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type BruStateKind = "state" | "console" | "evt" | "get";
@@ -27,6 +25,7 @@ type ScriptState =
 export default class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
     private scriptState: ScriptState = "idle";
     private source: "provider" | "webview" = "provider"
+    private currentInbound: ((e: any) => void) | null = null;
 
     constructor(private readonly ctx: vscode.ExtensionContext) { }
 
@@ -35,29 +34,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         doc: vscode.TextDocument,
         panel: vscode.WebviewPanel,
     ): Promise<void> {
-
-        if (this.ctx.extensionMode === vscode.ExtensionMode.Development) {
-            const basePath = pat.join(__dirname, "..");
-            let lastFile = ""
-            const dirs = ["src", "scripts"].map(d => pat.join(basePath, d))
-            watchFolders(dirs, async (e, filepath) => {
-                const mains = ["Editor_providers", "extension.ts", "scripts"]
-
-                if (lastFile !== filepath)
-                    for (const f of mains) {
-                        if (filepath.toLowerCase().includes(f.toLowerCase())) {
-                            await vscode.commands.executeCommand("workbench.action.reloadWindow")
-                            break;
-                        } else {
-                            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-                            await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.bruEditor');
-                            break;
-                        }
-                    }
-                lastFile = filepath
-            })
-        }
-
         const path = doc.uri.path;
         if (/collection\.bru$/.test(path)) {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -209,9 +185,11 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         extensionUri: this.ctx.extensionUri
                     };
 
+
                     this.setScriptState("running", webview);
-                    const { exports, logs } = await SandboxNode.run(opt, emitEvent);
-                    webview.postMessage({ type: "script-result", data: { exports, logs } });
+                    const { exports, logs, inbound } = await SandboxNode.run(opt, emitEvent);
+                    this.currentInbound = inbound;
+
                     this.setScriptState("stopped", webview);
                 }
                 catch (err) {
@@ -223,7 +201,13 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "bru-get-reply":
-
+                console.log(msg)
+                if (this.currentInbound) {
+                    this.currentInbound({
+                        type: "bru-get-result",
+                        payload: msg.data
+                    })
+                }
                 break;
 
             case "stop-script":
