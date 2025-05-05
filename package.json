@@ -1,7 +1,6 @@
 {
   "main": "./dist/extension.cjs",
   "publisher": "MolikoDeveloper",
-  "//": "START EXTENSION ATTRIBUTES",
   "name": "vs-bruno",
   "version": "0.0.2",
   "description": "a bruno files compatible api client.",
@@ -17,6 +16,11 @@
     "@codemirror/lang-json": "6.0.1",
     "@codemirror/lang-xml": "6.1.0",
     "@rollup/browser": "^4.40.1",
+    "@rollup/plugin-commonjs": "28.0.3",
+    "@rollup/plugin-node-resolve": "16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-virtual": "^3.0.2",
+    "@rollup/pluginutils": "5.1.4",
     "@uiw/codemirror-theme-vscode": "4.23.12",
     "@uiw/react-codemirror": "4.23.12",
     "@usebruno/lang": "0.22.0",
@@ -24,16 +28,11 @@
     "markdown-to-jsx": "7.7.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "rollup": "4.40.1",
     "style-mod": "4.1.2",
-    "tar": "7.4.3",
-    "rollup": "4.40.1"
+    "tar": "7.4.3"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "28.0.3",
-    "@rollup/plugin-node-resolve": "16.0.1",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@rollup/plugin-virtual": "^3.0.2",
-    "@rollup/pluginutils": "5.1.4",
     "@tailwindcss/postcss": "4.1.5",
     "@types/bun": "latest",
     "@types/dompurify": "3.2.0",
@@ -50,6 +49,28 @@
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.40.1",
+    "@rollup/rollup-android-arm64": "4.40.1",
+    "@rollup/rollup-win32-arm64-msvc": "4.40.1",
+    "@rollup/rollup-freebsd-arm64": "4.40.1",
+    "@rollup/rollup-linux-arm64-gnu": "4.40.1",
+    "@rollup/rollup-linux-arm64-musl": "4.40.1",
+    "@rollup/rollup-android-arm-eabi": "4.40.1",
+    "@rollup/rollup-linux-arm-gnueabihf": "4.40.1",
+    "@rollup/rollup-linux-arm-musleabihf": "4.40.1",
+    "@rollup/rollup-win32-ia32-msvc": "4.40.1",
+    "@rollup/rollup-linux-loongarch64-gnu": "4.40.1",
+    "@rollup/rollup-linux-riscv64-gnu": "4.40.1",
+    "@rollup/rollup-linux-riscv64-musl": "4.40.1",
+    "@rollup/rollup-linux-powerpc64le-gnu": "4.40.1",
+    "@rollup/rollup-linux-s390x-gnu": "4.40.1",
+    "@rollup/rollup-darwin-x64": "4.40.1",
+    "@rollup/rollup-win32-x64-msvc": "4.40.1",
+    "@rollup/rollup-freebsd-x64": "4.40.1",
+    "@rollup/rollup-linux-x64-gnu": "4.40.1",
+    "@rollup/rollup-linux-x64-musl": "4.40.1"
   },
   "type": "module",
   "scripts": {
@@ -72,6 +93,16 @@
       {
         "command": "vs-bruno.bundle.req",
         "title": "Debug Script",
+        "category": "vs-bruno"
+      },
+      {
+        "command": "vs-bruno.disable.rollup",
+        "title": "Disable Scripts",
+        "category": "vs-bruno"
+      },
+      {
+        "command": "vs-bruno.enable.rollup",
+        "title": "Enable Scripts",
         "category": "vs-bruno"
       }
     ],

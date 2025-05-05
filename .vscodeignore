@@ -2,9 +2,12 @@
 *
 */**
 
+
 # Whitelist what you need
 !.vscodeignore
-!dist/**
+!dist/**/*.cjs
+!dist/**/*.js
+!dist/**/*.css
 !CHANGELOG.md
 !LICENSE.txt
 !README.md

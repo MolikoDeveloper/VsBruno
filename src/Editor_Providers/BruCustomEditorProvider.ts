@@ -3,7 +3,8 @@ import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 import type { BruFile } from "src/types/bruno/bruno";
 import type { RunOptions } from "src/sandbox/types";
-import { SandboxNode } from "src/sandbox/SandboxNode";
+import { watchFolders } from "src/common/watcher";
+import * as pat from "path"
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type BruStateKind = "state" | "console" | "evt" | "get";
@@ -34,6 +35,28 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         doc: vscode.TextDocument,
         panel: vscode.WebviewPanel,
     ): Promise<void> {
+
+        if (this.ctx.extensionMode === vscode.ExtensionMode.Development) {
+            const basePath = pat.join(__dirname, "..");
+            let lastFile = ""
+            const dirs = ["src", "scripts"].map(d => pat.join(basePath, d))
+            watchFolders(dirs, async (e, filepath) => {
+                const mains = ["Editor_providers", "extension.ts", "scripts"]
+
+                if (lastFile !== filepath)
+                    for (const f of mains) {
+                        if (filepath.toLowerCase().includes(f.toLowerCase())) {
+                            await vscode.commands.executeCommand("workbench.action.reloadWindow")
+                            break;
+                        } else {
+                            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+                            await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.bruEditor');
+                            break;
+                        }
+                    }
+                lastFile = filepath
+            })
+        }
 
         const path = doc.uri.path;
         if (/collection\.bru$/.test(path)) {
@@ -151,6 +174,22 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "run-script":
+                if (!this.ctx.globalState.get<boolean>("rollupEnabled")) {
+                    webview.postMessage({ type: "script-error", data: "JavaScript Disabled" });
+                    const choice = await vscode.window.showInformationMessage(
+                        'JS desactivado, quieres activarlo? (requiere reinicio)',
+                        'Sí, Reiniciar',
+                        'No'
+                    );
+
+                    if (choice === "Sí, Reiniciar") {
+                        this.ctx.globalState.update("rollupEnabled", undefined);
+                        vscode.window.showInformationMessage("Reloading vscode");
+                        vscode.commands.executeCommand("workbench.action.reloadWindow")
+                    }
+                    break;
+                }
+
                 this.setScriptState("starting", webview)
                 const nearest = await this.findNearestCollection(doc.uri);
                 if (!nearest) {
@@ -159,6 +198,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 const emitEvent = (evt: any) => webview.postMessage({ type: "bru-event", data: evt });
 
                 try {
+                    const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
                     const { code, virtualPath, args } = msg.data;
                     const opt: RunOptions = {
                         code,

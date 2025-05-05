@@ -50,7 +50,7 @@ const config: BuildOptions = {
     //js: banner
   },
   format: "cjs",
-  external: ["vscode", "fsevents"],
+  external: ["vscode", "fsevents", "crypto"],
   loader: {
     ".ts": "ts",
     ".js": "js",
@@ -77,6 +77,7 @@ const config: BuildOptions = {
     "@lezer/common": require.resolve("src/vendor/@lezer/common/dist/index.js"),
     "@lezer/highlight": require.resolve("src/vendor/@lezer/highlight/dist/index.js"),
     "@codemirror/view": require.resolve("src/vendor/@codemirror/view/dist/index.js"),
+    "rollup": require.resolve("src/vendor/rollup/dist/rollup.js")
   }
 };
 
