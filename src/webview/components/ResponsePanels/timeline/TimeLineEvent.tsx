@@ -5,14 +5,16 @@ export default function ({ ev }: { ev: TimelineEvent_t }) {
     const [currentDate] = useState(new Date())
     const ago = useTimeAgo(ev.date)
 
+    const ok = ev.ok ? "text-green-500 font-bold" : "text-red-500 font-bold"
+
     return (
         <div className="min-h-fit">
             <div className="border-b-2 border-amber-700/50 py-2">
                 <div className="cursor-pointer">
                     <div className="flex justify-between items-center min-w-0">
                         <div className="flex items-center space-x-2 min-w-0">
-                            <span className="text-green-500 font-bold">{ev.status}</span>
-                            <span className="text-green-500 font-bold">{ev.method}</span>
+                            <span className={ok}>{ev.status}</span>
+                            <span className={ok}>{ev.method}</span>
                             <span className="text-gray-500 font-bold"></span>
                             <pre className="opacity-70">{`[${ev.date?.toLocaleDateString()} ${ev.date?.toLocaleTimeString()}]`}</pre>
                         </div>

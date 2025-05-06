@@ -43,7 +43,8 @@ export default function () {
             method: bruContent?.http?.method.toUpperCase(),
             statusText: bruResponse?.statusText,
             url: bruResponse?.url,
-            date: new Date()
+            date: new Date(),
+            ok: bruResponse.ok
         }
         setEvents(prev => [current, ...prev])
     }, [bruResponse])

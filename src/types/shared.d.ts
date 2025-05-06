@@ -12,6 +12,7 @@ export interface SerializedResponse<TBody = unknown> {
 }
 
 type TimelineEvent_t = {
+    ok: boolean;
     status?: number,
     date?: Date
     url?: string

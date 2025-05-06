@@ -6,7 +6,6 @@ import BruEnvironmentsEditorProvider from "./Editor_Providers/BruEnviromentEdito
 import { Downloader } from "./sandbox/Downloader";
 import { bindingsByPlatformAndArch } from "./sandbox/archs";
 import { watchFolders } from "./common/watcher";
-import { eventNames } from "process";
 
 let scriptChannel: vscode.OutputChannel;
 let brunoChannel: vscode.OutputChannel;
@@ -53,43 +52,42 @@ export const activate = async (context: vscode.ExtensionContext) => {
   )
 
   const enabled = gs.get<boolean>('rollupEnabled');
-  if (enabled === undefined) {
+  if (enabled === undefined || enabled == true) {
     await new Promise<void>(async (res, rej) => {
       if (fs.existsSync(binaryPath)) {
-        // Si ya existe, lo damos por bueno sin preguntar
         brunoChannel.appendLine(`rollup Binary found: ${binaryPath}`)
         await gs.update('rollupEnabled', true);
         res();
       } else {
-        // No existe: pedimos al usuario
         const choice = await vscode.window.showInformationMessage(
-          'No se encontró el binario de Rollup. ¿Quieres descargarlo para habilitar bundling?',
-          'Sí, descargar',
-          'No, desactivar'
+          'Rollup binary not found. do you want to download Rollup?\n(only applies to the extension)',
+          'Yes, Download.',
+          'No, Disable.'
         );
-        if (choice === 'Sí, descargar') {
+        if (choice === 'Yes, Download.') {
           const downloader = new Downloader(__dirname, rollupVersion);
           try {
             await downloader.download().then(async d => {
               if (d) {
                 const ok = await downloader.testBinary()
-                if (!ok) throw new Error('El binario no respondió correctamente');
+                if (!ok) throw new Error('the binary does not respond.');
               }
             });
 
             await gs.update('rollupEnabled', true);
-            vscode.window.showInformationMessage('Rollup descargado y validado ✅');
+            vscode.window.showInformationMessage('Rollup downloaded ✅');
           } catch (err: any) {
-            await gs.update('rollupEnabled', false);
-            vscode.window.showErrorMessage('Error al descargar Rollup: ' + err.message);
+            await gs.update('rollupEnabled', undefined);
+            vscode.window.showErrorMessage('Error downloading Rollup: ' + err.message);
             rej()
           }
-        } else {
+        } else if (choice === 'No, Disable.') {
           await gs.update('rollupEnabled', false);
-          res()
+        }
+        else {
+          await gs.update("rollupEnabled", undefined)
         }
       }
-
       res()
     })
   }

@@ -4,7 +4,7 @@ meta {
   seq: 2
 }
 
-get {
+post {
   url: http://localhost:3000/api/posts
   body: json
   auth: none
@@ -17,6 +17,5 @@ body:json {
 }
 
 script:pre-request {
-  req.setMethod("POST")
-  console.log(req.getMethod())
+  console.log(bru.cwd())
 }

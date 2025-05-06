@@ -10,7 +10,6 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
-import { GetRequest, SetRequest } from "src/common/bruEvents";
 
 type msg = {
     type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
@@ -52,10 +51,10 @@ export default function () {
                     console.log("event:", message.data)
                     const evt = message.data as { type: string; payload: any };
                     if (evt.type === "bru-get") {
-                        GetRequest(evt.payload, { bruContent: bruContent })
+                        //GetRequest(evt.payload, { bruContent: bruContent })
                     }
                     else {
-                        SetRequest({ type: evt.type, payload: evt.payload }, bruContent, setBruContent);
+                        //SetRequest({ type: evt.type, payload: evt.payload }, bruContent, setBruContent);
                     }
                     break;
                 case "script-state":

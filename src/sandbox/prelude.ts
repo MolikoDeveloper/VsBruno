@@ -1,6 +1,7 @@
 export const prelude = /* js */ `
 (function(){
   globalThis.bruContent = ___BRU_CONTENT___;
+  globalThis.cwd = ___cwd___;
   // Queue outgoing events until host is ready
   const __queue__ = [];
   // Simple event listener registry for incoming events
@@ -53,13 +54,18 @@ export const prelude = /* js */ `
     static version = "0.1.0";
 
     static cwd(){
-      return get("CollectionLocation")
+      return cwd;
     }
   }
 
   class req {
     script_body = "";
-    script_method = ""
+    script_method = "";
+    script_headers = {};
+    script_url = "";
+    script_timeout = "";
+
+
     static body = bruContent.body[bruContent.http.body];
     static method = bruContent.http.method.toUpperCase();
 
@@ -122,6 +128,10 @@ export const prelude = /* js */ `
      */
     static getExecutionMode(){
       __emit__("req.execution_mode")
+    }
+
+    static getExecutionPlatform(){
+      return "vscode"
     }
 
   }

@@ -205,12 +205,11 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "bru-get-reply":
-                if (this.currentInbound) {
-                    this.currentInbound({
-                        type: "bru-get-result",
-                        payload: msg.data
-                    })
-                }
+                if (!this.currentInbound) break;
+                this.currentInbound({
+                    type: "bru-get-result",
+                    payload: msg.data
+                })
                 break;
 
             case "stop-script":
@@ -225,32 +224,55 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         webview: vscode.Webview,
     ) {
         if (!req.uri) return;
-        try {
-            const res = await fetch(req.uri, req.init);
+
+        fetch(req.uri, req.init).then(async (res) => {
             const headers: Record<string, string> = {};
-            res.headers.forEach((v, k) => (headers[k] = v));
+            if (res.ok) {
+                res.headers.forEach((v, k) => (headers[k] = v));
+                const ct = headers["content-type"] ?? "";
+                const body =
+                    ct.includes("application/json")
+                        ? await res.json()
+                        : ct.startsWith("text/")
+                            ? await res.text()
+                            : Buffer.from(await res.arrayBuffer()).toString("base64");
 
-            const ct = headers["content-type"] ?? "";
-            const body =
-                ct.includes("application/json")
-                    ? await res.json()
-                    : ct.startsWith("text/")
-                        ? await res.text()
-                        : Buffer.from(await res.arrayBuffer()).toString("base64");
-
+                const payload: SerializedResponse = {
+                    ok: res.ok,
+                    status: res.status,
+                    statusText: res.statusText,
+                    url: res.url,
+                    headers,
+                    parsedAs: ct.includes("json") ? "json" : ct.startsWith("text/") ? "text" : "binary",
+                    body,
+                };
+                webview.postMessage({ type: "fetch", data: payload });
+            }
+            else {
+                const payload: SerializedResponse = {
+                    ok: res.ok,
+                    status: res.status,
+                    statusText: res.statusText,
+                    url: req.uri,
+                    headers: headers,
+                    parsedAs: "text",
+                    body: undefined,
+                };
+                webview.postMessage({ type: "fetch", data: payload });
+            }
+        }).catch(err => {
             const payload: SerializedResponse = {
-                ok: res.ok,
-                status: res.status,
-                statusText: res.statusText,
-                url: res.url,
-                headers,
-                parsedAs: ct.includes("json") ? "json" : ct.startsWith("text/") ? "text" : "binary",
-                body,
+                ok: false,
+                status: 0,
+                statusText: String(err.message ?? err),
+                url: req.uri,
+                headers: {},
+                parsedAs: 'text',
+                body: undefined
             };
-            webview.postMessage({ type: "fetch", data: payload });
-        } catch (err) {
-            webview.postMessage({ type: "fetch-error", data: String(err) });
-        }
+            webview.postMessage({ type: 'fetch', data: payload });
+        })
+
     }
 
     /* ──────────────────────────── Utils UI & FS ───────────────────────────── */

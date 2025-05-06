@@ -95,7 +95,7 @@ export const SandboxNode: Sandbox = {
                     const json = JSON.stringify(bruContent ?? null)
                         .replace(/<\/script/gi, '<\\/script')
                         .replace(/<!--/g, '<\\!--');
-                    const injectedPrelude = prelude.replace('___BRU_CONTENT___', json);
+                    const injectedPrelude = prelude.replace('___BRU_CONTENT___', json).replace("___cwd___", `"${collectionRoot.fsPath}"`);
 
                     return injectedPrelude + "\n" + transpiled;
                 }

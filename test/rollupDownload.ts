@@ -1,26 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { promisify } from 'util';
 import { execFile as _execFile } from 'child_process';
-import { Downloader, bindingsByPlatformAndArch } from 'src/sandbox/Downloader';
+import { Downloader } from 'src/sandbox/Downloader';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
 // @ts-ignore
 import pkg from '../package.json';
-
-const execFile = promisify(_execFile);
+import { bindingsByPlatformAndArch } from 'src/sandbox/archs';
 
 (async () => {
-    console.log('Rollup version to fetch:', pkg.dependencies.rollup);
 
-    // 1) Descargar el binario nativo
     const storeDir = path.resolve(__dirname, 'rollup-native');
     const downloader = new Downloader(storeDir, pkg.dependencies.rollup);
     await downloader.download();
-    console.log('Downloaded Rollup binary to', storeDir);
 
-    // 2) Sobrescribir el binario que usa la dependencia 'rollup'
     const rollupPkgBinDir = path.resolve(__dirname, '../node_modules/rollup/dist/bin');
     const platform = process.platform;
     const arch = process.arch;
@@ -30,7 +23,6 @@ const execFile = promisify(_execFile);
     const destName = `rollup.${info.base}.node`;
     const destPath = path.join(rollupPkgBinDir, destName);
     fs.copyFileSync(downloaded, destPath);
-    console.log(`Sobrescribí binario en: ${destPath}`);
 
     // 4) (Opcional) Generar un bundle usando la CLI
     try {
