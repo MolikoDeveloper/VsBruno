@@ -1,5 +1,6 @@
 export const prelude = /* js */ `
 (function(){
+  globalThis.bruContent = ___BRU_CONTENT___;
   // Queue outgoing events until host is ready
   const __queue__ = [];
   // Simple event listener registry for incoming events
@@ -36,40 +37,46 @@ export const prelude = /* js */ `
     });
   }
 
+  function get(key) {
+    const id = uuid();
+    __emit__("bru-get", { id, key });
+    return new Promise(resolve => {
+      __on__("bru-get-result", result => {
+        if (result.id === id) {
+          resolve(result.data);
+        }
+      });
+    });
+  }
+
   class bru {
     static version = "0.1.0";
 
-    static Response = class {
-      constructor(status, body) {
-        this.status = status;
-        this.body = body;
-      }
-    };
-
-    static send(type, payload) {
-      __emit__(type, payload);
-    }
-
-    static get(key) {
-      const id = uuid();
-      __emit__("bru-get", { id, key });
-      return new Promise(resolve => {
-        __on__("bru-get-result", result => {
-          if (result.id === id) {
-            resolve(result.data);
-          }
-        });
-      });
+    static cwd(){
+      return get("CollectionLocation")
     }
   }
 
   class req {
-    static setBody(body){
-      __emit__("set.req.body", body);
+    script_body = "";
+    script_method = ""
+    static body = bruContent.body[bruContent.http.body];
+    static method = bruContent.http.method.toUpperCase();
+
+    static setMethod(_method){
+      this.script_method = _method.toUpperCase()
     }
 
-    static getBody(body){
-      __emit__("req.body");
+    static getMethod(){
+      return this.script_method || this.method
+    }
+
+    static setBody(_body){
+      this.script_body = _body
+    }
+
+    static getBody(){
+      return this.script_body || this.body
     }
 
     static getUrl(){
@@ -78,14 +85,6 @@ export const prelude = /* js */ `
 
     static setUrl(url){
       __emit__("set.req.url", url)
-    }
-
-    static getMethod(){
-      return bru.get("req.method")
-    }
-
-    static setMethod(method){
-      __emit__("set.req.method", method);
     }
 
     static getHeader(header){
@@ -125,11 +124,15 @@ export const prelude = /* js */ `
       __emit__("req.execution_mode")
     }
 
-    static method = this.getMethod()
+  }
+
+  class res {
+    static body = args?.bruResponse?.body || null
   }
 
   globalThis.bru = bru;
   globalThis.req = req;
+  globalThis.res = res;
   globalThis.__bruQueued = __queue__;
 })();
 `;

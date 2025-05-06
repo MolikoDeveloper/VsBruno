@@ -8,10 +8,8 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import ts from "typescript";
 import path from "path";
-import { pathToFileURL } from "url";
 import vm from "vm";
 import { prelude } from "./prelude";
-import { rollup } from "rollup";
 
 export const SandboxNode: Sandbox = {
     /**
@@ -28,6 +26,7 @@ export const SandboxNode: Sandbox = {
             resolveDir,
             args,
             extensionUri,
+            bruContent
         } = opts;
 
         const logs: LogEntry[] = [];
@@ -71,6 +70,7 @@ export const SandboxNode: Sandbox = {
                     },
                     fileName: id,
                 });
+
                 return outputText;
             },
         };
@@ -83,17 +83,21 @@ export const SandboxNode: Sandbox = {
             },
             load(id: string) {
                 if (id === ENTRY_ID) {
-                    const transpiled = ts
-                        .transpileModule(code, {
-                            compilerOptions: {
-                                module: ts.ModuleKind.ESNext,
-                                target: ts.ScriptTarget.ES2019,
-                                esModuleInterop: true,
-                            },
-                            fileName: virtualPath,
-                        })
-                        .outputText;
-                    return prelude + "\n" + transpiled;
+                    const transpiled = ts.transpileModule(code, {
+                        compilerOptions: {
+                            module: ts.ModuleKind.ESNext,
+                            target: ts.ScriptTarget.ESNext,
+                            esModuleInterop: true,
+                        },
+                        fileName: virtualPath,
+                    }).outputText;
+
+                    const json = JSON.stringify(bruContent ?? null)
+                        .replace(/<\/script/gi, '<\\/script')
+                        .replace(/<!--/g, '<\\!--');
+                    const injectedPrelude = prelude.replace('___BRU_CONTENT___', json);
+
+                    return injectedPrelude + "\n" + transpiled;
                 }
                 return null;
             },
@@ -110,13 +114,18 @@ export const SandboxNode: Sandbox = {
             ],
             onwarn: () => { },
         });
-        const { output } = await bundle.generate({ format: "cjs" });
+        const { output } = await bundle.generate({ format: "es" });
         const cjs = output[0].code;
 
         // 5) Proxy para capturar console.*
         const pushLog = (kind: LogEntry["kind"], ...vals: any[]) => {
             logs.push({ kind, values: vals });
-            Print("script", `[${kind}] ${vals.map((x) => JSON.stringify(x)).join(" ")}`);
+            if (typeof vals[0] === "string") {
+                Print("script", `[${kind}] ${vals}`);
+            }
+            else {
+                Print("script", `[${kind}] ${JSON.stringify(vals[0])}`);
+            }
         };
         const consoleProxy = {
             log: (...v: any[]) => pushLog("log", ...v),

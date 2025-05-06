@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BruProvider } from "src/webview/context/BruProvider";
 import App from "./App";
+import { TimelineProvider } from "./context/TimeLineProvider";
 
 if (typeof ''.toLowerCase !== 'function') {
     Object.defineProperty(String.prototype, 'toLowerCase', {
@@ -17,6 +18,8 @@ const container = document.getElementById("root");
 if (container)
     createRoot(container).render(
         <BruProvider>
-            <App></App>
+            <TimelineProvider>
+                <App></App>
+            </TimelineProvider>
         </BruProvider>
     )

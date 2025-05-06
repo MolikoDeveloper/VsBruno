@@ -10,7 +10,7 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
-import { GetRequest } from "src/common/bruEvents";
+import { GetRequest, SetRequest } from "src/common/bruEvents";
 
 type msg = {
     type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
@@ -18,8 +18,7 @@ type msg = {
 }
 
 export default function () {
-    const { bruContent, setBruContent, bruCollection, setBruCollection, bruConfig, setBruConfig } = useBruContent();
-    const [response, setResponse] = useState<SerializedResponse | null>(null);
+    const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent(); const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
     const [firstLoad, setFirstLoad] = useState(true);
 
     useEffect(() => {
@@ -36,7 +35,7 @@ export default function () {
                     setBruContent(message.data as BruFile);
                     break;
                 case "fetch":
-                    setResponse(message.data as SerializedResponse)
+                    setBruResponse(message.data as SerializedResponse)
                     break;
                 case "collection":
                     setBruCollection(message.data as BruCollection)
@@ -50,13 +49,17 @@ export default function () {
                     setBruConfig(message.data as BrunoConfig)
                     break;
                 case "bru-event":
+                    console.log("event:", message.data)
                     const evt = message.data as { type: string; payload: any };
                     if (evt.type === "bru-get") {
                         GetRequest(evt.payload, { bruContent: bruContent })
                     }
+                    else {
+                        SetRequest({ type: evt.type, payload: evt.payload }, bruContent, setBruContent);
+                    }
                     break;
                 case "script-state":
-                    console.log(message.data)
+                    SetScriptStatus(message.data as any)
                     break;
                 default:
                     console.log(message.type);
@@ -70,6 +73,7 @@ export default function () {
         }
     }, [])
 
+    // on everyChange
     useEffect(() => {
         if (!bruContent) return;
         if (firstLoad) { setFirstLoad(false); return; }
@@ -85,11 +89,11 @@ export default function () {
                 <TopBar />
                 <div className="h-full">
                     <PanelGroup direction="horizontal" className="h-full w-full">
-                        <Panel className="min-w-[350px]">
-                            <RequestPanel className="h-full pr-4" />
+                        <Panel className="min-w-[350px] h-full relative">
+                            <RequestPanel className="px-4 h-full w-full flex flex-col" />
                         </Panel>
-                        <Panel className="min-w-[350px]">
-                            <ResponsePanel className="h-full pl-4" />
+                        <Panel className="min-w-[350px] h-full relative">
+                            <ResponsePanel className="px-4 h-full w-full flex flex-col" />
                         </Panel>
                     </PanelGroup>
                 </div>

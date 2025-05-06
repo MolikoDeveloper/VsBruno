@@ -5,39 +5,18 @@ meta {
 }
 
 get {
-  url: http://localhost/api/v1?a=22
-  body: none
+  url: http://localhost:3000/api/posts
+  body: json
   auth: none
 }
 
-params:query {
-  a: 22
-}
-
-headers {
-  Content-Base: application/gzip
-}
-
-vars:pre-request {
-  a: a
-}
-
-vars:post-response {
-  a: a
-}
-
-assert {
-  /a**: eq a
-  b: contains bsa
-  a: neq aa
+body:json {
+  {   
+    "A": "B"
+  }
 }
 
 script:pre-request {
-  import aa from "./src/getuser.js"
-  
-  console.log(req.method)
-}
-
-script:post-response {
-  console.log("b")
+  req.setMethod("POST")
+  console.log(req.getMethod())
 }

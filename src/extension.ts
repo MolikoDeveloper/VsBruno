@@ -6,6 +6,7 @@ import BruEnvironmentsEditorProvider from "./Editor_Providers/BruEnviromentEdito
 import { Downloader } from "./sandbox/Downloader";
 import { bindingsByPlatformAndArch } from "./sandbox/archs";
 import { watchFolders } from "./common/watcher";
+import { eventNames } from "process";
 
 let scriptChannel: vscode.OutputChannel;
 let brunoChannel: vscode.OutputChannel;
@@ -144,12 +145,13 @@ function watcher_(ctx: vscode.ExtensionContext) {
   if (ctx.extensionMode === vscode.ExtensionMode.Development) {
     const basePath = path.join(__dirname, "..");
     const dirs = ["src", "scripts"].map(d => path.join(basePath, d));
-    const mains = ["Editor_Providers", "extension.ts", "scripts", "/sandbox/"];
+    const mains = ["Editor_Providers", "extension.ts", "scripts", "sandbox"];
 
     let reloadTimer: ReturnType<typeof setTimeout> | undefined;
     let lastFilepath: string;
 
     watchFolders(dirs, (_event, filepath) => {
+      console.log(_event)
       lastFilepath = filepath;
       // reset timer on each event
       if (reloadTimer) {

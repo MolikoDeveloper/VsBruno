@@ -3,14 +3,14 @@ import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 import type { BruFile } from "src/types/bruno/bruno";
 import type { RunOptions } from "src/sandbox/types";
+import { Print } from "src/extension";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
-type BruStateKind = "state" | "console" | "evt" | "get";
 type WebviewMsg =
     | { type: "edit"; data: BruFile }
     | { type: "init" }
     | { type: "fetch"; data: { uri: string; init?: RequestInit } }
-    | { type: "run-script"; data: { code: string; virtualPath?: string; args: any } }
+    | { type: "run-script"; data: { code: string; virtualPath?: string; args: any, bruContent: BruFile } }
     | { type: "bru-get-reply"; data: { id: string; payload: any } }
     | { type: "stop-script" };
 
@@ -23,9 +23,10 @@ type ScriptState =
 
 /* ──────────────────────── Clase principal del editor ─────────────────────── */
 export default class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
-    private scriptState: ScriptState = "idle";
+
     private source: "provider" | "webview" = "provider"
     private currentInbound: ((e: any) => void) | null = null;
+    private lastBruContent = {}
 
     constructor(private readonly ctx: vscode.ExtensionContext) { }
 
@@ -64,6 +65,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         /* Watchers ------------------------------------------------------------- */
         const disposables: vscode.Disposable[] = [];
 
+
         /* Cambios en cualquier .bru, collection.bru o bruno.json */
         disposables.push(
             vscode.workspace.onDidChangeTextDocument(async (e) => {
@@ -75,7 +77,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         this.source = "provider";
                         return;
                     }
-                    webview.postMessage({ type: "update", data: bruToJsonV2(e.document.getText()) });
+                    this.lastBruContent = bruToJsonV2(e.document.getText())
+                    webview.postMessage({ type: "update", data: this.lastBruContent });
                     return;
                 }
 
@@ -175,14 +178,15 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
                 try {
                     const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
-                    const { code, virtualPath, args } = msg.data;
+                    const { code, virtualPath, args, bruContent } = msg.data;
                     const opt: RunOptions = {
                         code,
                         virtualPath,
                         args,
                         collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), ".."),
                         resolveDir: vscode.Uri.joinPath(doc.uri, "..").fsPath,
-                        extensionUri: this.ctx.extensionUri
+                        extensionUri: this.ctx.extensionUri,
+                        bruContent
                     };
 
 
@@ -193,7 +197,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     this.setScriptState("stopped", webview);
                 }
                 catch (err) {
-                    console.log(err)
+                    Print('script', `[error] ${String(err)}`)
                     webview.postMessage({ type: "script-error", data: String(err) })
                     this.setScriptState("stopped", webview)
                 }
@@ -201,7 +205,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "bru-get-reply":
-                console.log(msg)
                 if (this.currentInbound) {
                     this.currentInbound({
                         type: "bru-get-result",
@@ -321,7 +324,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     }
 
     private setScriptState(state: ScriptState, webview: vscode.Webview) {
-        this.scriptState = state;
         webview.postMessage({ type: "script-state", data: state });
     }
 }

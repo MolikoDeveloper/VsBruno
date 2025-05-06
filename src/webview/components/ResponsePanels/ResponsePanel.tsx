@@ -1,4 +1,9 @@
 import { useState } from "react";
+import Response_ResponsePanel from "./Response_ResponsePanel";
+import Headers_ResponsePanel from "./Headers_ResponsePanel";
+import Timeline_ResponsePanel from "./Timeline_ResponsePanel";
+import Eraser from "../icons/Eraser";
+import { useBruContent } from "src/webview/context/BruProvider";
 
 interface Props {
     className?: string
@@ -8,6 +13,7 @@ const tabs = ["Response", "Headers", "Timeline", "Tests"];
 
 export default function ({ className }: Props) {
     const [currentTab, setCurrentTab] = useState<string>("Response");
+    const { setBruResponse } = useBruContent()
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]"
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]"
 
@@ -22,13 +28,16 @@ export default function ({ className }: Props) {
                         <sup className="ml-1 font-medium"></sup>
                     </div>
                 ))}
+                <button className="cursor-pointer hover:text-red-500" onClick={() => { setBruResponse(null) }}>
+                    <Eraser />
+                </button>
             </section>
-            <section>
+            <section className="w-full h-full">
                 {
                     {
-                        "Response": <>WIP</>,
-                        "Headers": <>WIP</>,
-                        "Timeline": <>WIP</>,
+                        "Response": <Response_ResponsePanel />,
+                        "Headers": <Headers_ResponsePanel />,
+                        "Timeline": <Timeline_ResponsePanel />,
                         "Tests": <>WIP</>
                     }[currentTab]
                 }

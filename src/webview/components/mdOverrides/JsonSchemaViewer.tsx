@@ -33,7 +33,7 @@ export const JsonSchemaViewer: React.FC<JsonSchemaViewerProps> = ({ data }) => {
 
     return (
         <div className="font-mono text-xs leading-5">
-            <div className="grid grid-cols-[48px_1fr] w-ful bg-[--vscode-editor-background]">
+            <div className="grid grid-cols-[48px_1fr] w-ful bg-[vscode-editor-background]">
                 {rows.map((row, i) => (
                     <React.Fragment key={i}>
                         <div className="select-none pr-3 text-right text-gray-500 bg-[var(--vscode-badge-background)]">{i + 1}</div>

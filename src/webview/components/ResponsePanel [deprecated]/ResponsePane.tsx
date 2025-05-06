@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect, type MouseEvent, type RefObject } from 'react';
 
 interface SplitPanelProps {

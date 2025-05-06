@@ -10,3 +10,11 @@ export interface SerializedResponse<TBody = unknown> {
 
     body: TBody;
 }
+
+type TimelineEvent_t = {
+    status?: number,
+    date?: Date
+    url?: string
+    method?: string,
+    statusText?: string
+}

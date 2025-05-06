@@ -4,6 +4,7 @@ import { useBruContent } from 'src/webview/context/BruProvider';
 import { xmlLanguage } from '@codemirror/lang-xml';
 import { LanguageSupport } from '@codemirror/language';
 import type { BruBody } from 'src/types/bruno/bruno';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 type Mime = {
     name: string,
@@ -84,11 +85,29 @@ const mimes: Mime[] = [
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
-
     const xmlBare = new LanguageSupport(xmlLanguage);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [height, setHeight] = useState<string>('0px');
+
+
+    useLayoutEffect(() => {
+        const update = () => {
+            if (containerRef.current) {
+                setHeight(`${containerRef.current.clientHeight - 50}px`);
+            }
+        };
+
+        update(); // primera medición
+
+        // Observa cambios de tamaño del contenedor
+        const ro = new ResizeObserver(update);
+        if (containerRef.current) ro.observe(containerRef.current);
+
+        return () => ro.disconnect();
+    }, []);
 
     return (
-        <section className='w-full h-full'>
+        <div className='w-full h-full'>
             <div className="flex flex-grow justify-start items-center">
                 <div className="inline-flex items-center cursor-pointer">
                     <div className="text-amber-300 flex items-center justify-center py-1 select-none selected-body-mode" aria-expanded="false">
@@ -117,12 +136,12 @@ export default function () {
                 </div>
                 <button className="ml-1 cursor-pointer">Prettify</button>
             </div>
-            <div className="w-full overflow-auto">
+            <div className="w-full h-full" ref={containerRef}>
                 {
                     {
-                        "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,
-                        "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={'dark'} lang='plainText' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
-                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={'dark'} lang='xml' height='80vh' onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
+                        "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,
+                        "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={'dark'} lang='plainText' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
+                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={'dark'} lang='xml' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
                         "sparql": <></>,
                         "graphql": <></>,
                         "graphqlVars": <></>,
@@ -133,6 +152,6 @@ export default function () {
                     }[bruContent?.http?.body as string]
                 }
             </div>
-        </section>
+        </div>
     )
 }
