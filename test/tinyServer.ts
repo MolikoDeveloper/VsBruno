@@ -1,6 +1,7 @@
 import * as Bun from "bun"
 
 Bun.serve({
+    port: 9005,
     routes: {
         "/api/posts": {
             GET: () => new Response("List posts"),

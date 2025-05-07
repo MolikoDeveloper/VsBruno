@@ -30,7 +30,8 @@ export default function () {
             data: {
                 uri: bruContent.http?.url,
                 init: {
-                    "method": bruContent.http?.method.toUpperCase()
+                    "method": bruContent.http?.method.toUpperCase(),
+                    "body": bruContent.http.method != "get" && bruContent?.http?.body && bruContent.body && bruContent.body[bruContent.http.body]
                 } as RequestInit
             }
         })
@@ -45,7 +46,9 @@ export default function () {
             statusText: bruResponse?.statusText,
             url: bruResponse?.url,
             date: new Date(),
-            ok: bruResponse.ok
+            ok: bruResponse.ok,
+            time: bruResponse.time,
+            size: bruResponse.size
         }
         setEvents(prev => [current, ...prev])
     }, [bruResponse])

@@ -4,6 +4,7 @@ import Headers_ResponsePanel from "./Headers_ResponsePanel";
 import Timeline_ResponsePanel from "./Timeline_ResponsePanel";
 import Eraser from "../icons/Eraser";
 import { useBruContent } from "src/webview/context/BruProvider";
+import { useTimelineContext } from "src/webview/context/TimeLineProvider";
 
 interface Props {
     className?: string
@@ -13,7 +14,8 @@ const tabs = ["Response", "Headers", "Timeline", "Tests"];
 
 export default function ({ className }: Props) {
     const [currentTab, setCurrentTab] = useState<string>("Response");
-    const { setBruResponse } = useBruContent()
+    const { bruResponse, setBruResponse } = useBruContent()
+    const { setEvents } = useTimelineContext()
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]"
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]"
 
@@ -28,9 +30,22 @@ export default function ({ className }: Props) {
                         <sup className="ml-1 font-medium"></sup>
                     </div>
                 ))}
-                <button className="cursor-pointer hover:text-red-500" onClick={() => { setBruResponse(null) }}>
-                    <Eraser />
-                </button>
+                {bruResponse &&
+                    <div className="flex flex-grow items-center text-center justify-end gap-3 font-bold">
+                        <button className="cursor-pointer hover:text-red-500"
+                            onClick={() => {
+                                setBruResponse(null);
+                                setEvents([]);
+                            }}>
+                            <Eraser />
+                        </button>
+                        <div className={bruResponse?.ok ? "text-green-600" : "text-red-600"}>
+                            <p>{bruResponse?.status} {bruResponse?.ok ? "ok" : "Error"}</p>
+                        </div>
+                        <p>{bruResponse.time}</p>
+                        <p>{bruResponse.size}</p>
+                    </div>
+                }
             </section>
             <section className="w-full h-full">
                 {

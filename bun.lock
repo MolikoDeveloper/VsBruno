@@ -220,7 +220,7 @@
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
-    "@rollup/browser": ["@rollup/browser@4.40.1", "", { "dependencies": { "@types/estree": "1.0.7" } }, "sha512-tVql4XvsnbMKPNGh88MYcOn2KBvuDTo4cWfO7njhx+VKUtM2d0eGc3Gzc0r0ZDbZ+gvWFdoMplUW4D+/dmG4LQ=="],
+    "@rollup/browser": ["@rollup/browser@4.40.2", "", { "dependencies": { "@types/estree": "1.0.7" } }, "sha512-X4Wn+Hgj1EPS3SVaP1qp3BN/X5hscLTLg2XtajnulKloJgBjl02viUonCdDUr2hwx+FjN5z00D8rGjiu/MAYuw=="],
 
     "@rollup/plugin-commonjs": ["@rollup/plugin-commonjs@28.0.3", "", { "dependencies": { "@rollup/pluginutils": "^5.0.1", "commondir": "^1.0.1", "estree-walker": "^2.0.2", "fdir": "^6.2.0", "is-reference": "1.2.1", "magic-string": "^0.30.3", "picomatch": "^4.0.2" }, "peerDependencies": { "rollup": "^2.68.0||^3.0.0||^4.0.0" }, "optionalPeers": ["rollup"] }, "sha512-pyltgilam1QPdn+Zd9gaCfOLcnjMEJ9gV+bTw6/r73INdvzf1ah9zLIJBm+kW7R6IUFIQ1YO+VqZtYxZNWFPEQ=="],
 

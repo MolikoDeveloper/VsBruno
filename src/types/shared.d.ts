@@ -9,6 +9,8 @@ export interface SerializedResponse<TBody = unknown> {
     parsedAs: "json" | "text" | "binary";
 
     body: TBody;
+    size: string,
+    time: string
 }
 
 type TimelineEvent_t = {
@@ -17,5 +19,7 @@ type TimelineEvent_t = {
     date?: Date
     url?: string
     method?: string,
-    statusText?: string
+    statusText?: string,
+    time: string
+    size: string
 }

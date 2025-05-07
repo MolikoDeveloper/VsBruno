@@ -2,7 +2,8 @@
 
 |Estado | tema | sugerencia |
 |:-:|-|-|
-| 🔴 | **Rendimiento** | Cachear la instancia de Rollup y el SourceMapConsumer. <br> Evitar recrear sandbox‑tsconfig.json y el directorio dist/node_modules en cada ejecución. |
+| ✅ | **Rendimiento** | Cachear la instancia de Rollup y el SourceMapConsumer.
+| ✅ | **Rendimiento** | Evitar recrear sandbox‑tsconfig.json y el directorio dist/node_modules en cada ejecución. |
 | 🔴 | **Seguridad / Aislamiento** | Implementar un require filtrado (lista blanca) o ejecutar con vm.NodeVM de vm2 si necesitas aislar. <br>  Limitar acceso al disco fuera de collectionRoot.
 | 🔴 | **Manejo de errores** | Error.prepareStackTrace debería guardarse y restaurarse para no impactar a otros componentes. <br> Agregar map.destroy() tras usar SourceMapConsumer para liberar memoria nativa.
 | 🔴 | **Logs** | Serializar valores con una librería que maneje ciclos (p.ej. safe-stable-stringify) y truncar objetos grandes para no saturar el panel.

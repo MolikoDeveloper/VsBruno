@@ -4,7 +4,7 @@ meta {
   seq: 1
 }
 
-put {
+get {
   url: http://localhost:3001/api/inventory/create?test=ok
   body: json
   auth: none
@@ -40,10 +40,9 @@ vars:post-response {
 }
 
 script:pre-request {
-  import getUsers from "./src/getuser.ts"
+  import getuser from "../src/getuser"
   
-  
-  log(getUsers())
+  console.log(getuser())
 }
 
 docs {

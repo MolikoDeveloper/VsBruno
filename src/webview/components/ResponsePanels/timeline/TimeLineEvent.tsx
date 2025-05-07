@@ -15,7 +15,7 @@ export default function ({ ev }: { ev: TimelineEvent_t }) {
                         <div className="flex items-center space-x-2 min-w-0">
                             <span className={ok}>{ev.status}</span>
                             <span className={ok}>{ev.method}</span>
-                            <span className="text-gray-500 font-bold"></span>
+                            <span className="text-gray-500 font-bold">{ev.time}</span>
                             <pre className="opacity-70">{`[${ev.date?.toLocaleDateString()} ${ev.date?.toLocaleTimeString()}]`}</pre>
                         </div>
                         <span className="text-sm text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">

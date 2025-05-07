@@ -123,12 +123,23 @@ export function Print(channel: "script" | "bruno", msg: string) {
   }
 }
 
+export function Clear(channel: "script" | "bruno") {
+  switch (channel) {
+    case "script":
+      scriptChannel.clear()
+      break;
+    case "bruno":
+      brunoChannel.clear()
+      break;
+  }
+}
+
 
 function CreateCommands(gs: vscode.Memento & { setKeysForSync(keys: readonly string[]): void; }) {
 
   vscode.commands.registerCommand("vs-bruno.disable.rollup", () => {
     gs.update('rollupEnabled', false);
-    vscode.window.showInformationMessage("Reloading vscode");
+    vscode.window.showInformationMessage("Reloading extensions");
     vscode.commands.executeCommand("workbench.action.reloadWindow");
   })
 
@@ -160,6 +171,7 @@ function watcher_(ctx: vscode.ExtensionContext) {
         for (const f of mains) {
           if (lastFilepath.toLowerCase().includes(f.toLowerCase())) {
             Print("bruno", `Reloading Window: ${lastFilepath}`);
+            vscode.window.showInformationMessage("Reloading vscode");
             await vscode.commands.executeCommand("workbench.action.reloadWindow");
             didReloadWindow = true;
             break;

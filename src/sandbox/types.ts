@@ -9,6 +9,10 @@ export interface RunOptions {
     resolveDir: string;
     args: any;
     bruContent: any;
+    currentFilePath: string;
+    extensionUri: vscode.Uri;
+    scriptStartLine: number;
+    isPre: boolean;
 }
 
 
@@ -20,4 +24,5 @@ export interface ScriptResult {
 
 export interface Sandbox {
     run(opts: RunOptions, emit: (evt: any) => void): Promise<ScriptResult>;
+    stop(): void
 }

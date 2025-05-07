@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 import type { SerializedResponse } from "../types/shared";
 import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
 import type { BruFile } from "src/types/bruno/bruno";
-import type { RunOptions } from "src/sandbox/types";
 import { Print } from "src/extension";
-import type { RunOptionsWithFile } from "src/sandbox/SandboxNode";
+import type { RunOptions, Sandbox } from "src/sandbox/types";
+import { humanDuration, humanSize } from "src/common/humanSize";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type WebviewMsg =
@@ -28,8 +28,12 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     private source: "provider" | "webview" = "provider"
     private currentInbound: ((e: any) => void) | null = null;
     private lastBruContent = {}
+    private sandboxNode: Sandbox | undefined;
+    private SandboxState?: ScriptState = "idle"
 
-    constructor(private readonly ctx: vscode.ExtensionContext) { }
+    constructor(private readonly ctx: vscode.ExtensionContext) {
+        this.ctx.globalState.get<string>("SandboxState")
+    }
 
     /* ───────────── API de CustomTextEditorProvider ───────────── */
     public async resolveCustomTextEditor(
@@ -127,6 +131,11 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
     /* ──────────────────────────── Mensajes Webview ─────────────────────────── */
     private async handleWebviewMessage(msg: WebviewMsg, doc: vscode.TextDocument, webview: vscode.Webview) {
+        if (this.ctx.globalState.get<boolean>("rollupEnabled") == true) {
+            const sandbox = (await import("src/sandbox/SandboxNode")).SandboxNode
+            this.sandboxNode = new sandbox(this.ctx.extensionUri);
+        }
+
         switch (msg.type) {
             case "edit":
                 this.source = "webview"
@@ -169,6 +178,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     }
                     break;
                 }
+                if (!this.sandboxNode) break;
 
                 this.setScriptState("starting", webview)
                 const nearest = await this.findNearestCollection(doc.uri);
@@ -178,9 +188,11 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 const emitEvent = (evt: any) => webview.postMessage({ type: "bru-event", data: evt });
 
                 try {
-                    const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
+
+                    //const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
+                    //const { exports, logs } = await SandboxNode.run(opt, emitEvent);
                     const { code, virtualPath, args, bruContent, when } = msg.data;
-                    const opt: RunOptionsWithFile = {
+                    const opt: RunOptions = {
                         code,
                         virtualPath,
                         args,
@@ -189,12 +201,13 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         extensionUri: this.ctx.extensionUri,
                         bruContent,
                         currentFilePath: doc.uri.fsPath,
-                        scriptStartLine: this.getScriptStart(doc, when)
+                        scriptStartLine: this.getScriptStart(doc, when),
+                        isPre: when === "#script-pre"
                     };
 
 
                     this.setScriptState("running", webview);
-                    const { exports, logs, inbound } = await SandboxNode.run(opt, emitEvent);
+                    const { exports, logs, inbound } = await this.sandboxNode.run(opt, emitEvent);
                     this.currentInbound = inbound;
 
                     this.setScriptState("stopped", webview);
@@ -216,7 +229,10 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "stop-script":
-
+                if (!this.sandboxNode) break;
+                if (this.SandboxState === "running" || this.SandboxState === "starting") {
+                    this.sandboxNode.stop()
+                }
                 break;
         }
     }
@@ -227,6 +243,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         webview: vscode.Webview,
     ) {
         if (!req.uri) return;
+        const t0 = performance.now();
 
         fetch(req.uri, req.init).then(async (res) => {
             const headers: Record<string, string> = {};
@@ -240,6 +257,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                             ? await res.text()
                             : Buffer.from(await res.arrayBuffer()).toString("base64");
 
+                const elapsedMs = performance.now() - t0;        // ← fin cronómetro
+
                 const payload: SerializedResponse = {
                     ok: res.ok,
                     status: res.status,
@@ -248,10 +267,14 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     headers,
                     parsedAs: ct.includes("json") ? "json" : ct.startsWith("text/") ? "text" : "binary",
                     body,
+                    size: humanSize(Number.parseInt(res.headers.get("content-length") || "0"), 2),
+                    time: humanDuration(elapsedMs, 0)
                 };
                 webview.postMessage({ type: "fetch", data: payload });
             }
             else {
+                const elapsedMs = performance.now() - t0;        // ← fin cronómetro
+
                 const payload: SerializedResponse = {
                     ok: res.ok,
                     status: res.status,
@@ -260,10 +283,14 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     headers: headers,
                     parsedAs: "text",
                     body: undefined,
+                    size: humanSize(Number.parseInt(res.headers.get("content-length") || "0"), 2),
+                    time: humanDuration(elapsedMs, 0)
                 };
                 webview.postMessage({ type: "fetch", data: payload });
             }
         }).catch(err => {
+            const elapsedMs = performance.now() - t0;        // ← fin cronómetro
+
             const payload: SerializedResponse = {
                 ok: false,
                 status: 0,
@@ -271,7 +298,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 url: req.uri,
                 headers: {},
                 parsedAs: 'text',
-                body: undefined
+                body: undefined,
+                size: "0B",
+                time: humanDuration(elapsedMs, 0)
             };
             webview.postMessage({ type: 'fetch', data: payload });
         })
@@ -349,6 +378,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     }
 
     private setScriptState(state: ScriptState, webview: vscode.Webview) {
+        const gs = this.ctx.globalState;
+        gs.update("SandboxState", state)
+        this.SandboxState = gs.get<ScriptState>("SandboxState")
         webview.postMessage({ type: "script-state", data: state });
     }
 

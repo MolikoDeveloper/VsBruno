@@ -1,7 +1,5 @@
 export const prelude = /* js */ `
 (function(){
-  globalThis.bruContent = ___BRU_CONTENT___;
-  globalThis.cwd = ___cwd___;
   // Queue outgoing events until host is ready
   const __queue__ = [];
   // Simple event listener registry for incoming events
@@ -65,12 +63,19 @@ export const prelude = /* js */ `
     script_url = "";
     script_timeout = "";
 
-
-    static body = bruContent.body[bruContent.http.body];
+    static body = JSON.parse(bruContent.body[bruContent.http.body]);
     static method = bruContent.http.method.toUpperCase();
+    static headers = bruContent.headers;
+    static url = bruContent.http.url;
+    static timeout = undefined
 
     static setMethod(_method){
-      this.script_method = _method.toUpperCase()
+      if(['GET','POST','PUT','DELETE','PATCH','OPTIONS','HEAD','CONNECT','TRACE'].includes(_method.toUpperCase())){
+        this.script_method = _method.toUpperCase()
+      }
+      else{
+        throw "method " + _method.toUpperCase() + " does not exist"
+      }
     }
 
     static getMethod(){
@@ -78,6 +83,7 @@ export const prelude = /* js */ `
     }
 
     static setBody(_body){
+      if(typeof _body === string) this.script_body = JSON.parse(_body)
       this.script_body = _body
     }
 
@@ -144,5 +150,11 @@ export const prelude = /* js */ `
   globalThis.req = req;
   globalThis.res = res;
   globalThis.__bruQueued = __queue__;
+
+  delete globalThis.bruContent
+  delete globalThis.args
+  delete globalThis.__bruInbound
+  delete globalThis.cwd
+  isPre && delete globalThis.res
 })();
 `;
