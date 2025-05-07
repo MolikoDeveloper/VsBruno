@@ -1,0 +1,14 @@
+[
+    {
+        "resource": "/c:/Users/aarriagadac/Projects/VsBruno/src/sandbox/SandboxNode.ts",
+        "owner": "typescript",
+        "code": "2339",
+        "severity": 8,
+        "message": "Property 'withRawSourceMap' does not exist on type 'SourceMapConsumerConstructor'.",
+        "source": "ts",
+        "startLineNumber": 180,
+        "startColumn": 34,
+        "endLineNumber": 180,
+        "endColumn": 50
+    }
+]

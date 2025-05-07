@@ -42,6 +42,7 @@ const config: BuildOptions = {
   target: "node18",
   outdir: "./dist",
   outbase: "./src",
+  minifySyntax: true,
   outExtension: {
     ".js": ".cjs",
     ".css": ".css"
@@ -60,8 +61,8 @@ const config: BuildOptions = {
     ".ttf": "file"
   },
   logLevel: "info",
-  minify: true,
-  sourcemap: "linked",
+  minify: false,
+  //sourcemap: "",
   define: {
     "process.env.NODE_ENV": "\"production\""
   },

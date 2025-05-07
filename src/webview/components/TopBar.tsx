@@ -17,7 +17,8 @@ export default function () {
             data: {
                 code: bruContent.script.req,
                 args: null,
-                bruContent
+                bruContent,
+                when: "#script-pre"
             }
         })
     }, [bruContent])
@@ -60,7 +61,8 @@ export default function () {
                 args: {
                     bruResponse
                 },
-                bruContent
+                bruContent,
+                when: "#script-post"
             }
         })
     }, [bruResponse])

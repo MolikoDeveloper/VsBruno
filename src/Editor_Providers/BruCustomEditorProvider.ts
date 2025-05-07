@@ -4,13 +4,14 @@ import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBru
 import type { BruFile } from "src/types/bruno/bruno";
 import type { RunOptions } from "src/sandbox/types";
 import { Print } from "src/extension";
+import type { RunOptionsWithFile } from "src/sandbox/SandboxNode";
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type WebviewMsg =
     | { type: "edit"; data: BruFile }
     | { type: "init" }
     | { type: "fetch"; data: { uri: string; init?: RequestInit } }
-    | { type: "run-script"; data: { code: string; virtualPath?: string; args: any, bruContent: BruFile } }
+    | { type: "run-script"; data: { code: string; virtualPath?: string; args: any, bruContent: BruFile, when: "#script-pre" | "#script-post" } }
     | { type: "bru-get-reply"; data: { id: string; payload: any } }
     | { type: "stop-script" };
 
@@ -178,15 +179,17 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
                 try {
                     const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
-                    const { code, virtualPath, args, bruContent } = msg.data;
-                    const opt: RunOptions = {
+                    const { code, virtualPath, args, bruContent, when } = msg.data;
+                    const opt: RunOptionsWithFile = {
                         code,
                         virtualPath,
                         args,
                         collectionRoot: vscode.Uri.joinPath(vscode.Uri.parse(nearest?.uri ?? ""), ".."),
                         resolveDir: vscode.Uri.joinPath(doc.uri, "..").fsPath,
                         extensionUri: this.ctx.extensionUri,
-                        bruContent
+                        bruContent,
+                        currentFilePath: doc.uri.fsPath,
+                        scriptStartLine: this.getScriptStart(doc, when)
                     };
 
 
@@ -347,5 +350,14 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
     private setScriptState(state: ScriptState, webview: vscode.Webview) {
         webview.postMessage({ type: "script-state", data: state });
+    }
+
+    private getScriptStart(doc: vscode.TextDocument, when: "#script-pre" | "#script-post"): number {
+        const marker = when === "#script-pre" ? "script:pre-request" : "script:post-response";
+        const lines = doc.getText().split(/\r?\n/);
+        const idx = lines.findIndex(l => l.trimStart().startsWith(marker));
+        if (idx === -1) return 1;              // fallback
+        // El código real empieza en la línea siguiente al marcador
+        return idx + 2;                        // +1 para pasar a 1‑based y otra +1 para la siguiente línea
     }
 }

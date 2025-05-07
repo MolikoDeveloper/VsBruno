@@ -17,5 +17,7 @@ body:json {
 }
 
 script:pre-request {
-  console.log(bru.cwd())
+  import {name} from "./src/users.json"
+  
+  console.log(name)
 }

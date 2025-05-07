@@ -8,7 +8,6 @@ export interface RunOptions {
     collectionRoot: vscode.Uri;
     resolveDir: string;
     args: any;
-    extensionUri: vscode.Uri;
     bruContent: any;
 }
 

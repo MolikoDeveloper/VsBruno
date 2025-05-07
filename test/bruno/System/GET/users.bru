@@ -14,6 +14,10 @@ auth:bearer {
   token: 4ZaF7hdEgNn43KSvyezkTQ==
 }
 
+script:pre-request {
+  console.log(__dirname)
+}
+
 docs {
   # `GET` System users
   

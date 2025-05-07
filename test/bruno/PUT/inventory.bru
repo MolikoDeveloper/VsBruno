@@ -39,6 +39,13 @@ vars:post-response {
   b: c
 }
 
+script:pre-request {
+  import getUsers from "./src/getuser.ts"
+  
+  
+  log(getUsers())
+}
+
 docs {
   # `POST` products
   

@@ -12,6 +12,7 @@
       "src/types",
       "node_modules/@types"
     ],
+    "importHelpers": true,
     "target": "ESNext",
     "baseUrl": ".",
     "module": "ESNext",

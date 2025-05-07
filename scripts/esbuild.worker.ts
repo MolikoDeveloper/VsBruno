@@ -5,11 +5,10 @@ const workerConfig: BuildOptions = {
     outdir: "dist/sandbox",
     bundle: true,
     platform: "browser",
-    format: "esm",
+    format: "iife",
     target: "es2020",
-    //external: ["esbuild-wasm"],            // se cargará via importScripts
-    //plugins: [copyWasm()],                 // copia esbuild.wasm y prelude
-    sourcemap: "linked"
+    minify: true,
+    sourcemap: "inline"
 };
 
 export default workerConfig;

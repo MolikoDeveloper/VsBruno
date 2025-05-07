@@ -149,7 +149,6 @@ function watcher_(ctx: vscode.ExtensionContext) {
     let lastFilepath: string;
 
     watchFolders(dirs, (_event, filepath) => {
-      console.log(_event)
       lastFilepath = filepath;
       // reset timer on each event
       if (reloadTimer) {
