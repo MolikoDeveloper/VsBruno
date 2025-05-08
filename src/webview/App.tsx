@@ -10,6 +10,7 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
+import { loader } from "@monaco-editor/react";
 
 type msg = {
     type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
@@ -70,6 +71,13 @@ export default function () {
         return () => {
             window.removeEventListener("message", listener)
         }
+    }, [])
+
+    //monaco loader.
+    useEffect(() => {
+        loader.config({
+            paths: { vs: (globalThis as any).MONACO_BASE_PATH },
+        });
     }, [])
 
     // on everyChange

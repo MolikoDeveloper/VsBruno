@@ -1,12 +1,17 @@
 import esbuild from "esbuild";
-import main from "./esbuild.main.js";
+import { buildExtension, buildWebview } from "./esbuild.main.js";
 import worker from "./esbuild.worker.js";
+import { buildGlobalReact } from './build-global-react.js';
+
 
 await Promise.all([
-    esbuild.build(main),
-    esbuild.build(worker)
+    esbuild.build(buildExtension),
+    esbuild.build(buildWebview),
+    esbuild.build(worker),
 ]).catch((err) => {
     console.log(err)
 
     process.exit(1)
 })
+
+await buildGlobalReact();

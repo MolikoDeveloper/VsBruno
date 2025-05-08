@@ -310,25 +310,43 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     /* ──────────────────────────── Utils UI & FS ───────────────────────────── */
     private html(webview: vscode.Webview): string {
         const cssUri = this.getUri(webview, ["dist", "tailwind.css"]);
-        const scriptUri = this.getUri(webview, ["dist", "webview", "HydrateBruno.cjs"]);
-        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.cjs"]);
+
+        const reactUri = this.getUri(webview, ['dist', 'vendor', 'react', 'react.global.js']);
+        const reactDomUri = this.getUri(webview, ['dist', 'vendor', 'react', 'react-dom.global.js']);
+        const reactDomClient = this.getUri(webview, ['dist', 'vendor', 'react', 'react-dom.client.global.js']);
+        const hydrate = this.getUri(webview, ["dist", "webview", "HydrateBruno.js"]);
+        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.js"]);
+        const monaco = this.getUri(webview, ["dist", "vendor", "monaco-editor", "vs"]);
+
+        //allow certain inline script
+        const nonce = crypto.randomUUID().replace(/-/g, '');
 
         return /*html*/ `
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'none';
-    img-src ${webview.cspSource} data:;
-    style-src ${webview.cspSource} 'unsafe-inline';
-    script-src ${webview.cspSource};
-  "/>
-  <link rel="stylesheet" href="${cssUri}" />
-  <title>.bru Editor</title>
-</head><body>
-  <div id="root"></div>
-  <script src="${hlUri}" crossorigin></script>
-  <script src="${scriptUri}"></script>
-</body></html>`;
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Security-Policy" content="
+            default-src 'none';
+            script-src ${webview.cspSource} 'nonce-${nonce}';
+            style-src  ${webview.cspSource} 'unsafe-inline';
+            img-src    ${webview.cspSource} data:;
+            "/>
+        <link rel="stylesheet" href="${cssUri}" />
+        
+    </head>
+    <body>
+        <div id="root"></div>
+        <script nonce=${nonce}>
+            globalThis.MONACO_BASE_PATH = '${monaco}';
+        </script>
+        <script src="${reactUri}"></script>
+        <script src="${reactDomUri}"></script>
+        <script src="${reactDomClient}"></script>
+        <script src="${hlUri}" crossorigin></script>
+        <script src="${hydrate}"></script>
+    </body>
+</html>`;
     }
 
     private getUri(webview: vscode.Webview, path: string[]) {

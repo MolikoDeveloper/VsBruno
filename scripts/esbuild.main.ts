@@ -1,57 +1,40 @@
 import postCssPlugin from 'esbuild-style-plugin'
 import type { BuildOptions } from "esbuild";
+import { copyMonacoAssetsPlugin } from './plugins/copy';
+import path from "path"
 
-const banner = `
-/*
-MIT License
-
-Copyright (c) 2025 MolikoDev
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-`
-
-const config: BuildOptions = {
-  entryPoints: [
-    "./src/extension.ts",
-    "./src/webview/HydrateBruno.tsx",
-    "./src/webview/HydrateCollection.tsx",
-    "./src/webview/HydrateEnvironments.tsx",
-    "./src/tailwind.css",
-    "./src/common/highlight.min.cjs"
-  ],
-  //minify: true,
+export const buildExtension: BuildOptions = {
+  entryPoints: ['./src/extension.ts'],
   bundle: true,
-  platform: "node", // "node" | "browser"
-  target: "node18",
+  platform: 'node',
+  format: 'cjs',
+  target: 'node18',
+  outfile: 'dist/extension.cjs',
+  external: ['vscode', 'fsevents'],
+};
+
+const webviewEntryPoints = [
+  "./src/webview/HydrateBruno.tsx",
+  "./src/webview/HydrateCollection.tsx",
+  "./src/webview/HydrateEnvironments.tsx",
+  "./src/tailwind.css",
+  "./src/common/highlight.min.cjs"
+];
+
+
+export const buildWebview: BuildOptions = {
+  entryPoints: webviewEntryPoints,
+  bundle: true,
+  platform: "browser",
+  target: ['chrome96', 'firefox112'],
   outdir: "./dist",
   outbase: "./src",
-  minifySyntax: true,
-  outExtension: {
-    ".js": ".cjs",
-    ".css": ".css"
-  },
-  "banner": {
-    //js: banner
-  },
   format: "cjs",
-  external: ["vscode", "fsevents"],
+  external: [
+    "react",
+    "react-dom",
+    "react-dom/client"
+  ],
   loader: {
     ".ts": "ts",
     ".js": "js",
@@ -60,11 +43,8 @@ const config: BuildOptions = {
     ".css": "css",
     ".ttf": "file"
   },
-  logLevel: "info",
-  minify: false,
-  //sourcemap: "",
   define: {
-    "process.env.NODE_ENV": "\"production\""
+    "process.env.NODE_ENV": '"DEBUG"'
   },
   plugins: [
     postCssPlugin({
@@ -72,15 +52,24 @@ const config: BuildOptions = {
         plugins: [require('@tailwindcss/postcss')],
       }
     }),
+    copyMonacoAssetsPlugin({
+      src: "node_modules/monaco-editor/min/vs",
+      dest: "dist/vendor/monaco-editor/vs"
+    }),
   ],
   alias: {
     "style-mod": require.resolve("src/vendor/style-mod/src/style-mod.js"),
     "@lezer/common": require.resolve("src/vendor/@lezer/common/dist/index.js"),
     "@lezer/highlight": require.resolve("src/vendor/@lezer/highlight/dist/index.js"),
     "@codemirror/view": require.resolve("src/vendor/@codemirror/view/dist/index.js"),
-    "rollup": require.resolve("src/vendor/rollup/dist/rollup.js")
+    "rollup": require.resolve("src/vendor/rollup/dist/rollup.js"),
+    "react": path.resolve("src/vendor/react/react-global-shim.ts"),
+    "react-dom": path.resolve("src/vendor/react/react-dom-global-shim.ts"),
+    "react-dom/client": path.resolve("src/vendor/react/react-dom-client-shim.ts"),
+    "react/jsx-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts"),
+    "react/jsx-dev-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts",
+    )
   }
 };
 
-export default config;
 

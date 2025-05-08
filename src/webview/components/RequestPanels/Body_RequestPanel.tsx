@@ -1,10 +1,11 @@
 import CodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
+import Editor from '@monaco-editor/react'
 import { useBruContent } from 'src/webview/context/BruProvider';
 import { xmlLanguage } from '@codemirror/lang-xml';
 import { LanguageSupport } from '@codemirror/language';
 import type { BruBody } from 'src/types/bruno/bruno';
 import { useLayoutEffect, useRef, useState } from 'react';
+import { vsTheme } from 'src/webview/common/VSTheme';
 
 type Mime = {
     name: string,
@@ -84,6 +85,8 @@ const mimes: Mime[] = [
 ]
 
 export default function () {
+    //const monaco = useMonaco();
+
     const { bruContent, setBruContent } = useBruContent();
     const xmlBare = new LanguageSupport(xmlLanguage);
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -139,9 +142,9 @@ export default function () {
             <div className="w-full h-full" ref={containerRef}>
                 {
                     {
-                        "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,
-                        "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={'dark'} lang='plainText' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
-                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={'dark'} lang='xml' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
+                        "json": <Editor defaultLanguage='json' />,
+                        "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={vsTheme} lang='plainText' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
+                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={vsTheme} lang='xml' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
                         "sparql": <></>,
                         "graphql": <></>,
                         "graphqlVars": <></>,
@@ -155,3 +158,13 @@ export default function () {
         </div>
     )
 }
+/*<CodeMirror basicSetup={{
+                            "allowMultipleSelections": true,
+                            "autocompletion": true,
+                            "tabSize": 2
+                        }}
+                            editable
+                            contentEditable="true"
+                            value={bruContent?.body?.json} extensions={[json()]}
+                            theme={vsTheme} lang='json' height={height}
+                            onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,*/

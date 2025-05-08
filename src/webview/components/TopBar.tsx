@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { vscode } from "src/common/vscodeapi";
-import type { HttpMethod } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider";
 import { useTimelineContext } from "../context/TimeLineProvider";
 import type { TimelineEvent_t } from "src/types/shared";
+import type { HttpMethod } from "src/types/bruno/bruno";
+import { parseBruVars } from "src/common/parseBruVars";
 
 export default function () {
     const { bruContent, setBruContent, bruResponse, setBruResponse } = useBruContent();
@@ -11,6 +12,7 @@ export default function () {
     const httpMethods = ["get", "post", "put", "delete", "patch", "options", "head", "connect", "trace"];
 
     const runRequestScript = useCallback(() => {
+        console.log(parseBruVars(bruContent, bruContent?.vars?.req, { exclude: ["script", "assertions", "tests"], only: [] }))
         if (!bruContent?.script?.req) return;
         vscode.postMessage({
             type: "run-script",

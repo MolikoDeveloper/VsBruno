@@ -55,7 +55,7 @@ export default function () {
         setBruContent(prev => {
             if (!prev?.vars?.res || !isValidIndex(prev.vars.res, index)) return prev;
 
-            const updatedReq = prev.vars.res.map((v, i) =>
+            const updatedRes = prev.vars.res.map((v, i) =>
                 i === index ? { ...v, [key]: value } : v
             );
 
@@ -63,7 +63,7 @@ export default function () {
                 ...prev,
                 vars: {
                     ...prev.vars,
-                    res: updatedReq,
+                    res: updatedRes,
                 },
             };
         });
@@ -103,7 +103,7 @@ export default function () {
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
                                         style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
                                         onChange={(ev) => {
-                                            updateReqVar(i, "name", ev.target.value)
+                                            updateReqVar(i, "name", ev.currentTarget.value)
                                         }}></input>
                                 </td>
                                 <td>
@@ -137,17 +137,14 @@ export default function () {
                 <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline"
                     onClick={() => {
                         const blankVariable: BruVars = {
-                            enabled: true,     // o false, como prefieras
+                            enabled: true,
                             name: "",
                             value: "",
                             local: false
                         };
                         setBruContent(prev => ({
                             ...prev,
-                            vars: {
-                                ...prev?.vars,
-                                req: [...prev?.vars?.req!, blankVariable]
-                            }
+                            vars: { ...prev?.vars, req: [...prev?.vars?.req || [], blankVariable] }
                         }))
                     }}>+&nbsp;<span>Add</span></button>
             </div>
@@ -167,7 +164,7 @@ export default function () {
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
                                         style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
                                         onChange={(ev) => {
-                                            updateResVar(i, "name", ev.target.value)
+                                            updateResVar(i, "name", ev.currentTarget.value)
                                         }}></input>
                                 </td>
                                 <td>

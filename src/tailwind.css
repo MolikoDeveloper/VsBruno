@@ -78,8 +78,13 @@ body {
     border-color: var(--vscode-editorWidget-border);
 }
 
+
 .CM-Table .ͼ2 .cm-content {
     caret-color: aqua;
+}
+
+.ͼ4 .cm-line {
+    caret-color: aqua !important;
 }
 
 .CM-Table .cm-tooltip {
