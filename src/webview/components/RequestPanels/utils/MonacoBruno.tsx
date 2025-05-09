@@ -103,6 +103,7 @@ export default function ({
 
     return (
         <iframe
+            src="monaco-host.html"
             ref={iframeRef}
             sandbox="allow-scripts"
             srcDoc={srcDoc}
