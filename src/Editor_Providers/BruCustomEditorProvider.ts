@@ -69,6 +69,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
          * @alias 3 HightContrast
          */
         this.setupWebviewPanel(panel);
+        this.sendCurrentThemeToWebview(panel)
 
         const { webview } = panel;
         webview.options = { enableScripts: true };

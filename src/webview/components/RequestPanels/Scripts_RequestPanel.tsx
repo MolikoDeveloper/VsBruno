@@ -1,9 +1,10 @@
-import { useBruContent } from 'src/webview/context/BruProvider';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { useBruContent } from "src/webview/context/BruProvider";
+import MonacoBruno from "./utils/MonacoBruno";
+import { useEditorConfig } from "src/webview/context/EditorProvider";
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
+    const { themeKind } = useEditorConfig()
 
     return (
         <section className="flex flex-col flex-1 overflow-hidden pb-4">
@@ -12,17 +13,16 @@ export default function () {
                 <p className="text-xs text-[--var(--vscode-tab-inactiveForeground)]">
                     Pre Request
                 </p>
-                <CodeMirror
-                    className="flex-1"
-                    value={bruContent?.script?.req}
-                    extensions={[javascript()]}
-                    theme="dark"
-                    lang="javascript"
-                    height="100%"
-                    onChange={val =>
+                <MonacoBruno
+                    value={bruContent?.script?.req || ""}
+                    path="file:///pre/index.ts"
+                    globals={`declare const bru: any; declare const req: string;`}
+                    theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? "vs" : "hc-black"}
+                    monacoBasePath={(globalThis as any).MONACO_BASE_PATH} // inyectado desde global o desde el provider
+                    onChange={(val) =>
                         setBruContent(prev => ({
                             ...prev,
-                            script: { ...prev?.script!, req: val.trim() }
+                            script: { ...prev?.script!, req: val },
                         }))
                     }
                 />
@@ -33,17 +33,16 @@ export default function () {
                 <p className="text-xs text-[--var(--vscode-tab-inactiveForeground)]">
                     Post Response
                 </p>
-                <CodeMirror
-                    className="flex-1"
-                    value={bruContent?.script?.res}
-                    extensions={[javascript()]}
-                    theme="dark"
-                    lang="javascript"
-                    height="100%"
-                    onChange={val =>
+                <MonacoBruno
+                    value={bruContent?.script?.res || ""}
+                    path="file:///post/index.ts"
+                    globals={`declare const bru: any; declare const req: string; declare const res: string;`}
+                    theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? "vs" : "hc-black"}
+                    monacoBasePath={(globalThis as any).MONACO_BASE_PATH} // inyectado desde global o desde el provider
+                    onChange={(val) =>
                         setBruContent(prev => ({
                             ...prev,
-                            script: { ...prev?.script!, res: val.trim() }
+                            script: { ...prev?.script!, res: val },
                         }))
                     }
                 />

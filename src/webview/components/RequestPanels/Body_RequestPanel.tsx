@@ -1,10 +1,7 @@
-import CodeMirror from '@uiw/react-codemirror';
 import Editor from '@monaco-editor/react'
 import { useBruContent } from 'src/webview/context/BruProvider';
-import { xmlLanguage } from '@codemirror/lang-xml';
-import { LanguageSupport } from '@codemirror/language';
 import type { BruBody } from 'src/types/bruno/bruno';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEditorConfig } from 'src/webview/context/EditorProvider';
 
 type Mime = {
@@ -88,11 +85,19 @@ export default function () {
     //const monaco = useMonaco();
 
     const { bruContent, setBruContent } = useBruContent();
-    const xmlBare = new LanguageSupport(xmlLanguage);
+    //const xmlBare = new LanguageSupport(xmlLanguage);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [height, setHeight] = useState<string>('0px');
-    const { themeKind } = useEditorConfig()
+    const { themeKind } = useEditorConfig();
+    const [bodyKey, setBodyKey] = useState<string>("none");
+    const [bodyValue, setbodyValue] = useState("");
 
+    //const { key: bodyKey, value: bodyValue } = getBodyContentKeyAndValue(bruContent);
+    useEffect(() => {
+        const { key, value } = getBodyContentKeyAndValue(bruContent);
+        setBodyKey(key)
+        setbodyValue(value);
+    }, [bruContent])
 
     useLayoutEffect(() => {
         const update = () => {
@@ -140,43 +145,43 @@ export default function () {
                 <button className="ml-1 cursor-pointer">Prettify</button>
             </div>
             <div className="w-full h-full" ref={containerRef}>
+                {["json", "text", "xml", "sparql", "ldjson"].includes(bruContent?.http?.body!) && (
+                    <Editor
+                        theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
+                        language={bodyKey} height={height} options={{ minimap: { 'enabled': false } }}
+                        value={bodyValue}
+                        onChange={(value, ev) => {
+                            if (!bodyKey) return;
+                            setBruContent(prev => ({
+                                ...prev!,
+                                body: { ...prev?.body, [bodyKey]: value?.trim() || "" }
+                            }));
+                        }}
+                        path=''
+                    />
+                )}
                 {
                     {
-                        "json": <Editor
-                            theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
-                            language='json' height={height} options={{ minimap: { 'enabled': false } }}
-                            value={bruContent?.body?.json}
-                            onChange={(value, ev) => {
-                                setBruContent(prev => ({ ...prev, body: { ...prev?.body, json: value?.trim() } }))
-                            }} />,
-                        "text": <Editor
-                            theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
-                            language="auto" height={height} options={{ minimap: { 'enabled': false } }}
-                            value={bruContent?.body?.text}
-                            onChange={(value, ev) => {
-                                setBruContent(prev => ({ ...prev, body: { ...prev?.body, text: value?.trim() } }))
-                            }} />,
-                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={"dark"} lang='xml' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
-                        "sparql": <></>,
-                        "graphql": <></>,
-                        "graphqlVars": <></>,
-                        "formUrlEncoded": <></>,
-                        "multipartForm": <></>,
-                        "file": <></>,
-                        "none": <></>
-                    }[bruContent?.http?.body as string]
+                        "graphql": <>WIP</>,
+                        "graphqlVars": <>WIP</>,
+                        "form-url-encoded": <>WIP</>,
+                        "multipartForm": <>WIP</>,
+                        "file": <>WIP</>,
+                        "none": <>WIP</>
+                    }[bruContent?.http?.body as string || "none"]
                 }
             </div>
         </div>
     )
 }
-/*<CodeMirror basicSetup={{
-                            "allowMultipleSelections": true,
-                            "autocompletion": true,
-                            "tabSize": 2
-                        }}
-                            editable
-                            contentEditable="true"
-                            value={bruContent?.body?.json} extensions={[json()]}
-                            theme={vsTheme} lang='json' height={height}
-                            onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,*/
+
+function getBodyContentKeyAndValue(bruContent: any): { key: string, value: string } {
+    const bodyType = bruContent?.http?.body;
+    if (!bodyType || bodyType === "none") return { key: "", value: "" };
+
+    const content = bruContent?.body?.[bodyType];
+    return {
+        key: bodyType || "",
+        value: typeof content === "string" ? content : JSON.stringify(content, null, 2) || ""
+    };
+}

@@ -23,7 +23,8 @@ type providerMsg =
     { type: "bru-event", data: { type: string; payload: any } } |
     { type: "script-error", data: any } |
     { type: "script-result", data: any } |
-    { type: "script-state", data: any }
+    { type: "script-state", data: any } |
+    { type: "vscode-theme-data", data: { base: string, colors: any, tokenColors: any } }
 
 export default function () {
     const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent();
@@ -80,6 +81,9 @@ export default function () {
                     break;
                 case "theme":
                     setThemeKind(message.data)
+                    break;
+                case "vscode-theme-data":
+                    console.log(message.data)
                     break;
                 default:
                     //console.log(message);

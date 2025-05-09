@@ -13,7 +13,7 @@ post {
 body:json {
   {
     "count": 1302,
-    "saludo": "{{saludo}}", 
+    "saludo": "{{saludo}}",
     "next": "https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20",
     "previous": true,
     "results": [
@@ -101,6 +101,24 @@ body:json {
   }
 }
 
+body:text {
+  hola!
+}
+
+body:xml {
+  <init>
+      <auth>none</auth>
+  </init>
+}
+
 vars:pre-request {
   saludo: hola!
+}
+
+script:pre-request {
+  req
+}
+
+script:post-response {
+  res
 }
