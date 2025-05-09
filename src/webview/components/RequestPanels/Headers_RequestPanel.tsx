@@ -40,7 +40,7 @@ export default function () {
                     </thead>
                     <tbody>
                         {bruContent?.headers?.map((h, i) => (
-                            <tr>
+                            <tr key={i}>
                                 <td className="w-[30%]">
                                     <ReactCodeMirror value={h.name} extensions={headersAutocomplete} theme="none" basicSetup={false} editable className="CM-Table w-available" onChange={(e) => updateParam(i, 'name', e)} />
                                 </td>

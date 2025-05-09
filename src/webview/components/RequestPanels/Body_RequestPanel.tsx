@@ -1,10 +1,8 @@
-import CodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
+import Editor from '@monaco-editor/react'
 import { useBruContent } from 'src/webview/context/BruProvider';
-import { xmlLanguage } from '@codemirror/lang-xml';
-import { LanguageSupport } from '@codemirror/language';
 import type { BruBody } from 'src/types/bruno/bruno';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEditorConfig } from 'src/webview/context/EditorProvider';
 
 type Mime = {
     name: string,
@@ -84,11 +82,22 @@ const mimes: Mime[] = [
 ]
 
 export default function () {
+    //const monaco = useMonaco();
+
     const { bruContent, setBruContent } = useBruContent();
-    const xmlBare = new LanguageSupport(xmlLanguage);
+    //const xmlBare = new LanguageSupport(xmlLanguage);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [height, setHeight] = useState<string>('0px');
+    const { themeKind } = useEditorConfig();
+    const [bodyKey, setBodyKey] = useState<string>("none");
+    const [bodyValue, setbodyValue] = useState("");
 
+    //const { key: bodyKey, value: bodyValue } = getBodyContentKeyAndValue(bruContent);
+    useEffect(() => {
+        const { key, value } = getBodyContentKeyAndValue(bruContent);
+        setBodyKey(key)
+        setbodyValue(value);
+    }, [bruContent])
 
     useLayoutEffect(() => {
         const update = () => {
@@ -112,8 +121,7 @@ export default function () {
                 <div className="inline-flex items-center cursor-pointer">
                     <div className="text-amber-300 flex items-center justify-center py-1 select-none selected-body-mode" aria-expanded="false">
                         <select className="bg-transparent text-amber-400 py-1 [&>*]:bg-[var(--vscode-input-background)]"
-                            value={bruContent?.http?.body} style={{ outline: 0 }}
-                            defaultValue="none"
+                            value={bruContent?.http?.body || "none"} style={{ outline: 0 }}
                             onChange={(e) => {
                                 const val = e.currentTarget.value as BruBody;
                                 setBruContent(prev => ({
@@ -137,21 +145,43 @@ export default function () {
                 <button className="ml-1 cursor-pointer">Prettify</button>
             </div>
             <div className="w-full h-full" ref={containerRef}>
+                {["json", "text", "xml", "sparql", "ldjson"].includes(bruContent?.http?.body!) && (
+                    <Editor
+                        theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
+                        language={bodyKey} height={height} options={{ minimap: { 'enabled': false } }}
+                        value={bodyValue}
+                        onChange={(value, ev) => {
+                            if (!bodyKey) return;
+                            setBruContent(prev => ({
+                                ...prev!,
+                                body: { ...prev?.body, [bodyKey]: value?.trim() || "" }
+                            }));
+                        }}
+                        path=''
+                    />
+                )}
                 {
                     {
-                        "json": <CodeMirror value={bruContent?.body?.json} extensions={[json()]} theme={'dark'} lang='json' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, json: val.trim() } })) }} />,
-                        "text": <CodeMirror value={bruContent?.body?.text} extensions={[]} theme={'dark'} lang='plainText' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, text: val.trim() } })) }} />,
-                        "xml": <CodeMirror value={bruContent?.body?.xml} extensions={[xmlBare]} theme={'dark'} lang='xml' height={height} onChange={(val, viewUpdate) => { setBruContent(prev => ({ ...prev, body: { ...prev?.body!, xml: val.trim() } })) }} />,
-                        "sparql": <></>,
-                        "graphql": <></>,
-                        "graphqlVars": <></>,
-                        "formUrlEncoded": <></>,
-                        "multipartForm": <></>,
-                        "file": <></>,
-                        "none": <></>
-                    }[bruContent?.http?.body as string]
+                        "graphql": <>WIP</>,
+                        "graphqlVars": <>WIP</>,
+                        "form-url-encoded": <>WIP</>,
+                        "multipartForm": <>WIP</>,
+                        "file": <>WIP</>,
+                        "none": <>WIP</>
+                    }[bruContent?.http?.body as string || "none"]
                 }
             </div>
         </div>
     )
+}
+
+function getBodyContentKeyAndValue(bruContent: any): { key: string, value: string } {
+    const bodyType = bruContent?.http?.body;
+    if (!bodyType || bodyType === "none") return { key: "", value: "" };
+
+    const content = bruContent?.body?.[bodyType];
+    return {
+        key: bodyType || "",
+        value: typeof content === "string" ? content : JSON.stringify(content, null, 2) || ""
+    };
 }

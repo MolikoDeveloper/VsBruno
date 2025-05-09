@@ -5,6 +5,8 @@ import type { BruFile } from "src/types/bruno/bruno";
 import { Print } from "src/extension";
 import type { RunOptions, Sandbox } from "src/sandbox/types";
 import { humanDuration, humanSize } from "src/common/humanSize";
+import * as path from 'path';
+import * as fs from 'fs';
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type WebviewMsg =
@@ -21,6 +23,8 @@ type ScriptState =
     | "running"   // dentro de Sandbox.run(...)  
     | "stopping"  // al recibir stop-script  
     | "stopped";  // ejecución finalizada o interrumpida  
+
+const prod = process.env.NODE_ENV === 'production';
 
 /* ──────────────────────── Clase principal del editor ─────────────────────── */
 export default class BruCustomEditorProvider implements vscode.CustomTextEditorProvider {
@@ -58,6 +62,14 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
             //await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.environmentEditor');
             return;
         }
+
+        /**
+         * @alias 1 Light
+         * @alias 2 Dark
+         * @alias 3 HightContrast
+         */
+        this.setupWebviewPanel(panel);
+        this.sendCurrentThemeToWebview(panel)
 
         const { webview } = panel;
         webview.options = { enableScripts: true };
@@ -310,25 +322,69 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     /* ──────────────────────────── Utils UI & FS ───────────────────────────── */
     private html(webview: vscode.Webview): string {
         const cssUri = this.getUri(webview, ["dist", "tailwind.css"]);
-        const scriptUri = this.getUri(webview, ["dist", "webview", "HydrateBruno.cjs"]);
-        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.cjs"]);
+        const reactUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react.production.min.js" : "react.development.js"}`]);
+        const reactDomUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react-dom.production.min.js" : "react-dom.development.js"}`]);
+        const hydrate = this.getUri(webview, ["dist", "webview", "HydrateBruno.js"]);
+        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.js"]);
+        const monaco = this.getUri(webview, ["dist", "vendor", "monaco-editor", "vs"]);
+
+        //allow certain inline script
+        const nonce = crypto.randomUUID().replace(/-/g, '');
 
         return /*html*/ `
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'none';
-    img-src ${webview.cspSource} data:;
-    style-src ${webview.cspSource} 'unsafe-inline';
-    script-src ${webview.cspSource};
-  "/>
-  <link rel="stylesheet" href="${cssUri}" />
-  <title>.bru Editor</title>
-</head><body>
-  <div id="root"></div>
-  <script src="${hlUri}" crossorigin></script>
-  <script src="${scriptUri}"></script>
-</body></html>`;
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Security-Policy" content="
+            default-src 'none';
+            script-src ${webview.cspSource} 'nonce-${nonce}';
+            style-src  ${webview.cspSource} 'unsafe-inline';
+            img-src    ${webview.cspSource} data:;
+            "/>
+        <link rel="stylesheet" href="${cssUri}" />
+        
+    </head>
+    <body>
+        <div id="root"></div>
+        <script nonce=${nonce}>
+            globalThis.MONACO_BASE_PATH = '${monaco}';
+        </script>
+        <script src="${reactUri}"></script>
+        <script src="${reactDomUri}"></script>
+        <script src="${hlUri}" crossorigin></script>
+        <script src="${hydrate}"></script>
+    </body>
+</html>`;
+    }
+
+    private async sendCurrentThemeToWebview(panel: vscode.WebviewPanel) {
+        const config = vscode.workspace.getConfiguration();
+        const currentTheme = config.get<string>('workbench.colorTheme');
+        const extensions = vscode.extensions.all;
+
+        for (const ext of extensions) {
+            const contributes = ext.packageJSON?.contributes;
+            if (!contributes?.themes) continue;
+
+            for (const theme of contributes.themes) {
+                if (theme.label === currentTheme) {
+                    const themePath = path.join(ext.extensionPath, theme.path);
+                    const content = JSON.parse(fs.readFileSync(themePath, 'utf8'));
+
+                    panel.webview.postMessage({
+                        type: 'vscode-theme-data',
+                        data: {
+                            base: theme.uiTheme ?? 'vs-dark',
+                            colors: content.colors ?? {},
+                            tokenColors: content.tokenColors ?? [],
+                        }
+                    });
+
+                    return;
+                }
+            }
+        }
     }
 
     private getUri(webview: vscode.Webview, path: string[]) {
@@ -391,5 +447,28 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         if (idx === -1) return 1;              // fallback
         // El código real empieza en la línea siguiente al marcador
         return idx + 2;                        // +1 para pasar a 1‑based y otra +1 para la siguiente línea
+    }
+
+    private setupWebviewPanel(panel: vscode.WebviewPanel) {
+        const sendTheme = () => {
+            const themeKind = vscode.window.activeColorTheme.kind;
+            panel.webview.postMessage({
+                type: 'theme',
+                data: themeKind, // 1: Light, 2: Dark, 3: High contrast
+            });
+        };
+
+        sendTheme(); // inicial
+
+        vscode.window.onDidChangeActiveColorTheme(() => {
+            sendTheme();
+        });
+
+        // Listener desde la WebView si necesitas handshake
+        panel.webview.onDidReceiveMessage(msg => {
+            if (msg.type === 'get-theme') {
+                sendTheme();
+            }
+        });
     }
 }

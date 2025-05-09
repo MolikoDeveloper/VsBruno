@@ -200,9 +200,9 @@ function App() {
         return (
             <>
                 <div className="flex flex-wrap gap-1 select-none">
-                    {LEFT_TABS.map((id) => (
+                    {LEFT_TABS.map((id, key) => (
                         <Tag
-                            key={id}
+                            key={key}
                             title={id[0].toUpperCase() + id.slice(1)}
                             id={`L_tab_${id}`}
                             active={L_activeTab === `L_tab_${id}`}

@@ -16,7 +16,7 @@ const tabs = ["Params", "Body", "Headers", "Auth", "Vars", "Script", "Assert", "
 
 export default function ({ className }: Props) {
     const { bruContent } = useBruContent();
-    const [currentTab, setCurrentTab] = useState<string>("Params");
+    const [currentTab, setCurrentTab] = useState<string>("Body");
 
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]";
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]";
@@ -33,14 +33,14 @@ export default function ({ className }: Props) {
                         <>{
                             {
                                 "Params": <sup className="ml-1 font-medium">{bruContent?.params?.length || ""}</sup>,
-                                "Body": <sup className="ml-1 font-medium">{bruContent?.body?.json && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                "Body": <sup className="ml-1 font-medium">{bruContent?.body?.json && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" strokeWidth="0" fill="currentColor"></path></svg>}</sup>,
                                 "Headers": <sup className="ml-1 font-medium">{bruContent?.headers?.length || ""}</sup>,
-                                "Auth": <sup className="ml-1 font-medium">{(bruContent?.http?.auth !== "none" as any) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                "Auth": <sup className="ml-1 font-medium">{(bruContent?.http?.auth !== "none" as any) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" strokeWidth="0" fill="currentColor"></path></svg>}</sup>,
                                 "Vars": <sup className="ml-1 font-medium">{((bruContent?.vars?.req?.length || 0) + (bruContent?.vars?.res?.length || 0)) || ""}</sup>,
-                                "Script": <sup className="ml-1 font-medium">{(bruContent?.script?.req?.length || 0) + (bruContent?.script?.res?.length || 0) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                "Script": <sup className="ml-1 font-medium">{(bruContent?.script?.req?.length || 0) + (bruContent?.script?.res?.length || 0) && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" strokeWidth="0" fill="currentColor"></path></svg>}</sup>,
                                 "Assert": <sup className="ml-1 font-medium">{Object.keys(bruContent?.assert ?? {}).length || ""}</sup>,
                                 "Test": <></>,
-                                "Docs": <sup className="ml-1 font-medium">{bruContent?.docs && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>}</sup>,
+                                "Docs": <sup className="ml-1 font-medium">{bruContent?.docs && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" strokeWidth="0" fill="currentColor"></path></svg>}</sup>,
                             }[t]
                         }</>
                     </div>

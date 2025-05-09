@@ -1,15 +1,17 @@
 import esbuild from "esbuild";
-import main from "./esbuild.main.js";
+import { buildExtension, buildWebview } from "./esbuild.main.js";
 import worker from "./esbuild.worker.js";
 
 try {
-  const [ctxMain, ctxWorker] = await Promise.all([
-    esbuild.context(main),
+  const [ctxExt, ctxWeb, ctxWorker] = await Promise.all([
+    esbuild.context(buildExtension),
+    esbuild.context(buildWebview),
     esbuild.context(worker)
   ]);
 
   await Promise.all([
-    ctxMain.watch(),
+    ctxExt.watch(),
+    ctxWeb.watch(),
     ctxWorker.watch()
   ]);
   console.log("👀 Watching main + worker…");

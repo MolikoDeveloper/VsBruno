@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { vscode } from "src/common/vscodeapi";
-import type { HttpMethod } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider";
 import { useTimelineContext } from "../context/TimeLineProvider";
 import type { TimelineEvent_t } from "src/types/shared";
+import type { HttpMethod } from "src/types/bruno/bruno";
+import { parseBruVars } from "src/common/parseBruVars";
 
 export default function () {
     const { bruContent, setBruContent, bruResponse, setBruResponse } = useBruContent();
@@ -17,7 +18,7 @@ export default function () {
             data: {
                 code: bruContent.script.req,
                 args: null,
-                bruContent,
+                bruContent: parseBruVars(bruContent, bruContent?.vars?.req, { exclude: ["script", "assertions", "tests"], only: [] }),
                 when: "#script-pre"
             }
         })
@@ -74,7 +75,7 @@ export default function () {
     return (
         <div className="bg-[var(--vscode-input-background)] h-[30px] text-[15px] font-bold flex m-0 rounded-[10px]">
             <div className="self-center select-none px-4">
-                <select style={{ outline: 0 }} value={bruContent?.http?.method} defaultValue="get"
+                <select style={{ outline: 0 }} value={bruContent?.http?.method || "get"}
                     onChange={e => {
                         const val = e.currentTarget.value as HttpMethod;
                         setBruContent(prev => ({

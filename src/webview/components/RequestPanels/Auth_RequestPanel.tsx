@@ -59,8 +59,8 @@ export default function () {
     return <section className="flex w-full flex-1">
         <div className="w-full mt-1 overflow-y-scroll">
             <div className="flex flex-grow items-center justify-start">
-                <select className="bg-transparent text-amber-400 py-1 [&>*]:bg-[var(--vscode-input-background)]" defaultValue={"none"}
-                    value={bruContent?.http?.auth} style={{ outline: 0 }}
+                <select className="bg-transparent text-amber-400 py-1 [&>*]:bg-[var(--vscode-input-background)]"
+                    value={bruContent?.http?.auth || "none"} style={{ outline: 0 }}
                     onChange={(ev) => {
                         const val = ev.currentTarget.value;
                         setBruContent(prev => ({
@@ -72,7 +72,7 @@ export default function () {
                         }))
                     }}>
                     {authOptions.map((a, i) => (
-                        <option value={a.key} className={`text-[var(--vscode-tab-activeForeground)] ${!a.active && "text-red-400"}`}>{a.name}</option>
+                        <option key={i} value={a.key} className={`text-[var(--vscode-tab-activeForeground)] ${!a.active && "text-red-400"}`}>{a.name}</option>
                     ))}
                 </select>
             </div>
