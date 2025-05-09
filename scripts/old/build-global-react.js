@@ -8,7 +8,7 @@ async function buildDom(entry, global, out) {
     await esbuild.build({
         entryPoints: [entry],
         bundle: true,
-        minify: true,
+        minify: false,
         format: 'iife',          // IIFE ⇒ global.*
         globalName: global,      // window.ReactDOM / ReactDOMClient
         inject: [shim],          // ← sustituye todos los “import react”
@@ -21,7 +21,7 @@ export async function buildGlobalReact(outDir = 'dist/vendor/react') {
     await esbuild.build({
         entryPoints: ['react'],
         bundle: true,
-        minify: true,
+        minify: false,
         format: 'iife',
         globalName: 'React',
         outfile: path.join(outDir, 'react.global.js')
@@ -36,3 +36,5 @@ export async function buildGlobalReact(outDir = 'dist/vendor/react') {
 
     console.log('✅  React globals →', outDir);
 }
+
+//buildGlobalReact()

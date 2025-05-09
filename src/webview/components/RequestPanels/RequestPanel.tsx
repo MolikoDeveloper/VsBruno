@@ -16,7 +16,7 @@ const tabs = ["Params", "Body", "Headers", "Auth", "Vars", "Script", "Assert", "
 
 export default function ({ className }: Props) {
     const { bruContent } = useBruContent();
-    const [currentTab, setCurrentTab] = useState<string>("Params");
+    const [currentTab, setCurrentTab] = useState<string>("Body");
 
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]";
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]";

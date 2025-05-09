@@ -12,14 +12,13 @@ export default function () {
     const httpMethods = ["get", "post", "put", "delete", "patch", "options", "head", "connect", "trace"];
 
     const runRequestScript = useCallback(() => {
-        console.log(parseBruVars(bruContent, bruContent?.vars?.req, { exclude: ["script", "assertions", "tests"], only: [] }))
         if (!bruContent?.script?.req) return;
         vscode.postMessage({
             type: "run-script",
             data: {
                 code: bruContent.script.req,
                 args: null,
-                bruContent,
+                bruContent: parseBruVars(bruContent, bruContent?.vars?.req, { exclude: ["script", "assertions", "tests"], only: [] }),
                 when: "#script-pre"
             }
         })
@@ -76,7 +75,7 @@ export default function () {
     return (
         <div className="bg-[var(--vscode-input-background)] h-[30px] text-[15px] font-bold flex m-0 rounded-[10px]">
             <div className="self-center select-none px-4">
-                <select style={{ outline: 0 }} value={bruContent?.http?.method} defaultValue="get"
+                <select style={{ outline: 0 }} value={bruContent?.http?.method || "get"}
                     onChange={e => {
                         const val = e.currentTarget.value as HttpMethod;
                         setBruContent(prev => ({

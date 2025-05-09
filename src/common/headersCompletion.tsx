@@ -10,13 +10,14 @@ import { createRoot } from "react-dom/client";
 const container = document.createElement("div");
 const root = createRoot(container);
 
-const header = headers.map(d => ({
+const header = headers.map((d, key) => ({
     label: d.label,
     info: (com: Completion): CompletionInfo | Promise<CompletionInfo> => {
-        root.render(<>
+        root.render(<div key={key}>
             <div>{d.info}</div>
             <a href={d.detail}>[see details]</a>
-        </>);
+        </div>
+        );
         return {
             dom: container,
 

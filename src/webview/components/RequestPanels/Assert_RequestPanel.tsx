@@ -72,7 +72,7 @@ export default function () {
                                 <td>
                                     <select>
                                         {AssertionOperators.map((op, ind) => (
-                                            <option value={op.value}>{op.label}</option>
+                                            <option key={ind} value={op.value}>{op.label}</option>
                                         ))
 
                                         }

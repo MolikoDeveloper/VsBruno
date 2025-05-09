@@ -11,34 +11,51 @@ import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
 import { loader } from "@monaco-editor/react";
+import { useEditorConfig } from "./context/EditorProvider";
 
-type msg = {
-    type: "update" | "open" | "fetch" | "collection" | "script-error" | "script-result" | "bruno-config" | "bru-event" | "script-state"
-    data: unknown
-}
+type providerMsg =
+    { type: "theme", data: 1 | 2 | 3 } |
+    { type: "update", data: BruFile } |
+    { type: "open", data: BruFile } |
+    { type: "fetch", data: SerializedResponse } |
+    { type: "collection", data: BruCollection } |
+    { type: "bruno-config", data: BrunoConfig } |
+    { type: "bru-event", data: { type: string; payload: any } } |
+    { type: "script-error", data: any } |
+    { type: "script-result", data: any } |
+    { type: "script-state", data: any }
 
 export default function () {
-    const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent(); const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
+    const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent();
+    const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
+    const { themeKind, setThemeKind } = useEditorConfig();
     const [firstLoad, setFirstLoad] = useState(true);
+
+    //monaco loader.
+    useEffect(() => {
+        loader.config({
+            paths: { vs: (globalThis as any).MONACO_BASE_PATH },
+        });
+    }, [])
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
 
         const listener = (event: MessageEvent) => {
-            const message: msg = event.data;
+            const message: providerMsg = event.data;
             switch (message.type) {
                 case "open":
-                    setBruContent(message.data as BruFile)
+                    setBruContent(message.data)
                     break;
                 case "update":
                     setFirstLoad(true);
-                    setBruContent(message.data as BruFile);
+                    setBruContent(message.data);
                     break;
                 case "fetch":
-                    setBruResponse(message.data as SerializedResponse)
+                    setBruResponse(message.data)
                     break;
                 case "collection":
-                    setBruCollection(message.data as BruCollection)
+                    setBruCollection(message.data)
                     break;
                 case "script-result":
                     break;
@@ -46,23 +63,26 @@ export default function () {
                     console.log(`error`, message.data)
                     break;
                 case "bruno-config":
-                    setBruConfig(message.data as BrunoConfig)
+                    setBruConfig(message.data)
                     break;
                 case "bru-event":
-                    console.log("event:", message.data)
-                    const evt = message.data as { type: string; payload: any };
+                    /*//console.log("event:", message.data)
+                    //const evt = message.data;
                     if (evt.type === "bru-get") {
                         //GetRequest(evt.payload, { bruContent: bruContent })
                     }
                     else {
                         //SetRequest({ type: evt.type, payload: evt.payload }, bruContent, setBruContent);
-                    }
+                    }*/
                     break;
                 case "script-state":
-                    SetScriptStatus(message.data as any)
+                    SetScriptStatus(message.data)
+                    break;
+                case "theme":
+                    setThemeKind(message.data)
                     break;
                 default:
-                    console.log(message.type);
+                    //console.log(message);
                     break;
             }
         }
@@ -71,13 +91,6 @@ export default function () {
         return () => {
             window.removeEventListener("message", listener)
         }
-    }, [])
-
-    //monaco loader.
-    useEffect(() => {
-        loader.config({
-            paths: { vs: (globalThis as any).MONACO_BASE_PATH },
-        });
     }, [])
 
     // on everyChange

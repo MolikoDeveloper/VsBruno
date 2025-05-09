@@ -45,7 +45,7 @@ export const Params: React.FC<EditableListProps> = ({ value, onChange }) => {
                 </thead>
                 <tbody>
                     {entries.map((entry, i) => (
-                        <tr key={i} className="bg-[var(--vscode-input-background)] max-h-4">
+                        <tr key={'ParamsEntry' + i} className="bg-[var(--vscode-input-background)] max-h-4">
                             <td className="border py-1">
                                 <input
                                     type="text"

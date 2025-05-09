@@ -66,9 +66,8 @@ export const buildWebview: BuildOptions = {
     "react": path.resolve("src/vendor/react/react-global-shim.ts"),
     "react-dom": path.resolve("src/vendor/react/react-dom-global-shim.ts"),
     "react-dom/client": path.resolve("src/vendor/react/react-dom-client-shim.ts"),
-    "react/jsx-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts"),
-    "react/jsx-dev-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts",
-    )
+    //"react/jsx-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts"),
+    //"react/jsx-dev-runtime": path.resolve("src/vendor/react/react-jsx-runtime-shim.ts"),
   }
 };
 
