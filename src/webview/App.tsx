@@ -10,7 +10,6 @@ import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
-import { loader } from "@monaco-editor/react";
 import { useEditorConfig } from "./context/EditorProvider";
 
 type providerMsg =
@@ -31,13 +30,6 @@ export default function () {
     const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
     const { setThemeKind } = useEditorConfig();
     const [firstLoad, setFirstLoad] = useState(true);
-
-    //monaco loader.
-    useEffect(() => {
-        loader.config({
-            paths: { vs: (globalThis as any).MONACO_BASE_PATH },
-        });
-    }, [])
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
