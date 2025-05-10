@@ -1,13 +1,13 @@
 import { useBruContent } from "src/webview/context/BruProvider";
-import CodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
 import { useLayoutEffect, useRef, useState } from "react";
-
+import Editor from '@monaco-editor/react'
+import { useEditorConfig } from "src/webview/context/EditorProvider";
 
 export default function () {
     const { bruResponse } = useBruContent()
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [height, setHeight] = useState<string>('0px');
+    const { themeKind } = useEditorConfig();
 
     useLayoutEffect(() => {
         const update = () => {
@@ -30,12 +30,12 @@ export default function () {
     return (
         <div className="w-full mt-2 h-full flex flex-col pb-2">
             <div className="flex-1 w-full h-full" ref={containerRef}>
-                <CodeMirror className="CM-Table overflow-auto" value={JSON.stringify(bruResponse?.body, null, 2)}
-                    extensions={[json()]}
-                    theme="dark"
-                    lang="json"
+                <Editor
+                    theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
+                    value={JSON.stringify(bruResponse?.body, null, 2)}
+                    language="json"
                     height={height}
-                    editable={false}
+                    options={{ readOnly: true, minimap: { enabled: false } }}
                 />
             </div>
         </div>
