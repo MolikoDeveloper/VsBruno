@@ -20,6 +20,7 @@ export default function reactUMDPlugin(opts: ReactUMDPluginOptions = {}): Plugin
     const reactDOMEntry = opts.reactDOMEntry ?? __dirname + '/react-dom.ts';
     const reactOutfile = `${outdir}/react.${NODE_ENV}${prod ? '.min' : ''}.js`;
     const reactDOMOutfile = `${outdir}/react-dom.${NODE_ENV}${prod ? '.min' : ''}.js`;
+    const reactJSXOutfile = `${outdir}/react-jsx.${NODE_ENV}${prod ? '.min' : ''}.js`;
 
     return {
         name: 'esbuild-react-umd',
@@ -35,8 +36,19 @@ export default function reactUMDPlugin(opts: ReactUMDPluginOptions = {}): Plugin
                     sourcemap: !prod ? 'inline' : false,
                     minify: prod,
                     outfile: `${build.initialOptions.outdir ? build.initialOptions.outdir + "/" : ''}${reactOutfile}`,
+                    banner: {
+                        js: `
+function require(module) {
+    if (module === 'react') return window.React;
+    if (module === 'react-dom/client') return window.ReactDOM;
+    if (module === 'react-dom') return window.ReactDOM.default;
+    if (module === 'react/jsx-runtime') return window.ReactJSX;
+    throw new Error('Cannot find module ' + module);
+}
+              `.trim()
+                    },
                 });
-
+                console.log(`✅ React`);
                 // 2) Bundlea ReactDOM usando la global React
                 await esbuildBuild({
                     entryPoints: [reactDOMEntry],
@@ -48,34 +60,22 @@ export default function reactUMDPlugin(opts: ReactUMDPluginOptions = {}): Plugin
                     minify: prod,
                     external: ['react'],
                     outfile: `${build.initialOptions.outdir ? build.initialOptions.outdir + "/" : ''}${reactDOMOutfile}`,
-                    banner: {
-                        js: `
-  function require(module) {
-    if (module === 'react') return window.React;
-    if (module === 'react-dom/client') return window.ReactDOM;
-    if (module === 'react-dom') return window.ReactDOM.default;
-    if (module === 'react/jsx-runtime') {
-        const React = window.React;
-        function jsx(type, props, key) {
-            const finalProps = { ...props };
-                if (key !== undefined) finalProps.key = key;
-                return React.createElement(type, finalProps);
-            }
-        return {
-            jsx,
-            jsxs: jsx,
-            jsxDEV: jsx,
-            Fragment: React.Fragment
-        };
-    }
-    throw new Error('Cannot find module ' + module);
-  }
-              `.trim()
-                    },
                 });
-
-                console.log(`✅ React`);
                 console.log(`✅ ReactDOM`);
+                await esbuildBuild({
+                    entryPoints: [require.resolve("react/jsx-runtime")],
+                    bundle: true,
+                    platform: 'browser',
+                    format: 'iife',
+                    globalName: 'ReactJSX',
+                    external: ['react'],
+                    outfile: `${build.initialOptions.outdir ? build.initialOptions.outdir + "/" : ''}${reactJSXOutfile}`,
+                    minify: prod,
+                    define: {
+                        "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`
+                    }
+                });
+                console.log(`✅ ReactJSX`);
             });
             build.onResolve({ filter: /^(react|react-dom(\/client)?|react\/jsx-runtime)$/ }, args => ({
                 path: args.path,
