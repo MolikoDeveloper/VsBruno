@@ -1,5 +1,4 @@
 /* ────────────────────────────── imports  ───────────────────────────── */
-import { prelude } from "./prelude";
 import { Clear, Print } from "src/extension";
 import { unwrapDefault } from "./unwrapDefault";
 import * as vscode from "vscode";
@@ -39,6 +38,7 @@ export class SandboxNode implements Sandbox {
         emit: (evt: any) => void
     ): Promise<ScriptResult> {
         const {
+            banner,
             code,
             currentFilePath,
             collectionRoot,
@@ -50,7 +50,7 @@ export class SandboxNode implements Sandbox {
         } = opts;
 
         if (!bruContent) {
-            Print("script", "Error getting Bruno Config")
+            Print("script", "Error getting Bruno Config");
             return { 'logs': [], 'exports': [], 'inbound': () => { } };
         }
 
@@ -115,7 +115,10 @@ export class SandboxNode implements Sandbox {
                     fileName: currentFilePath,
                 });
 
-                const finalCode = `${prelude}\n${outputText}`;
+                const finalCode = `${banner}\n${outputText}\nmodule.exports = {
+                __SKIP__: globalThis.__SKIP__, 
+                __STOP_ALL__: globalThis.__STOP_ALL__
+                }`;
                 const lines = finalCode.split(/\r?\n/).length;
                 return {
                     code: finalCode,

@@ -1,15 +1,4 @@
-import esbuild from "esbuild"
+import { env } from "process";
 
-await esbuild.build({
-    entryPoints: [require.resolve("react/jsx-runtime")],
-    bundle: true,
-    platform: 'browser',
-    format: 'iife',
-    globalName: 'ReactJSX',
-    external: ['react'],
-    outfile: "./build/test.js",
-    minify: false,
-    define: {
-        "process.env.NODE_ENV": '""'
-    }
-});
+
+console.log(env.NODE_ENV)

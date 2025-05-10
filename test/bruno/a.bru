@@ -12,20 +12,8 @@ post {
 
 body:json {
   {
-    "count": 13022,
-    "saludo": "{{saludo}}",
-    "next": "https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20",
-    "previous": true,
-    "results": [
-      {
-        "name": "bulbasaur",
-        "url": "https://pokeapi.co/api/v2/pokemon/1/"
-      },
-      {
-        "name": "ivysaur",
-        "url": "https://pokeapi.co/api/v2/pokemon/2/"
-      }
-    ]
+    "count": {{cantidad}},
+    "saludo": "{{saludo}}"
   }
 }
 
@@ -41,8 +29,16 @@ body:xml {
 
 vars:pre-request {
   saludo: hola!
+  cantidad: 2290
+}
+
+vars:post-response {
+  saludo: adios!
+  cantidad: 0
 }
 
 script:pre-request {
-  console.log(bru.cwd())
+  console.log(req.body)
+  
+  bru.runner.skipRequest()
 }

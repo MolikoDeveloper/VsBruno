@@ -2,7 +2,7 @@
   "main": "./dist/extension.cjs",
   "publisher": "MolikoDeveloper",
   "name": "vs-bruno",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a bruno files compatible api client.",
   "displayName": "VS-Bruno",
   "icon": "icon.png",
@@ -71,15 +71,14 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "echo 'Open this directory in VSCode and then run your extension with F5 or `Run and Debug > Run Extension`!'",
     "build": "bun run ./scripts/build.ts",
     "watch": "bun run ./scripts/watch.ts",
-    "prelude": "bun ",
-    "vsce-package": "bun run vsce package",
+    "vsce-package": "bunx run vsce package",
     "clean": "rm -r ./dist",
     "build-rollup": "bunx rollup -c rollup.config.js",
     "build-all": "bun run build && bun run build-rollup",
-    "package": "bun run build && bun run vsce-package"
+    "package": "bun run build && bun run vsce-package",
+    "deploy": "bun run build -env-file production.env && bun -env-file production.env vsce-package"
   },
   "repository": {
     "type": "git",

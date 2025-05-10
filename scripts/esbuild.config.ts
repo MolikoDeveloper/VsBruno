@@ -2,6 +2,8 @@ import { type BuildOptions } from "esbuild";
 import reactUMDPlugin from "./plugins/react/esbuild-react-umd";
 import postCssPlugin from 'esbuild-style-plugin'
 import { copyMonacoAssetsPlugin } from "./plugins/CopyMonaco";
+import { dtsToGlobalPlugin } from "./plugins/d.ts-to-global";
+import pkg from "../package.json"
 
 
 const webviewEntryPoints = [
@@ -56,13 +58,25 @@ export const extension: BuildOptions = {
 }
 
 export const prelude: BuildOptions = {
-    entryPoints: ["src/sandbox/prelude.ts"],
+    entryPoints: ["src/sandbox/prelude.js"/*, "src/sandbox/prelude.d.ts"*/],
     outdir: "dist/sandbox",
     logLevel: "info",
-    bundle: true,
+    bundle: false,
     platform: "browser",
+    globalName: "",
     format: "iife",
-    target: ["es2020"],
+    target: [],
     sourcemap: !prod ? 'inline' : false,
-    minify: !prod
+    minify: !prod,
+    plugins: [
+        dtsToGlobalPlugin({
+            replace: [
+                {
+                    name: "__VERSION__",
+                    value: pkg.version
+                }
+            ],
+            rawText: ["prelude.js"]
+        })
+    ]
 };

@@ -11,6 +11,7 @@ export interface SerializedResponse<TBody = unknown> {
     body: TBody;
     size: string,
     time: string
+    timems: number
 }
 
 type TimelineEvent_t = {
@@ -21,5 +22,5 @@ type TimelineEvent_t = {
     method?: string,
     statusText?: string,
     time: string
-    size: string
+    size: string,
 }

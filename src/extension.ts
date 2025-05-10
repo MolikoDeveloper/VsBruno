@@ -69,7 +69,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
           try {
             await downloader.download().then(async d => {
               if (d) {
-                const ok = await downloader.testBinary()
+                const ok = await downloader.testBinary();
                 if (!ok) throw new Error('the binary does not respond.');
               }
             });

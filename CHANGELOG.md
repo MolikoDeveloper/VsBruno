@@ -1,3 +1,24 @@
+## [0.0.3] - 2025-05-10
+
+### Added
+
+- Dynamic Monaco language registration based on `src/common/headers.json`, providing tokenization, completions, and hover tooltips with no external dependencies.
+- Support for multiple Monaco contexts (`req`, `res`) by injecting custom global types (`req`, `res`, `bru`) with autocomplete and type safety.
+- Automatic detection of the current VSCode theme (`light`, `vs-dark`, `hc-black`) using `vscode.theme`.
+- New UMD bundle that assigns `globalThis.ReactJSX | globalThis.ReactDOM | globalThis.React` dynamically based on `NODE_ENV`, matching React's official runtime behavior.
+- Added `manual.yml` GitHub Actions workflow to allow manual build validation execution via `workflow_dispatch`.
+- Added `bun.yml` GitHub Actions workflow to allow automatic build validation execution via `workflow_dispatch`.
+- The UMD banner now sets `globalThis.process = { env: { NODE_ENV: "..." } }` to prevent "process is not defined" errors in WebViews.
+
+### Changed
+
+- Rollup exports skip params depending of post script instruction.
+- Replaced Codemirror with `@monaco-editor/react`.
+
+### Fixed
+
+- CSP violation for `blob:` workers; resolved by reconfiguring Monaco to use local `vs` paths and avoiding blob-based workers.
+
 ## [0.0.2] - 2025-04-19
 
 ### Added

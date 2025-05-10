@@ -10,15 +10,19 @@ export default function () {
     const { bruContent, setBruContent, bruResponse, setBruResponse } = useBruContent();
     const { setEvents } = useTimelineContext()
     const httpMethods = ["get", "post", "put", "delete", "patch", "options", "head", "connect", "trace"];
+    const requestExclude = ["script", "assertions", "tests"];
 
     const runRequestScript = useCallback(() => {
         if (!bruContent?.script?.req) return;
+        const bru = parseBruVars(bruContent, bruContent?.vars?.req, { exclude: requestExclude, only: [] });
+
+        console.log(bru)
         vscode.postMessage({
             type: "run-script",
             data: {
                 code: bruContent.script.req,
                 args: null,
-                bruContent: parseBruVars(bruContent, bruContent?.vars?.req, { exclude: ["script", "assertions", "tests"], only: [] }),
+                bruContent: bru,
                 when: "#script-pre"
             }
         })
@@ -26,13 +30,15 @@ export default function () {
 
     const runRequest = useCallback(() => {
         if (!bruContent?.http?.url) return;
+        const bru = parseBruVars(bruContent, bruContent?.vars?.req, { exclude: requestExclude, only: [] });
+
         vscode.postMessage({
             type: "fetch",
             data: {
                 uri: bruContent.http?.url,
                 init: {
                     "method": bruContent.http?.method.toUpperCase(),
-                    "body": bruContent.http.method != "get" && bruContent?.http?.body && bruContent.body && bruContent.body[bruContent.http.body]
+                    "body": bruContent.http.method != "get" && bruContent?.http?.body && bru.body && bru.body[bruContent.http.body]
                 } as RequestInit
             }
         })
@@ -65,7 +71,7 @@ export default function () {
                 args: {
                     bruResponse
                 },
-                bruContent,
+                bruContent: parseBruVars(bruContent, bruContent?.vars?.res, { exclude: requestExclude, only: [] }),
                 when: "#script-post"
             }
         })

@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 export type LogEntry = { kind: "log" | "warn" | "error" | "info"; values: any[] };
 
 export interface RunOptions {
+    banner: string,
     code: string;
     virtualPath?: string;
     collectionRoot: vscode.Uri;

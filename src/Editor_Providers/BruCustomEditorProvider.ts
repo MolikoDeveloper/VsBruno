@@ -37,6 +37,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     private doc__filepath?: vscode.Uri;
     private doc__dirname?: vscode.Uri;
 
+    private bannerCode = "";
+
     constructor(private readonly ctx: vscode.ExtensionContext) {
         this.ctx.globalState.get<string>("SandboxState")
     }
@@ -104,7 +106,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
         }
 
-
         const { webview } = panel;
         webview.options = { enableScripts: true };
         webview.html = this.html(webview);
@@ -112,6 +113,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         /* Rutas de proyecto */
         let collectionUri = (await this.findNearestCollection(doc.uri))?.uri ?? null;
         let configUri = (await this.findNearestJsonConfig(doc.uri))?.uri ?? null;
+        const bannerpath = vscode.Uri.joinPath(this.ctx.extensionUri, "dist", "sandbox", "prelude.js");
+
+        this.bannerCode = await vscode.workspace.fs.readFile(bannerpath).then(text => Buffer.from(text).toString("utf8"))
 
         /* Watchers ------------------------------------------------------------- */
         const disposables: vscode.Disposable[] = [];
@@ -131,6 +135,10 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     this.lastBruContent = bruToJsonV2(e.document.getText())
                     webview.postMessage({ type: "update", data: this.lastBruContent });
                     return;
+                }
+
+                if (uri === bannerpath.toString()) {
+                    console.log(e.document.getText())
                 }
 
                 /* ② Colección */
@@ -235,10 +243,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
 
                 try {
 
-                    //const SandboxNode = (await import("src/sandbox/SandboxNode")).SandboxNode;
-                    //const { exports, logs } = await SandboxNode.run(opt, emitEvent);
                     const { code, virtualPath, args, bruContent, when } = msg.data;
                     const opt: RunOptions = {
+                        banner: this.bannerCode,
                         code,
                         virtualPath,
                         args,
@@ -255,6 +262,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     this.setScriptState("running", webview);
                     const { exports, logs, inbound } = await this.sandboxNode.run(opt, emitEvent);
                     this.currentInbound = inbound;
+                    console.log(exports)
 
                     this.setScriptState("stopped", webview);
                 }
@@ -303,7 +311,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                             ? await res.text()
                             : Buffer.from(await res.arrayBuffer()).toString("base64");
 
-                const elapsedMs = performance.now() - t0;        // ← fin cronómetro
+                const elapsedMs = performance.now() - t0;
 
                 const payload: SerializedResponse = {
                     ok: res.ok,
@@ -314,12 +322,13 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     parsedAs: ct.includes("json") ? "json" : ct.startsWith("text/") ? "text" : "binary",
                     body,
                     size: humanSize(Number.parseInt(res.headers.get("content-length") || "0"), 2),
-                    time: humanDuration(elapsedMs, 0)
+                    time: humanDuration(elapsedMs, 0),
+                    timems: elapsedMs
                 };
                 webview.postMessage({ type: "fetch", data: payload });
             }
             else {
-                const elapsedMs = performance.now() - t0;        // ← fin cronómetro
+                const elapsedMs = performance.now() - t0;
 
                 const payload: SerializedResponse = {
                     ok: res.ok,
@@ -330,7 +339,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     parsedAs: "text",
                     body: undefined,
                     size: humanSize(Number.parseInt(res.headers.get("content-length") || "0"), 2),
-                    time: humanDuration(elapsedMs, 0)
+                    time: humanDuration(elapsedMs, 0),
+                    timems: elapsedMs
                 };
                 webview.postMessage({ type: "fetch", data: payload });
             }
@@ -346,7 +356,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 parsedAs: 'text',
                 body: undefined,
                 size: "0B",
-                time: humanDuration(elapsedMs, 0)
+                time: humanDuration(elapsedMs, 0),
+                timems: 0
             };
             webview.postMessage({ type: 'fetch', data: payload });
         })
@@ -359,6 +370,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         const reactUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react.production.min.js" : "react.development.js"}`]);
         const reactDomUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react-dom.production.min.js" : "react-dom.development.js"}`]);
         const reactJsxUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react-jsx.production.min.js" : "react-jsx.development.js"}`]);
+
+        const preludeTypesUri = this.getUri(webview, ['dist', 'sandbox', 'prelude.d.js',]);
         const hydrate = this.getUri(webview, ["dist", "webview", "HydrateBruno.js"]);
         const monaco = this.getUri(webview, ["dist", "vendor", "monaco-editor", "vs"]);
 
@@ -392,6 +405,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         <script src="${reactUri}"></script>
         <script src="${reactDomUri}"></script>
         <script src="${reactJsxUri}"></script>
+        <script src="${preludeTypesUri}"></script>
         <script src="${hydrate}"></script>
     </body>
 </html>`;

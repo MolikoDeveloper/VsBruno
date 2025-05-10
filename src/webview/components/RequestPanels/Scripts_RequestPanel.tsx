@@ -1,5 +1,5 @@
 import { useBruContent } from "src/webview/context/BruProvider";
-import MonacoBruno from "./utils/MonacoBruno";
+import MonacoBruno from "src/webview/components/MonacoBruno";
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
