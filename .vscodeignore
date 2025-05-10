@@ -8,6 +8,7 @@
 !dist/**/*.cjs
 !dist/**/*.js
 !dist/**/*.css
+!dist/**/*.ttf
 !CHANGELOG.md
 !LICENSE.txt
 !README.md
