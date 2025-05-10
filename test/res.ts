@@ -1,3 +1,15 @@
-import path from "path"
+import esbuild from "esbuild"
 
-console.log(path.resolve("src/vendor/react/react-dom-client-shim.ts"))
+await esbuild.build({
+    entryPoints: [require.resolve("react/jsx-runtime")],
+    bundle: true,
+    platform: 'browser',
+    format: 'iife',
+    globalName: 'ReactJSX',
+    external: ['react'],
+    outfile: "./build/test.js",
+    minify: false,
+    define: {
+        "process.env.NODE_ENV": '""'
+    }
+});

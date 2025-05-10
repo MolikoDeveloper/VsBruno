@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "count": 1302,
+    "count": 13022,
     "saludo": "{{saludo}}",
     "next": "https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20",
     "previous": true,
@@ -41,4 +41,8 @@ body:xml {
 
 vars:pre-request {
   saludo: hola!
+}
+
+script:pre-request {
+  console.log(bru.cwd())
 }
