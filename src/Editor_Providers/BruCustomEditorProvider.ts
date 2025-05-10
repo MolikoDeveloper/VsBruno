@@ -33,7 +33,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     private currentInbound: ((e: any) => void) | null = null;
     private lastBruContent = {}
     private sandboxNode: Sandbox | undefined;
-    private SandboxState?: ScriptState = "idle"
+    private SandboxState?: ScriptState = "idle";
+    private doc__filepath?: vscode.Uri;
+    private doc__dirname?: vscode.Uri;
 
     constructor(private readonly ctx: vscode.ExtensionContext) {
         this.ctx.globalState.get<string>("SandboxState")
@@ -44,20 +46,22 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         doc: vscode.TextDocument,
         panel: vscode.WebviewPanel,
     ): Promise<void> {
-        const path = doc.uri.path;
-        if (/collection\.bru$/.test(path)) {
+        this.doc__filepath = doc.uri;
+        this.doc__dirname = vscode.Uri.joinPath(doc.uri, "..");
+
+        if (/collection\.bru$/.test(this.doc__filepath.path)) {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
             await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.collectionEditor');
             return;
         }
 
-        if (/\/environments\//.test(path)) {
+        if (/\/environments\//.test(this.doc__filepath.path)) {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
             await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.environmentEditor');
             return;
         }
 
-        if (/folder\.bru$/.test(path)) {
+        if (/folder\.bru$/.test(this.doc__filepath.path)) {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
             //await vscode.commands.executeCommand('vscode.openWith', doc.uri, 'vs-bruno.environmentEditor');
             return;
@@ -70,6 +74,36 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
          */
         this.setupWebviewPanel(panel);
         this.sendCurrentThemeToWebview(panel)
+
+
+        if (!doc.getText()) {
+            const init: BruFile = {
+                meta: {
+                    name: path.basename(this.doc__filepath?.fsPath || "").replace(".bru", ""),
+                    type: "http",
+                    seq: "1"
+                },
+                http: {
+                    auth: undefined,
+                    body: undefined,
+                    method: "get",
+                    url: ""
+                }
+            }
+
+            const newString = jsonToBruV2(init)
+
+            const fullRange = new vscode.Range(
+                doc.positionAt(0),
+                doc.positionAt(doc.getText().length)
+            )
+
+            const edit = new vscode.WorkspaceEdit();
+            edit.replace(doc.uri, fullRange, newString);
+            await vscode.workspace.applyEdit(edit);
+
+        }
+
 
         const { webview } = panel;
         webview.options = { enableScripts: true };
@@ -349,6 +383,9 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         <div id="root"></div>
         <script nonce=${nonce}>
             globalThis.MONACO_BASE_PATH = '${monaco}';
+            globalThis.__dirname = '${decodeURIComponent(this.doc__dirname?.toString() || "").replace("file:///", "")}';
+            globalThis.__filename = '${path.basename(this.doc__filepath?.fsPath || "")}';
+            globalThis.__filepath = '${decodeURIComponent(this.doc__filepath?.toString() || "").replace("file:///", "")}';
         </script>
         <script src="${reactUri}"></script>
         <script src="${reactDomUri}"></script>

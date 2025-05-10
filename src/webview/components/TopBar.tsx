@@ -99,7 +99,7 @@ export default function () {
                 style={{ outline: "0px" }}
                 placeholder="http://www.example.com/api/version"
                 className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
-                value={bruContent?.http?.url}
+                value={bruContent?.http?.url || ""}
                 onChange={(e) => {
                     const val = e.currentTarget.value as string;
                     setBruContent(prev => ({

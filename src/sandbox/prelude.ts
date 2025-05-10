@@ -1,5 +1,7 @@
 export const prelude = /* js */ `
 (function(){
+  
+  const _cwd = cwd; 
   // Queue outgoing events until host is ready
   const __queue__ = [];
   // Simple event listener registry for incoming events
@@ -52,7 +54,7 @@ export const prelude = /* js */ `
     static version = "0.1.0";
 
     static cwd(){
-      return cwd;
+      return _cwd;
     }
   }
 
@@ -63,7 +65,25 @@ export const prelude = /* js */ `
     script_url = "";
     script_timeout = "";
 
-    static body = JSON.parse(bruContent.body[bruContent.http.body]);
+    static body = (function() {
+      if(bruContent.http.body === "none" || bruContent.http.body === undefined) return undefined;
+      switch (bruContent.http.body) {
+        case "json":
+          try{
+            const json = JSON.parse(bruContent?.body[bruContent.http.body]);
+            return json;
+          }
+          catch(err){
+            console.error(err.message);
+          }
+          break;
+      
+        default:
+          bruContent?.body[bruContent.http.body]
+          break;
+      }
+    })();
+
     static method = bruContent.http.method.toUpperCase();
     static headers = bruContent.headers;
     static url = bruContent.http.url;
@@ -148,7 +168,7 @@ export const prelude = /* js */ `
 
   globalThis.bru = bru;
   globalThis.req = req;
-  globalThis.res = res;
+  if(!isPre) globalThis.res = res;
   globalThis.__bruQueued = __queue__;
 
   delete globalThis.bruContent

@@ -29,7 +29,7 @@ type providerMsg =
 export default function () {
     const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent();
     const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
-    const { themeKind, setThemeKind } = useEditorConfig();
+    const { setThemeKind } = useEditorConfig();
     const [firstLoad, setFirstLoad] = useState(true);
 
     //monaco loader.
@@ -97,15 +97,27 @@ export default function () {
         }
     }, [])
 
-    // on everyChange
+    // on every webview change
     useEffect(() => {
-        if (!bruContent) return;
+        if (!bruContent) { return };
+
+        if (__filename.replace(".bru", "") !== bruContent.meta?.name) {
+            setBruContent(prev => ({
+                ...prev,
+                meta: {
+                    ...prev?.meta!,
+                    name: __filename.replace(".bru", "")
+                }
+            }))
+        }
+
         if (firstLoad) { setFirstLoad(false); return; }
+
         vscode.postMessage({
             type: "edit",
             data: bruContent
         })
-    }, [bruContent])
+    }, [bruContent, __filename])
 
     return (
         <div className="m-0 p-0 relative h-screen w-screen flex flex-col">

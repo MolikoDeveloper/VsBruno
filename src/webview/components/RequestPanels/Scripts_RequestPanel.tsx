@@ -1,10 +1,8 @@
 import { useBruContent } from "src/webview/context/BruProvider";
 import MonacoBruno from "./utils/MonacoBruno";
-import { useEditorConfig } from "src/webview/context/EditorProvider";
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
-    const { themeKind } = useEditorConfig()
 
     return (
         <section className="flex flex-col flex-1 overflow-hidden pb-4">
@@ -15,10 +13,7 @@ export default function () {
                 </p>
                 <MonacoBruno
                     value={bruContent?.script?.req || ""}
-                    path="file:///pre/index.ts"
-                    globals={`declare const bru: any; declare const req: string;`}
-                    theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? "vs" : "hc-black"}
-                    monacoBasePath={(globalThis as any).MONACO_BASE_PATH} // inyectado desde global o desde el provider
+                    context="req"
                     onChange={(val) =>
                         setBruContent(prev => ({
                             ...prev,
@@ -35,10 +30,7 @@ export default function () {
                 </p>
                 <MonacoBruno
                     value={bruContent?.script?.res || ""}
-                    path="file:///post/index.ts"
-                    globals={`declare const bru: any; declare const req: string; declare const res: string;`}
-                    theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? "vs" : "hc-black"}
-                    monacoBasePath={(globalThis as any).MONACO_BASE_PATH} // inyectado desde global o desde el provider
+                    context="res"
                     onChange={(val) =>
                         setBruContent(prev => ({
                             ...prev,

@@ -49,6 +49,11 @@ export class SandboxNode implements Sandbox {
             isPre,
         } = opts;
 
+        if (!bruContent) {
+            Print("script", "Error getting Bruno Config")
+            return { 'logs': [], 'exports': [], 'inbound': () => { } };
+        }
+
         await this.ensureSetup();                       // tsconfig + carpetas
         const rollup = await this.getRollup();          // singleton Rollup
         const SourceMapConsumer = await this.getSMC();  // impl JS pura
@@ -57,9 +62,10 @@ export class SandboxNode implements Sandbox {
         const logs: LogEntry[] = [];
 
         const pushLog = (kind: LogEntry["kind"], ...values: any[]) => {
+            console.log(values)
             const text = values
-                .map((v) => (typeof v === "string" ? v : safeStringify(v)))
-                .join(" | ");
+                .map((v) => (typeof v === "string" ? v : safeStringify(v) || "undefined"))
+                .join(" ");
             logs.push({ kind, values: [text] });
             Print("script", `[${kind}] ${text}`);
         };
@@ -302,7 +308,7 @@ async function ensureSandboxSetup(extensionUri: vscode.Uri) {
 
 function safeStringify(val: any) {
     try {
-        return JSON.stringify(val);
+        return JSON.stringify(val, null, 1);
     } catch {
         return String(val);
     }
