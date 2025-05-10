@@ -10,7 +10,9 @@ export default function ({ value, onChange, context = "req", }: {
         //editor.onDidFocusEditorText(() => {
         const libSource = /*ts*/`
 declare class bru {
+    /** current version of the package. */
     static version: string;
+    /** returns the absolute path location. */
     static cwd(): string;
 }
 
