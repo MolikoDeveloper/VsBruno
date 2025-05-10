@@ -358,8 +358,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         const cssUri = this.getUri(webview, ["dist", "tailwind.css"]);
         const reactUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react.production.min.js" : "react.development.js"}`]);
         const reactDomUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react-dom.production.min.js" : "react-dom.development.js"}`]);
+        const reactJsxUri = this.getUri(webview, ['dist', 'vendor', 'react', `${prod ? "react-jsx.production.min.js" : "react-jsx.development.js"}`]);
         const hydrate = this.getUri(webview, ["dist", "webview", "HydrateBruno.js"]);
-        const hlUri = this.getUri(webview, ["dist", "common", "highlight.min.js"]);
         const monaco = this.getUri(webview, ["dist", "vendor", "monaco-editor", "vs"]);
 
         //allow certain inline script
@@ -375,6 +375,8 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
             script-src ${webview.cspSource} 'nonce-${nonce}';
             style-src  ${webview.cspSource} 'unsafe-inline';
             img-src    ${webview.cspSource} data:;
+            font-src   ${webview.cspSource};
+            worker-src blob:;
             "/>
         <link rel="stylesheet" href="${cssUri}" />
         
@@ -389,7 +391,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         </script>
         <script src="${reactUri}"></script>
         <script src="${reactDomUri}"></script>
-        <script src="${hlUri}" crossorigin></script>
+        <script src="${reactJsxUri}"></script>
         <script src="${hydrate}"></script>
     </body>
 </html>`;
