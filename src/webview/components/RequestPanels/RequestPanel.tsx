@@ -16,7 +16,7 @@ const tabs = ["Params", "Body", "Headers", "Auth", "Vars", "Script", "Assert", "
 
 export default function ({ className }: Props) {
     const { bruContent } = useBruContent();
-    const [currentTab, setCurrentTab] = useState<string>("Body");
+    const [currentTab, setCurrentTab] = useState<string>("Params");
 
     const activeStyle = "!border-b-[2px] border-b-[#569cd6] text-[var(--vscode-tab-activeForeground)]";
     const inactiveStyle = "text-[var(--vscode-tab-inactiveForeground)]";
@@ -27,7 +27,10 @@ export default function ({ className }: Props) {
                 {tabs.map((t, index) => (
                     <div key={"Reqtab" + index}
                         className={`select-none px-0 py-[6px] cursor-pointer mr-5 ${currentTab === t ? activeStyle : inactiveStyle}`}
-                        onClick={(e) => setCurrentTab(t)}
+                        onClick={(e) => {
+                            console.log(e.target)
+                            setCurrentTab(t)
+                        }}
                     >
                         {t}
                         <>{

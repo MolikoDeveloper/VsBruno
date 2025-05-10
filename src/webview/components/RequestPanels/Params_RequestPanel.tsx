@@ -1,4 +1,3 @@
-import ReactCodeMirror from "@uiw/react-codemirror";
 import type { BruParams } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider"
 
@@ -46,17 +45,17 @@ export default function () {
                             <tr key={`requestParams-${i}`}>
                                 <td className="w-[30%]">
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
-                                        style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
+                                        style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                        value={e.name}
                                         onChange={(ev) => {
-                                            updateParam(i, "name", ev.target.value)
+                                            updateParam(i, "name", ev.currentTarget.value)
                                         }}></input>
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available"
-                                            onChange={(val) => {
-                                                updateParam(i, "value", val)
-                                            }} />
+                                        <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                            style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                            value={e.value} onChange={(value) => updateParam(i, "value", value.currentTarget.value)}></input>
                                     </div>
                                 </td>
                                 <td className="w-[70px]">

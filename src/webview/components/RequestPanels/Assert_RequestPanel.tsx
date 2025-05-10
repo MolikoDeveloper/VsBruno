@@ -1,4 +1,3 @@
-import ReactCodeMirror from "@uiw/react-codemirror";
 import { useBruContent } from "src/webview/context/BruProvider";
 import { AssertionOperators, ParseAssertToValue, ParseValueToAssert } from "./utils/assertUtils";
 import { useCallback } from "react";
@@ -66,7 +65,7 @@ export default function () {
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
                                         style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
                                         onChange={(ev) => {
-                                            updateAssertAt(i, { newKey: "name", newValue: ev.target.value })
+                                            updateAssertAt(i, { newKey: "name", newValue: ev.currentTarget.value })
                                         }}></input>
                                 </td>
                                 <td>
@@ -80,10 +79,12 @@ export default function () {
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={ParseAssertToValue(e.value).operand} theme="none" basicSetup={false} editable className="CM-Table w-available"
-                                            onChange={(val) => {
-                                                updateAssertAt(i, { newKey: "value", newValue: val })
-                                            }} />
+                                        <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                            style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                            value={ParseAssertToValue(e.value).operand}
+                                            onChange={(ev) => {
+                                                updateAssertAt(i, { newKey: "name", newValue: ev.currentTarget.value })
+                                            }}></input>
                                     </div>
                                 </td>
                                 <td className="w-[70px]">

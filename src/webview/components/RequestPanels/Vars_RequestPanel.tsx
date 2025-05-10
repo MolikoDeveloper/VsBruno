@@ -1,4 +1,3 @@
-import ReactCodeMirror from "@uiw/react-codemirror";
 import type { BruVars } from "src/types/bruno/bruno";
 
 import { useBruContent } from "src/webview/context/BruProvider"
@@ -108,10 +107,12 @@ export default function () {
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available"
-                                            onChange={(val) => {
-                                                updateReqVar(i, "value", val)
-                                            }} />
+                                        <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                            style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                            value={e.value}
+                                            onChange={(ev) => {
+                                                updateReqVar(i, "value", ev.currentTarget.value)
+                                            }}></input>
                                     </div>
                                 </td>
                                 <td className="w-[70px]">
@@ -169,10 +170,12 @@ export default function () {
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={e.value} theme="none" basicSetup={false} editable className="CM-Table w-available"
-                                            onChange={(val) => {
-                                                updateResVar(i, "value", val)
-                                            }} />
+                                        <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                            style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                            value={e.value}
+                                            onChange={(ev) => {
+                                                updateResVar(i, "value", ev.currentTarget.value)
+                                            }}></input>
                                     </div>
                                 </td>
                                 <td className="w-[70px]">

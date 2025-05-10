@@ -1,5 +1,3 @@
-import ReactCodeMirror from "@uiw/react-codemirror";
-import { headersAutocomplete } from "src/common/headersCompletion";
 import type { BruHeaders } from "src/types/bruno/bruno";
 import { useBruContent } from "src/webview/context/BruProvider"
 
@@ -42,11 +40,21 @@ export default function () {
                         {bruContent?.headers?.map((h, i) => (
                             <tr key={i}>
                                 <td className="w-[30%]">
-                                    <ReactCodeMirror value={h.name} extensions={headersAutocomplete} theme="none" basicSetup={false} editable className="CM-Table w-available" onChange={(e) => updateParam(i, 'name', e)} />
+                                    <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                        style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                        value={h.name}
+                                        onChange={(ev) => {
+                                            updateParam(i, "name", ev.currentTarget.value)
+                                        }}></input>
                                 </td>
                                 <td>
                                     <div className="flex flex-row justify-between w-full overflow-x-auto">
-                                        <ReactCodeMirror value={h.value} theme="none" basicSetup={false} editable className="CM-Table w-available" onChange={(e) => updateParam(i, 'value', e)} />
+                                        <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
+                                            style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
+                                            value={h.value}
+                                            onChange={(ev) => {
+                                                updateParam(i, "value", ev.currentTarget.value)
+                                            }}></input>
                                     </div>
                                 </td>
                                 <td className="w-[70px]">
