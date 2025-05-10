@@ -50,7 +50,7 @@ export const Params: React.FC<EditableListProps> = ({ value, onChange }) => {
                                 <input
                                     type="text"
                                     value={entry.method}
-                                    onChange={(e) => updateEntry(i, "method", e.target.value)}
+                                    onChange={(e) => updateEntry(i, "method", e.currentTarget.value)}
                                     className="w-full outline-none bg-transparent appearance-none px-2"
                                     style={{ outline: "0px" }}
                                     placeholder="name"
@@ -60,7 +60,7 @@ export const Params: React.FC<EditableListProps> = ({ value, onChange }) => {
                                 <input
                                     type="text"
                                     value={entry.value}
-                                    onChange={(e) => updateEntry(i, "value", e.target.value)}
+                                    onChange={(e) => updateEntry(i, "value", e.currentTarget.value)}
                                     className="!w-[100%] !h-[100%] bg-transparent px-2"
                                     style={{ outline: "0px" }}
                                     placeholder="value"
@@ -71,7 +71,7 @@ export const Params: React.FC<EditableListProps> = ({ value, onChange }) => {
                                     type="checkbox"
                                     checked={entry.active}
                                     style={{ outline: "0px" }}
-                                    onChange={(e) => updateEntry(i, "active", e.target.checked)}
+                                    onChange={(e) => updateEntry(i, "active", e.currentTarget.checked)}
                                 />
 
                                 <button
