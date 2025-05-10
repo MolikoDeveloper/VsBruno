@@ -42,7 +42,8 @@
     "esbuild": "0.25.4",
     "esbuild-style-plugin": "1.6.3",
     "tailwindcss": "4.1.5",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "vsce": "^2.15.0"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
@@ -73,12 +74,10 @@
   "scripts": {
     "build": "bun run ./scripts/build.ts",
     "watch": "bun run ./scripts/watch.ts",
-    "vsce-package": "bunx run vsce package",
-    "clean": "rm -r ./dist",
-    "build-rollup": "bunx rollup -c rollup.config.js",
-    "build-all": "bun run build && bun run build-rollup",
+    "vsce-package": "bunx vsce package",
+    "clean": "rm -r ./dist && rm bun.lock && rm -r node_modules && bun i",
     "package": "bun run build && bun run vsce-package",
-    "deploy": "bun run build -env-file production.env && bun -env-file production.env vsce-package"
+    "deploy": "bun run build -env-file production.env && bun vsce-package"
   },
   "repository": {
     "type": "git",

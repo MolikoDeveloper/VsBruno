@@ -39,6 +39,9 @@ vars:post-response {
 
 script:pre-request {
   console.log(req.body)
-  
+}
+
+script:post-response {
+  console.log("hola!")
   bru.runner.skipRequest()
 }

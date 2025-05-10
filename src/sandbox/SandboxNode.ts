@@ -115,10 +115,8 @@ export class SandboxNode implements Sandbox {
                     fileName: currentFilePath,
                 });
 
-                const finalCode = `${banner}\n${outputText}\nmodule.exports = {
-                __SKIP__: globalThis.__SKIP__, 
-                __STOP_ALL__: globalThis.__STOP_ALL__
-                }`;
+                const finalCode = `${banner}\n${outputText}\n
+                ${isPre ? "" : "module.exports = {__SKIP__: globalThis.__SKIP__, __STOP_ALL__: globalThis.__STOP_ALL__}"}`;
                 const lines = finalCode.split(/\r?\n/).length;
                 return {
                     code: finalCode,

@@ -258,13 +258,21 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         isPre: when === "#script-pre"
                     };
 
-
                     this.setScriptState("running", webview);
                     const { exports, logs, inbound } = await this.sandboxNode.run(opt, emitEvent);
+
                     this.currentInbound = inbound;
-                    console.log(exports)
 
                     this.setScriptState("stopped", webview);
+
+                    if (exports["__SKIP__"] !== undefined) {
+                        if (exports["__SKIP__"] === false) {
+                            console.log("no saltar");
+                        }
+                        else {
+                            console.log("Saltar")
+                        }
+                    }
                 }
                 catch (err) {
                     Print('script', `[error] ${String(err)}`)
