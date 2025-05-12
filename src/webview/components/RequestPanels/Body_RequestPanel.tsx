@@ -40,12 +40,12 @@ const mimes: Mime[] = [
                 mime: "application/json",
                 key: "json",
                 name: "JSON",
-                active: false
+                active: true
             },
             {
                 mime: "application/ld+json",
                 key: "ldjson",
-                name: "Json-LD (ex)",
+                name: "Json-LD",
                 active: false
             },
             {
@@ -135,7 +135,7 @@ export default function () {
                             {mimes.map((m, i) => (
                                 <optgroup key={'ctg' + i} label={m.name}>
                                     {m.values.map((mv, iv) => (
-                                        <option key={"cto" + iv} className={`text-[var(--vscode-tab-activeForeground)] ${!mv.active && "text-red-400"}`} value={mv.key || "none"}>{mv.name}</option>
+                                        <option key={"cto" + iv} className={`text-[var(--vscode-tab-activeForeground)] ${!mv.active && "text-red-400"}`} value={mv.key || "none"}>{mv.active ? mv.name : `${mv.name} (W.I.P)`}</option>
                                     ))}
                                 </optgroup>
                             ))}

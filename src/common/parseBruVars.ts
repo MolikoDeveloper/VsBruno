@@ -44,10 +44,10 @@ export function parseBruVars(
         return s.replace(PLACEHOLDER, (_, name) => {
             const entry = varMap.get(name);
             if (!entry) {
-                throw new Error(`Variable "${name}" no encontrada`);
+                return 'null'
             }
             if (!entry.enabled) {
-                throw new Error(`Variable "${name}" está deshabilitada`);
+                return 'null'
             }
             return entry.value;
         });
