@@ -12,8 +12,8 @@ post {
 
 body:json {
   {
-    "count": {{cantidad}},
-    "saludo": "{{saludo}}"
+    "count": {{ammount}},
+    "saludo": "{{greet}}"
   }
 }
 
@@ -28,20 +28,21 @@ body:xml {
 }
 
 vars:pre-request {
-  saludo: hola!
-  cantidad: 2290
+  greet: Hello World!
+  ammount: 2290
 }
 
 vars:post-response {
-  saludo: adios!
-  cantidad: 0
+  greet: Goodbye!
+  ammount: 0
 }
 
 script:pre-request {
-  console.log(req.body)
+  console.log(req.getBody())
 }
 
 script:post-response {
-  console.log("hola!")
-  bru.runner.skipRequest()
+  console.log(res.getBody())
+  
+  
 }
