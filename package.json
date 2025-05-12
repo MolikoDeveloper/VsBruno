@@ -185,5 +185,12 @@
   },
   "engines": {
     "vscode": "^1.99.3"
-  }
+  },
+  "categories": [
+    "Visualization",
+    "Programming Languages",
+    "Testing",
+    "Other",
+    "Debuggers"
+  ]
 }
