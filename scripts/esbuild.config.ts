@@ -5,7 +5,6 @@ import { copyMonacoAssetsPlugin } from "./plugins/CopyMonaco";
 import { dtsToGlobalPlugin } from "./plugins/d.ts-to-global";
 import pkg from "../package.json"
 
-
 const webviewEntryPoints = [
     "./src/webview/HydrateBruno.tsx",
     "./src/webview/HydrateCollection.tsx",
@@ -14,7 +13,6 @@ const webviewEntryPoints = [
 ];
 
 const prod = process.env.NODE_ENV === 'production';
-
 
 export const react: BuildOptions = {
     entryPoints: webviewEntryPoints,
@@ -41,7 +39,8 @@ export const react: BuildOptions = {
             src: "node_modules/monaco-editor/min/vs",
             dest: "dist/vendor/monaco-editor/vs"
         })
-    ]
+    ],
+    drop: prod ? ["console", "debugger"] : []
 }
 
 export const extension: BuildOptions = {
@@ -55,10 +54,14 @@ export const extension: BuildOptions = {
     minify: true,
     outfile: 'dist/extension.cjs',
     external: ['vscode', 'fsevents'],
+    define: {
+        "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`
+    },
+    drop: prod ? ["console", "debugger"] : []
 }
 
 export const prelude: BuildOptions = {
-    entryPoints: ["src/sandbox/prelude.js"/*, "src/sandbox/prelude.d.ts"*/],
+    entryPoints: ["src/sandbox/prelude.js", "src/sandbox/prelude.d.ts"],
     outdir: "dist/sandbox",
     logLevel: "info",
     bundle: false,
