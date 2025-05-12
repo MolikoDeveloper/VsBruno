@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react'
+import Editor, { type Monaco } from '@monaco-editor/react'
 import { useBruContent } from 'src/webview/context/BruProvider';
 import type { BruBody } from 'src/types/bruno/bruno';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -115,6 +115,10 @@ export default function () {
         return () => ro.disconnect();
     }, []);
 
+    const beforeMount = (monaco: Monaco) => {
+        console.log("mounting")
+    }
+
     return (
         <div className='w-full h-full'>
             <div className="flex flex-grow justify-start items-center">
@@ -149,6 +153,7 @@ export default function () {
                     <Editor
                         theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
                         language={bodyKey} height={height} options={{ minimap: { 'enabled': false } }}
+                        beforeMount={bodyKey == "brujson" ? beforeMount : undefined}
                         value={bodyValue}
                         onChange={(value, ev) => {
                             if (!bodyKey) return;
@@ -176,7 +181,7 @@ export default function () {
 }
 
 function getBodyContentKeyAndValue(bruContent: any): { key: string, value: string } {
-    const bodyType = bruContent?.http?.body;
+    const bodyType = bruContent?.http?.body == "json" ? "brujson" : bruContent?.http?.body;
     if (!bodyType || bodyType === "none") return { key: "", value: "" };
 
     const content = bruContent?.body?.[bodyType];
