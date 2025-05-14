@@ -137,6 +137,19 @@ export type BruBody = Partial<{
   file: { path: string };            // body:file  (single attachment)
 }>;
 
+export type BodyKey =
+  | 'json'
+  | 'ldjson'
+  | 'text'
+  | 'xml'
+  | 'sparql'
+  | 'graphql'
+  | 'graphqlVars'
+  | 'formUrlEncoded'
+  | 'multipartForm'
+  | 'file'
+  | 'none';
+
 /*────────────────────────── meta (collection) ───────────────────── */
 export interface BruCollectionMeta {
   name: string;

@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "count": {{ammount}},
+    "count": "{{ammount}}",
     "saludo": "{{greet}}"
   }
 }
@@ -28,21 +28,5 @@ body:xml {
 }
 
 vars:pre-request {
-  greet: Hello World!
-  ammount: 2290
-}
-
-vars:post-response {
-  greet: Goodbye!
-  ammount: 0
-}
-
-script:pre-request {
-  console.log(req.getBody())
-}
-
-script:post-response {
-  console.log(res.getBody())
-  
-  
+  name: Alberto Arriagada
 }

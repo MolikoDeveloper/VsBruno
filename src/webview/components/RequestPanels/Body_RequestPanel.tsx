@@ -1,6 +1,6 @@
 import Editor, { type Monaco } from '@monaco-editor/react'
 import { useBruContent } from 'src/webview/context/BruProvider';
-import type { BruBody } from 'src/types/bruno/bruno';
+import type { BruBody, BodyKey } from 'src/types/bruno/bruno';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEditorConfig } from 'src/webview/context/EditorProvider';
 
@@ -89,15 +89,15 @@ export default function () {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [height, setHeight] = useState<string>('0px');
     const { themeKind } = useEditorConfig();
-    const [bodyKey, setBodyKey] = useState<string>("none");
-    const [bodyValue, setbodyValue] = useState("");
+    const [bodyKey, setBodyKey] = useState<BodyKey>('none');
+    const [bodyValue, setBodyValue] = useState("");
 
     //const { key: bodyKey, value: bodyValue } = getBodyContentKeyAndValue(bruContent);
     useEffect(() => {
         const { key, value } = getBodyContentKeyAndValue(bruContent);
-        setBodyKey(key)
-        setbodyValue(value);
-    }, [bruContent])
+        setBodyKey(key);
+        setBodyValue(value);
+    }, [bruContent]);
 
     useLayoutEffect(() => {
         const update = () => {
@@ -118,6 +118,20 @@ export default function () {
     const beforeMount = (monaco: Monaco) => {
         console.log("mounting")
     }
+
+    const languageMap: Record<BodyKey, string> = {
+        json: 'json',
+        ldjson: 'json',
+        xml: 'xml',
+        text: 'plaintext',
+        sparql: 'sparql',
+        graphql: 'graphql',
+        graphqlVars: 'json',  // o 'graphql' según tu setup
+        formUrlEncoded: 'plaintext',
+        multipartForm: 'plaintext',
+        file: 'plaintext',
+        none: '',
+    };
 
     return (
         <div className='w-full h-full'>
@@ -153,7 +167,7 @@ export default function () {
                     <Editor
                         theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
                         language={bodyKey} height={height} options={{ minimap: { 'enabled': false } }}
-                        beforeMount={bodyKey == "brujson" ? beforeMount : undefined}
+                        beforeMount={bodyKey == "json" ? beforeMount : undefined}
                         value={bodyValue}
                         onChange={(value, ev) => {
                             if (!bodyKey) return;
@@ -180,13 +194,15 @@ export default function () {
     )
 }
 
-function getBodyContentKeyAndValue(bruContent: any): { key: string, value: string } {
-    const bodyType = bruContent?.http?.body == "json" ? "brujson" : bruContent?.http?.body;
-    if (!bodyType || bodyType === "none") return { key: "", value: "" };
-
-    const content = bruContent?.body?.[bodyType];
+function getBodyContentKeyAndValue(bruContent: any): { key: BodyKey, value: string } {
+    const key = bruContent.http.body as BodyKey;
+    if (key === 'none') return { key, value: '' };
+    const val = bruContent.body?.[key];
     return {
-        key: bodyType || "",
-        value: typeof content === "string" ? content : JSON.stringify(content, null, 2) || ""
+        key,
+        value:
+            typeof val === 'string'
+                ? val
+                : JSON.stringify(val ?? '', null, 2),
     };
 }
