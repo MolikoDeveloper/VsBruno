@@ -24,3 +24,8 @@ type TimelineEvent_t = {
     time: string
     size: string,
 }
+
+type WorkSpaceScripts = {
+    file: string,
+    content: string
+}
