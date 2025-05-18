@@ -269,21 +269,22 @@ export class SandboxNode implements Sandbox {
     }
 
     private async getRollupv2(): Promise<typeof import("rollup")> {
-        if (this.rollup) return this.rollup;
+        if (!this.rollup)// return this.rollup;
+        {
+            // -- ruta donde Downloader dejó el paquete completo
+            const localDir = path.join(this.extensionUri.fsPath, "dist", "vendor", "rollup");
+            try {
+                // 1. Resolvemos 'rollup' considerando localDir como raíz
+                const resolved = createRequire(import.meta.url).resolve("rollup", {
+                    paths: [localDir],
+                });
 
-        // -- ruta donde Downloader dejó el paquete completo
-        const localDir = path.join(this.extensionUri.fsPath, "dist", "vendor", "rollup");
-        try {
-            // 1. Resolvemos 'rollup' considerando localDir como raíz
-            const resolved = createRequire(import.meta.url).resolve("rollup", {
-                paths: [localDir],
-            });
-
-            // 2. Lo importamos como ES-module
-            this.rollup = await import(pathToFileURL(resolved).href);
-            return this.rollup!;
-        } catch {
-            /* Si falla, probamos la resolución estándar */
+                // 2. Lo importamos como ES-module
+                this.rollup = await import(pathToFileURL(resolved).href);
+                return this.rollup!;
+            } catch {
+                /* Si falla, probamos la resolución estándar */
+            }
         }
 
         // Fallback: que exista en algún node_modules tradicional

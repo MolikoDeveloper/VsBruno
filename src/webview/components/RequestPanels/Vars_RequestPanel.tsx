@@ -96,7 +96,7 @@ export default function () {
                         </tr>
                     </thead>
                     <tbody>
-                        {bruContent?.vars?.req?.map((e, i) => <>
+                        {bruContent?.vars?.req?.map((e, i) => (
                             <tr key={`requestVars-${i}`}>
                                 <td className="w-[30%]">
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
@@ -132,7 +132,7 @@ export default function () {
                                     </div>
                                 </td>
                             </tr>
-                        </>)}
+                        ))}
                     </tbody>
                 </table>
                 <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline"
@@ -159,8 +159,8 @@ export default function () {
                         </tr>
                     </thead>
                     <tbody>
-                        {bruContent?.vars?.res?.map((e, i) => <>
-                            <tr key={`requestVars-${i}`}>
+                        {bruContent?.vars?.res?.map((e, i) => (
+                            <tr key={`responseVars-${i}`}>
                                 <td className="w-[30%]">
                                     <input className="w-full h-full m-0 p-2 placeholder:font-thin font-normal"
                                         style={{ outline: "0px" }} type="text" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false" value={e.name}
@@ -195,7 +195,7 @@ export default function () {
                                     </div>
                                 </td>
                             </tr>
-                        </>)}
+                        ))}
                     </tbody>
                 </table>
                 <button className="pr-2 py-3 mt-2 select-none cursor-pointer font-[0.8125rem] text-[#569cd6] hover:[&>span]:underline"
