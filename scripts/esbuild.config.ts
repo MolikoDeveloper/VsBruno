@@ -1,7 +1,7 @@
 import { type BuildOptions } from "esbuild";
 import reactUMDPlugin from "./plugins/react/esbuild-react-umd";
 import postCssPlugin from 'esbuild-style-plugin'
-import { copyMonacoAssetsPlugin } from "./plugins/CopyMonaco";
+import { CopyFiles } from "./plugins/CopyMonaco";
 import { dtsToGlobalPlugin } from "./plugins/d.ts-to-global";
 import pkg from "../package.json"
 
@@ -10,6 +10,20 @@ const webviewEntryPoints = [
     "./src/webview/HydrateCollection.tsx",
     "./src/webview/HydrateEnvironments.tsx",
     "./src/tailwind.css"
+];
+
+const MonacoEntry = [
+    'vs/base/browser/ui/codicons/codicon/codicon.ttf',
+    'vs/base/worker/workerMain.js',
+    'vs/basic-languages/markdown/markdown.js',
+    'vs/basic-languages/typescript/typescript.js',
+    'vs/editor/editor.main.css',
+    'vs/editor/editor.main.js',
+    'vs/language/json/jsonMode.js',
+    'vs/language/json/jsonWorker.js',
+    'vs/language/typescript/tsMode.js',
+    'vs/language/typescript/tsWorker.js',
+    'vs/loader.js',
 ];
 
 const prod = process.env.NODE_ENV === 'production';
@@ -35,9 +49,19 @@ export const react: BuildOptions = {
                 plugins: [require('@tailwindcss/postcss')],
             },
         }),
-        copyMonacoAssetsPlugin({
-            src: "node_modules/monaco-editor/min/vs",
-            dest: "dist/vendor/monaco-editor/vs"
+        CopyFiles({
+            src: MonacoEntry,
+            dest: "dist/vendor/monaco-editor",
+            name: "monaco-editor/vs",
+            preserveStructure: true,
+            root: "node_modules/monaco-editor/min/",
+            clear: true
+        }),
+        CopyFiles({
+            src: ["node_modules/@types/react/index.d.ts", "node_modules/@types/react/jsx-runtime.d.ts"],
+            dest: "dist/vendor/react/types",
+            name: "react-types",
+            clear: true
         })
     ],
     drop: prod ? ["console", "debugger"] : []
