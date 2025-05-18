@@ -27,6 +27,14 @@ body:multipart-form {
   image: @file(Z:\ADLX65YCC3A.webp)
 }
 
+script:pre-request {
+  import a from "../src/getuser"
+  import bruno from "../bruno.json"
+  
+  console.log(a())
+  console.log(bruno.version)
+}
+
 docs {
   # `POST` products
   

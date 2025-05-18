@@ -1,3 +1,20 @@
+## [0.0.32]
+
+### added
+- auto complete for external script files.
+
+### changed
+- less files exported for monaco-editor loader.
+- rollup download folder.
+
+### fixed
+- retain Context When the editor is hidden in production.
+
+## [0.0.31] - 2025-05-10
+
+### fixed
+- Request Body editor fixed.
+
 ## [0.0.3] - 2025-05-10
 
 ### Added
@@ -32,7 +49,7 @@
 - Refactored App.tsx state management to prevent circular updates and ensure active flags persist.
 - Params component now emits updates through onChange, keeping external state in sync.
 
-## Fixed
+### Fixed
 
 - Runtime error “module is not defined” in WebView by bundling the WebView code for the browser environment.
 - Column mis‑alignment in the query parameter table when the vertical scrollbar is visible.
