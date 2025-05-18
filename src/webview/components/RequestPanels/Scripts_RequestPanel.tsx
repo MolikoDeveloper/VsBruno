@@ -1,8 +1,10 @@
 import { useBruContent } from "src/webview/context/BruProvider";
 import MonacoBruno from "src/webview/components/MonacoBruno";
+import { useWorkspaceScripts } from "src/webview/context/scriptsProvider";
 
 export default function () {
     const { bruContent, setBruContent } = useBruContent();
+    const { scripts, setScripts } = useWorkspaceScripts();
 
     return (
         <section className="flex flex-col flex-1 overflow-hidden pb-4">
@@ -20,6 +22,7 @@ export default function () {
                             script: { ...prev?.script!, req: val },
                         }))
                     }
+                    externalModels={scripts}
                 />
             </div>
 
