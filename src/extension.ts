@@ -9,6 +9,7 @@ import { watchFolders } from "./common/watcher";
 
 let scriptChannel: vscode.OutputChannel;
 let brunoChannel: vscode.OutputChannel;
+const prod = process.env.NODE_ENV === 'production';
 
 export const activate = async (context: vscode.ExtensionContext) => {
   scriptChannel = vscode.window.createOutputChannel("VsBruno · Script");
@@ -19,7 +20,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
   CreateCommands(gs);
   const rollupVersion = require('package.json').dependencies.rollup;
   const ver = (bindingsByPlatformAndArch as any)[process.platform][process.arch].base as string
-  const binaryPath = path.join(__dirname, `rollup.${ver}.node`);
+  const binaryPath = path.join(__dirname, "vendor", "rollup", `rollup.${ver}.node`);
 
 
   const bruCollectionProvider = new BruCollectionEditorProvider(context);
@@ -31,7 +32,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruCollectionProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: false,
+        retainContextWhenHidden: prod,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
@@ -44,7 +45,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruEnvProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: false,
+        retainContextWhenHidden: prod,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
@@ -100,7 +101,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: false,
+        retainContextWhenHidden: prod,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
