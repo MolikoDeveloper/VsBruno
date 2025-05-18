@@ -36,6 +36,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     private SandboxState?: ScriptState = "idle";
     private doc__filepath?: vscode.Uri;
     private doc__dirname?: vscode.Uri;
+    private doc__workspace?: string;
 
     private bannerCode = "";
 
@@ -50,6 +51,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     ): Promise<void> {
         this.doc__filepath = doc.uri;
         this.doc__dirname = vscode.Uri.joinPath(doc.uri, "..");
+        this.doc__workspace = vscode.workspace.asRelativePath(doc.uri, false)
 
         if (/collection\.bru$/.test(this.doc__filepath.path)) {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -207,9 +209,31 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 break;
 
             case "init":
+                const collectionUri = await this.findNearestCollection(doc.uri)
                 webview.postMessage({ type: "open", data: bruToJsonV2(doc.getText()) });
-                webview.postMessage({ type: "collection", data: await this.findNearestCollection(doc.uri) });
+                webview.postMessage({ type: "collection", data: collectionUri });
                 webview.postMessage({ type: "bruno-config", data: await this.findNearestJsonConfig(doc.uri) });
+
+                const collectionBruUri = vscode.Uri.parse(collectionUri!.uri);
+                const collectionDirFs = path.dirname(collectionBruUri.fsPath);
+                const pattern = new vscode.RelativePattern(
+                    vscode.Uri.file(collectionDirFs),
+                    '**/*.{ts,js,jsx,tsx,json}'
+                );
+
+                const fileUris = await vscode.workspace.findFiles(pattern);
+
+                const scripts = await Promise.all(
+                    fileUris.map(async uri => {
+                        // IMPORTANT: usa fsPath, no uri.path
+                        //console.log(path.relative(collectionDirFs, uri.fsPath));
+                        const rel = path.relative(collectionDirFs, uri.fsPath);
+                        const buf = await vscode.workspace.fs.readFile(uri);
+                        return { file: rel.replace(/\\/g, '/'), content: buf.toString() };
+                    })
+                );
+
+                webview.postMessage({ type: "bruno-scripts", data: scripts })
                 break;
 
             case "fetch":
@@ -409,6 +433,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
             globalThis.__dirname = '${decodeURIComponent(this.doc__dirname?.toString() || "").replace("file:///", "")}';
             globalThis.__filename = '${path.basename(this.doc__filepath?.fsPath || "")}';
             globalThis.__filepath = '${decodeURIComponent(this.doc__filepath?.toString() || "").replace("file:///", "")}';
+            globalThis.__workspacePath = '${this.doc__workspace}'
         </script>
         <script src="${reactUri}"></script>
         <script src="${reactDomUri}"></script>
