@@ -21,7 +21,7 @@ export class Downloader {
     private storeDir: string,
     private rollupVersion: string,
     private fullDownload = false
-  ) {}
+  ) { }
 
   async download(): Promise<boolean> {
     const plat = os.platform();
@@ -36,7 +36,8 @@ export class Downloader {
     const ver = this.rollupVersion.replace(/^[^\d]*/, '');
     const tarballUrl =
       `https://registry.npmjs.org/@rollup/rollup-${pkgBase}/-/rollup-${pkgBase}-${ver}.tgz`;
-    Print("bruno","Downloading rollup.");
+    Print("bruno", "Downloading rollup.");
+    console.log(tarballUrl)
 
     return new Promise<boolean>((resolve, reject) => {
       https.get(tarballUrl, res => {
@@ -64,7 +65,7 @@ export class Downloader {
             const relPath = this.fullDownload
               ? internal
               : path.basename(internal);
-            const dest = path.join(this.storeDir, relPath);
+            const dest = path.join(this.storeDir, "vendor", "rollup", relPath);
 
             if (header.type === 'directory') {
               fs.mkdirSync(dest, { recursive: true });
@@ -103,9 +104,9 @@ export class Downloader {
     if (!platMap) throw new Error(`Unsupported platform: ${plat}`);
     const info = platMap[arch];
     if (!info) throw new Error(`Unsupported arch: ${plat}/${arch}`);
-    
 
-    const binPath = path.join(this.storeDir, `rollup.${info.base}.node`);
+
+    const binPath = path.join(this.storeDir, "vendor", "rollup", `rollup.${info.base}.node`);
     if (!fs.existsSync(binPath)) return false;
     try {
       const { stdout } = await execFile(binPath, ['--version']);

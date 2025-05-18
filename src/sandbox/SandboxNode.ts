@@ -55,7 +55,7 @@ export class SandboxNode implements Sandbox {
         }
 
         await this.ensureSetup();                       // tsconfig + carpetas
-        const rollup = await this.getRollup();          // singleton Rollup
+        const rollup = await this.getRollupv2();          // singleton Rollup
         const SourceMapConsumer = await this.getSMC();  // impl JS pura
 
         const ENTRY_ID = currentFilePath;
@@ -163,6 +163,7 @@ export class SandboxNode implements Sandbox {
                     typescript({
                         tsconfig: vscode.Uri.joinPath(this.extensionUri, "dist/sandbox-tsconfig.json").fsPath,
                         tslib: "node_modules/tslib",
+                        typescript: ts
                     }),
                 ],
                 onwarn: (w) => pushLog("warn", new Error(w.message)),
@@ -267,6 +268,29 @@ export class SandboxNode implements Sandbox {
         return this.rollup!;
     }
 
+    private async getRollupv2(): Promise<typeof import("rollup")> {
+        if (this.rollup) return this.rollup;
+
+        // -- ruta donde Downloader dejó el paquete completo
+        const localDir = path.join(this.extensionUri.fsPath, "dist", "vendor", "rollup");
+        try {
+            // 1. Resolvemos 'rollup' considerando localDir como raíz
+            const resolved = createRequire(import.meta.url).resolve("rollup", {
+                paths: [localDir],
+            });
+
+            // 2. Lo importamos como ES-module
+            this.rollup = await import(pathToFileURL(resolved).href);
+            return this.rollup!;
+        } catch {
+            /* Si falla, probamos la resolución estándar */
+        }
+
+        // Fallback: que exista en algún node_modules tradicional
+        this.rollup = await import("rollup");
+        return this.rollup!;
+    }
+
     private async getSMC() {
         if (!this.SMC) {
             const mod = await import("source-map-js");
@@ -284,13 +308,13 @@ async function ensureSandboxSetup(extensionUri: vscode.Uri) {
     } catch {
         const cfg = {
             compilerOptions: {
-                target: "ES2019",
-                module: "ESNext",
-                moduleResolution: "node",
-                allowJs: true,
-                esModuleInterop: true,
-                skipLibCheck: true,
-                lib: ["ES2019"],
+                "target": "ES2019",
+                "module": "ESNext",
+                "moduleResolution": "node",
+                "allowJs": true,
+                "esModuleInterop": true,
+                "skipLibCheck": true,
+                "types": ["node"]
             },
         };
         await vscode.workspace.fs.writeFile(
