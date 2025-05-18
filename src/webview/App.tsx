@@ -5,12 +5,13 @@ import RequestPanel from "src/webview/components/RequestPanels/RequestPanel";
 import TopBar from "src/webview/components/TopBar";
 import { useBruContent } from "./context/BruProvider";
 import { useEffect, useState } from "react";
-import type { SerializedResponse } from "src/types/shared";
+import type { SerializedResponse, WorkSpaceScripts } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
 import type { BruFile, BruCollection } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
 import { useEditorConfig } from "./context/EditorProvider";
+import { useWorkspaceScripts } from "./context/scriptsProvider";
 
 type providerMsg =
     { type: "theme", data: 1 | 2 | 3 } |
@@ -23,10 +24,12 @@ type providerMsg =
     { type: "script-error", data: any } |
     { type: "script-result", data: any } |
     { type: "script-state", data: any } |
-    { type: "vscode-theme-data", data: { base: string, colors: any, tokenColors: any } }
+    { type: "vscode-theme-data", data: { base: string, colors: any, tokenColors: any } } |
+    { type: "bruno-scripts", data: WorkSpaceScripts[] }
 
 export default function () {
     const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent();
+    const { setScripts } = useWorkspaceScripts();
     const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
     const { setThemeKind } = useEditorConfig();
     const [firstLoad, setFirstLoad] = useState(true);
@@ -76,6 +79,9 @@ export default function () {
                     break;
                 case "vscode-theme-data":
                     console.log(message.data)
+                    break;
+                case "bruno-scripts":
+                    setScripts(message.data)
                     break;
                 default:
                     //console.log(message);
