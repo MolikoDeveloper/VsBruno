@@ -12,8 +12,8 @@ post {
 
 body:json {
   {
-    "count": "{{ammount}}",
-    "saludo": "{{greet}}"
+    "count": {{total}},
+    "saludo": "{{item}}"
   }
 }
 
@@ -28,9 +28,6 @@ body:xml {
 }
 
 vars:pre-request {
-  name: AlbertoSaurus
-}
-
-script:pre-request {
-  console.log("hola!")
+  total: 100
+  item: item:aabbcc
 }

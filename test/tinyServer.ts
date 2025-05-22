@@ -7,8 +7,15 @@ Bun.serve({
             GET: () => new Response("List posts"),
             POST: async req => {
                 if (!req.body) return new Response("error", { status: 400 })
-                const body = await req.json();
-                return Response.json(body);
+
+                try {
+                    const js = await req.json()
+                    return Response.json(js);
+                }
+                catch (err: any) {
+                    console.error(err)
+                    return Response.json(err.message, { status: 500 })
+                }
             },
         }
     },
