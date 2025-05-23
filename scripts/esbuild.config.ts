@@ -17,6 +17,8 @@ const MonacoEntry = [
     'vs/base/worker/workerMain.js',
     'vs/basic-languages/markdown/markdown.js',
     'vs/basic-languages/typescript/typescript.js',
+    'vs/basic-languages/xml/xml.js',
+    'vs/basic-languages/sparql/sparql.js',
     'vs/editor/editor.main.css',
     'vs/editor/editor.main.js',
     'vs/language/json/jsonMode.js',
