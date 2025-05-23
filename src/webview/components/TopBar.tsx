@@ -5,6 +5,7 @@ import { useTimelineContext } from "../context/TimeLineProvider";
 import type { TimelineEvent_t } from "src/types/shared";
 import type { HttpMethod } from "src/types/bruno/bruno";
 import { parseBruVars } from "src/common/parseBruVars";
+import SearchLineEditor from "./monaco/MonacoSearch";
 
 export default function () {
     const { bruContent, setBruContent, bruResponse, setBruResponse } = useBruContent();
@@ -117,6 +118,7 @@ export default function () {
                     }))
                 }}
             />
+            {/*<SearchLineEditor value="aaa" onChange={() => { }} ></SearchLineEditor>*/}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-full m-0 mr-2 icon icon-tabler icon-tabler-arrow-right cursor-pointer"
                 width="24" height="24" viewBox="0 0 24 24" strokeWidth="1.5" stroke="rgb(204, 204, 204)"
                 fill="none" strokeLinecap="round" strokeLinejoin="round"
