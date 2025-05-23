@@ -141,7 +141,7 @@ export default function () {
                             enabled: true,
                             name: "",
                             value: "",
-                            local: false
+                            local: true
                         };
                         setBruContent(prev => ({
                             ...prev,
@@ -204,7 +204,7 @@ export default function () {
                             enabled: true,
                             name: "",
                             value: "",
-                            local: false
+                            local: true
                         };
                         setBruContent(prev => ({
                             ...prev,

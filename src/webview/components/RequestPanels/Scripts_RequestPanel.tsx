@@ -1,5 +1,5 @@
 import { useBruContent } from "src/webview/context/BruProvider";
-import MonacoBruno from "src/webview/components/MonacoBruno";
+import MonacoBruno from "src/webview/components/monaco/MonacoBruno";
 import { useWorkspaceScripts } from "src/webview/context/scriptsProvider";
 
 export default function () {
