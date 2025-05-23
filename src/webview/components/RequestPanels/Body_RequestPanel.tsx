@@ -3,6 +3,7 @@ import { useBruContent } from 'src/webview/context/BruProvider';
 import type { BruBody, BodyKey } from 'src/types/bruno/bruno';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEditorConfig } from 'src/webview/context/EditorProvider';
+import MonacoJson from '../monaco/MonacoJson';
 
 type Mime = {
     name: string,
@@ -115,10 +116,6 @@ export default function () {
         return () => ro.disconnect();
     }, []);
 
-    const beforeMount = (monaco: Monaco) => {
-        console.log("mounting")
-    }
-
     const languageMap: Record<BodyKey, string> = {
         json: 'json',
         ldjson: 'json',
@@ -164,10 +161,11 @@ export default function () {
             </div>
             <div className="w-full h-full" ref={containerRef}>
                 {["json", "text", "xml", "sparql", "ldjson"].includes(bruContent?.http?.body!) && (
-                    <Editor
+                    <MonacoJson
                         theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? 'light' : 'hc-black'}
-                        language={bodyKey} height={height} options={{ minimap: { 'enabled': false } }}
-                        beforeMount={bodyKey == "json" ? beforeMount : undefined}
+                        language={bodyKey === "json" ? "jsonv" : bodyKey}
+                        height={height}
+                        options={{ minimap: { 'enabled': false } }}
                         value={bodyValue}
                         onChange={(value, ev) => {
                             if (!bodyKey) return;
@@ -176,7 +174,6 @@ export default function () {
                                 body: { ...prev?.body, [bodyKey]: value?.trim() || "" }
                             }));
                         }}
-                        path=''
                     />
                 )}
                 {
