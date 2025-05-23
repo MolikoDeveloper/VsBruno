@@ -116,20 +116,6 @@ export default function () {
         return () => ro.disconnect();
     }, []);
 
-    const languageMap: Record<BodyKey, string> = {
-        json: 'json',
-        ldjson: 'json',
-        xml: 'xml',
-        text: 'plaintext',
-        sparql: 'sparql',
-        graphql: 'graphql',
-        graphqlVars: 'json',  // o 'graphql' según tu setup
-        formUrlEncoded: 'plaintext',
-        multipartForm: 'plaintext',
-        file: 'plaintext',
-        none: '',
-    };
-
     return (
         <div className='w-full h-full'>
             <div className="flex flex-grow justify-start items-center">
@@ -183,7 +169,7 @@ export default function () {
                         "form-url-encoded": <>WIP</>,
                         "multipartForm": <>WIP</>,
                         "file": <>WIP</>,
-                        "none": <>WIP</>
+                        "none": <></>
                     }[bruContent?.http?.body as string || "none"]
                 }
             </div>
