@@ -154,71 +154,60 @@ function CreateCommands(gs: vscode.Memento & { setKeysForSync(keys: readonly str
 }
 
 function watcher_(ctx: vscode.ExtensionContext) {
-  if (ctx.extensionMode === vscode.ExtensionMode.Development) {
-    const basePath = path.join(ctx.extensionPath, "..");
-    const dirsToWatch = ["src", "scripts"].map(d => path.join(basePath, d));
-    const mainFilesOrFoldersTriggeringFullReload = ["Editor_Providers", "extension.ts", "scripts", "sandbox"];
+  if (ctx.extensionMode !== vscode.ExtensionMode.Development) return;
 
-    let reloadDebounceTimer: NodeJS.Timeout | undefined;
-    const fileHashes = new Map<string, string>();
+  const root = ctx.extensionPath;                       //  ← FIX 1
+  const folders = ["src", "scripts"].map(d => path.join(root, d));
+  const triggersFullReload = ["Editor_Providers", "extension.ts", "scripts", "sandbox"];
 
-    async function calculateFileHash(filePath: string): Promise<string | null> {
-      try {
-        const fileBuffer = await fsPromises.readFile(filePath);
-        const hashSum = crypto.createHash('sha256');
-        hashSum.update(fileBuffer);
-        return hashSum.digest('hex');
-      } catch (error: any) {
-        if (ctx.extensionMode === vscode.ExtensionMode.Development) { }
-        return null;
+  const fileHashes = new Map<string, string>();
+  let debounce: NodeJS.Timeout | undefined;
+
+  const handle = async (uri: vscode.Uri) => {
+    const fp = uri.fsPath;
+    let changed = false;
+
+    try {
+      const buf = await fsPromises.readFile(fp);
+      const h = crypto.createHash("sha256").update(buf).digest("hex");
+      if (h !== fileHashes.get(fp)) {
+        fileHashes.set(fp, h);
+        changed = true;
       }
+    } catch {
+      fileHashes.delete(fp);          // borrado o ilegible
+      changed = true;
     }
 
-    watchFolders(dirsToWatch, async (_event: string, filepath: string) => {
-      const currentHash = await calculateFileHash(filepath);
-      const previousHash = fileHashes.get(filepath);
-      let significantChange = false;
+    if (!changed) return;
 
-      if (currentHash !== null) {
-        if (currentHash !== previousHash) {
-          fileHashes.set(filepath, currentHash);
-          significantChange = true;
-          Print("bruno", `Content changed (new hash): ${filepath}`);
-        } else {
-          Print("bruno", `Content hash unchanged: ${filepath}`);
-        }
+    if (debounce) clearTimeout(debounce);
+    debounce = setTimeout(async () => {
+      const needsWindowReload = triggersFullReload.some(t =>
+        fp.toLowerCase().includes(t.toLowerCase()),
+      );
+
+      if (needsWindowReload) {
+        Print("bruno", `⟳ Reload Window: ${fp}`);
+        await vscode.commands.executeCommand("workbench.action.reloadWindow");
       } else {
-        if (previousHash !== undefined) {
-          fileHashes.delete(filepath);
-          significantChange = true;
-          Print("bruno", `File deleted or unreadable (previously had hash): ${filepath}`);
-        } else {
-          Print("bruno", `File event (deleted/unreadable, no prior hash): ${filepath}`);
-          significantChange = true;
-        }
+        Print("bruno", `⟳ Reload Webviews: ${fp}`);
+        await vscode.commands.executeCommand(
+          "workbench.action.webview.reloadWebviewAction"  // comando correcto :contentReference[oaicite:1]{index=1}
+        );
       }
+    }, 1000);
+  };
 
-      if (significantChange) {
-        if (reloadDebounceTimer) {
-          clearTimeout(reloadDebounceTimer);
-        }
-        reloadDebounceTimer = setTimeout(async () => {
-          let didReloadWindow = false;
-          for (const mainTrigger of mainFilesOrFoldersTriggeringFullReload) {
-            if (filepath.toLowerCase().includes(mainTrigger.toLowerCase())) {
-              Print("bruno", `Reloading Window due to significant change in: ${filepath}`);
-              await vscode.commands.executeCommand("workbench.action.reloadWindow");
-              didReloadWindow = true;
-              break;
-            }
-          }
-          if (!didReloadWindow) {
-            Print("bruno", `Reloading WebView due to significant change in: ${filepath}`);
-            await vscode.commands.executeCommand("workbench.action.webview.reloadWebviewAction");
-          }
-        }, 1000);
-      }
-    });
-    Print("bruno", `File watcher active for development mode in: ${dirsToWatch.join(', ')}`);
+  // crea un FileSystemWatcher por carpeta
+  for (const dir of folders) {
+    const pattern = new vscode.RelativePattern(dir, "**/*");
+    const w = vscode.workspace.createFileSystemWatcher(pattern, false, false, false);
+    w.onDidChange(handle, null, ctx.subscriptions);
+    w.onDidCreate(handle, null, ctx.subscriptions);
+    w.onDidDelete(handle, null, ctx.subscriptions);
+    ctx.subscriptions.push(w);
   }
+
+  Print("bruno", `File-watcher activo en: ${folders.join(", ")}`);
 }
