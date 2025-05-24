@@ -76,8 +76,8 @@ export const extension: BuildOptions = {
     platform: 'node',
     format: 'cjs',
     target: 'node18',
-    sourcemap: false,
-    minify: true,
+    sourcemap: !prod ? "inline" : false,
+    minify: !prod,
     outfile: 'dist/extension.cjs',
     external: ['vscode', 'fsevents'],
     define: {

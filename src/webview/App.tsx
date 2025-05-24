@@ -78,7 +78,7 @@ export default function () {
                     setThemeKind(message.data)
                     break;
                 case "vscode-theme-data":
-                    console.log(message.data)
+                    //console.log(message.data)
                     break;
                 case "bruno-scripts":
                     setScripts(message.data)

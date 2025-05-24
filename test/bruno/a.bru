@@ -6,12 +6,13 @@ meta {
 
 post {
   url: http://localhost:9005/api/posts
-  body: json
+  body: ldjson
   auth: none
 }
 
 body:json {
   {
+    //test
     "count": {{total}},
     "saludo": "{{item}}"
   }
@@ -27,7 +28,15 @@ body:xml {
   </init>
 }
 
+body:sparql {
+  select ?title
+  WHERE
+  {
+    <http://example.org/book/book1> <http://purl.org/dc/elements/1.1/title> ?title .
+  }
+}
+
 vars:pre-request {
-  total: 100
-  item: item:aabbcc
+  @total: 100
+  @item: item:aa
 }

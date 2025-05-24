@@ -456,14 +456,14 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
             for (const theme of contributes.themes) {
                 if (theme.label === currentTheme) {
                     const themePath = path.join(ext.extensionPath, theme.path);
-                    const content = JSON.parse(fs.readFileSync(themePath, 'utf8'));
+                    //const content = JSON.parse(fs.readFileSync(themePath, 'utf8'));
 
                     panel.webview.postMessage({
                         type: 'vscode-theme-data',
                         data: {
                             base: theme.uiTheme ?? 'vs-dark',
-                            colors: content.colors ?? {},
-                            tokenColors: content.tokenColors ?? [],
+                            //colors: content.colors ?? {},
+                            //tokenColors: content.tokenColors ?? [],
                         }
                     });
 
