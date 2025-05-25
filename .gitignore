@@ -178,3 +178,4 @@ out
 
 bin
 .node
+bun.lock
