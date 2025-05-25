@@ -4,8 +4,7 @@
 
 > **⚠️ Disclaimer**: All Bruno brand names, images, and logos are the property of [Bruno](https://usebruno.com/). Any appearance of a Bruno image or name belongs explicitly to [Bruno](https://usebruno.com/).
 
-<img src="https://raw.githubusercontent.com/MolikoDeveloper/VsBruno/refs/heads/main/assets/screenshot-1.png" height="500"/>
-
+<img src="https://raw.githubusercontent.com/MolikoDeveloper/VsBruno/refs/heads/main/assets/screenshot-1.webp" height="500"/>
 
 ## ✨ Features
 
