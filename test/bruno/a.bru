@@ -6,13 +6,17 @@ meta {
 
 post {
   url: http://localhost:9005/api/posts
-  body: ldjson
+  body: json
   auth: none
+}
+
+headers {
+  a: b
+  cc: b
 }
 
 body:json {
   {
-    //test
     "count": {{total}},
     "saludo": "{{item}}"
   }
@@ -39,4 +43,16 @@ body:sparql {
 vars:pre-request {
   @total: 100
   @item: item:aa
+}
+
+vars:post-response {
+  @total: 90
+}
+
+script:pre-request {
+  req.setBody({
+      ...req.body,
+      a: "{{total}}"
+      });
+  req.setHeader("cc", "a");
 }

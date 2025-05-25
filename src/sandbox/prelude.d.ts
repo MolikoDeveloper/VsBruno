@@ -115,10 +115,23 @@ declare class req {
     static getUrl(): void;
     static setUrl(url: string): void;
 
-    static getHeader(header: string): void;
-    static getHeaders(): void;
-    static setHeader(header: string): void;
-    static setHeaders(headers: Record<string, string>): void;
+    static getHeader(header: string): { enabled: boolean, name: string, value: string };
+    static getHeaders(): { enabled: boolean, name: string, value: string }[];
+
+    /** Update a value of the selected header. 
+     * @param header header name.
+     * @param value header value.
+     * @param enabled
+     * @example
+     * req.setHeader("content-type", "application/json");
+     */
+    static setHeader(header: string, value: string, enabled?: boolean): void;
+    /**
+     * @param headers.name header name
+     * @param headers.value header value
+     * @param headers.enabled enable or disable header.
+     */
+    static setHeaders(headers: Array<{ name: string; value: string; enabled?: boolean; }>): void;
 
     static setMaxRedirects(count: number): void;
 
@@ -150,3 +163,13 @@ declare class res {
      */
     static getResponseTime(): number;
 }
+
+/**
+ * absolute filepath of the current bru file.
+ */
+declare const __filename: string;
+
+/**
+ * absolute path of the current bru file.
+ */
+declare const __dirname: string;

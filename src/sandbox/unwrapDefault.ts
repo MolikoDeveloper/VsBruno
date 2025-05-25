@@ -1,11 +1,9 @@
-export function unwrapDefault(mod: any): any {
-    if (
-        mod &&
-        typeof mod === "object" &&
-        "default" in mod &&
-        Object.keys(mod).filter(k => k !== "__esModule").length === 1
-    ) {
-        return mod.default;
+export function unwrapDefault(m: any) {
+    if (m && typeof m === "object" && "default" in m) {
+        const keys = Object.keys(m);
+        return keys.length === 1              // --► solo si *solo* tiene default
+            ? m.default
+            : m;                           // --► mantiene los demás exports
     }
-    return mod;
+    return m;
 }

@@ -135,6 +135,7 @@ export type BruBody = Partial<{
   formUrlEncoded: Record<string, string>;      // body:form-urlencoded
   multipartForm: MultipartFormField[];        // body:multipart-form
   file: { path: string };            // body:file  (single attachment)
+  none: undefined
 }>;
 
 export type BodyKey =

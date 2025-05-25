@@ -115,9 +115,11 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         /* Rutas de proyecto */
         let collectionUri = (await this.findNearestCollection(doc.uri))?.uri ?? null;
         let configUri = (await this.findNearestJsonConfig(doc.uri))?.uri ?? null;
-        const bannerpath = vscode.Uri.joinPath(this.ctx.extensionUri, "dist", "sandbox", "prelude.js");
 
-        this.bannerCode = await vscode.workspace.fs.readFile(bannerpath).then(text => Buffer.from(text).toString("utf8"))
+        if (!this.bannerCode) {
+            const bannerpath = vscode.Uri.joinPath(this.ctx.extensionUri, "dist", "sandbox", "prelude.js");
+            this.bannerCode = await vscode.workspace.fs.readFile(bannerpath).then(text => Buffer.from(text).toString("utf8"))
+        }
 
         /* Watchers ------------------------------------------------------------- */
         const disposables: vscode.Disposable[] = [];
@@ -137,10 +139,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                     this.lastBruContent = bruToJsonV2(e.document.getText())
                     webview.postMessage({ type: "update", data: this.lastBruContent });
                     return;
-                }
-
-                if (uri === bannerpath.toString()) {
-                    console.log(e.document.getText())
                 }
 
                 /* ② Colección */
@@ -188,8 +186,10 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
     /* ──────────────────────────── Mensajes Webview ─────────────────────────── */
     private async handleWebviewMessage(msg: WebviewMsg, doc: vscode.TextDocument, webview: vscode.Webview) {
         if (this.ctx.globalState.get<boolean>("rollupEnabled") == true) {
-            const sandbox = (await import("src/sandbox/SandboxNode")).SandboxNode
-            this.sandboxNode = new sandbox(this.ctx.extensionUri);
+            if (!this.sandboxNode) {
+                const sandbox = (await import("src/sandbox/SandboxNode")).SandboxNode
+                this.sandboxNode = new sandbox(this.ctx.extensionUri);
+            }
         }
 
         switch (msg.type) {
@@ -259,6 +259,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 if (!this.sandboxNode) break;
 
                 this.setScriptState("starting", webview)
+
                 const nearest = await this.findNearestCollection(doc.uri);
                 if (!nearest) {
                     webview.postMessage({ type: "script-error", data: "collection.bru not found" });
@@ -266,7 +267,6 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                 const emitEvent = (evt: any) => webview.postMessage({ type: "bru-event", data: evt });
 
                 try {
-
                     const { code, virtualPath, args, bruContent, when } = msg.data;
                     const opt: RunOptions = {
                         banner: this.bannerCode,
@@ -281,13 +281,12 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                         scriptStartLine: this.getScriptStart(doc, when),
                         isPre: when === "#script-pre"
                     };
-
                     this.setScriptState("running", webview);
-                    const { exports, logs, inbound } = await this.sandboxNode.run(opt, emitEvent);
-
+                    const { exports, inbound } = await this.sandboxNode.run(opt, emitEvent);
                     this.currentInbound = inbound;
 
                     this.setScriptState("stopped", webview);
+
 
                     if (exports["__SKIP__"] !== undefined) {
                         if (exports["__SKIP__"] === false) {
@@ -297,6 +296,16 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
                             console.log("Saltar")
                         }
                     }
+
+                    webview.postMessage({
+                        type: "script-result",
+                        data: {
+                            isPre: when === "#script-pre",
+                            exports: exports,
+                            inbound: this.currentInbound,
+
+                        }
+                    })
                 }
                 catch (err) {
                     Print('script', `[error] ${String(err)}`)

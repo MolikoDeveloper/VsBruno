@@ -3,51 +3,122 @@ import { vscode } from "src/common/vscodeapi";
 import { useBruContent } from "src/webview/context/BruProvider";
 import { useTimelineContext } from "../context/TimeLineProvider";
 import type { TimelineEvent_t } from "src/types/shared";
-import type { HttpMethod } from "src/types/bruno/bruno";
 import { parseBruVars } from "src/common/parseBruVars";
-import SearchLineEditor from "./monaco/MonacoSearch";
+import type { BruFile, HttpMethod } from "src/types/bruno/bruno";
+
+type Mime = {
+    key: string
+    mime: string
+}
+
+const mimes: Mime[] = [
+    {
+        mime: "multipart/form-data",
+        key: "multipartForm"
+    }, {
+        mime: "application/x-www-form-urlencoded",
+        key: "form-url-encoded"
+    }, {
+        mime: "application/json",
+        key: "json"
+
+    }, {
+        mime: "application/ld+json",
+        key: "ldjson"
+    }, {
+        mime: "application/xml",
+        key: "xml"
+    }, {
+        mime: "text/plain",
+        key: "text"
+    }, {
+        mime: "application/sparql",
+        key: "sparql"
+
+    }, {
+        mime: "none",
+        key: "none"
+    }
+]
 
 export default function () {
-    const { bruContent, setBruContent, bruResponse, setBruResponse } = useBruContent();
-    const { setEvents } = useTimelineContext()
+    const { bruContent, setBruContent, bruResponse } = useBruContent();
+    const { setEvents } = useTimelineContext();
     const httpMethods = ["get", "post", "put", "delete", "patch", "options", "head", "connect", "trace"];
-    const requestExclude = ["script", "assertions", "tests"];
+    const requestExclude = ["script", "assertions", "tests", "http"];
 
-    const runRequestScript = useCallback(() => {
-        if (!bruContent?.script?.req) return;
-        const bru = parseBruVars(bruContent, bruContent?.vars?.req, { exclude: requestExclude, only: [] });
+    // VM
+    const runRequestScript = useCallback(
+        (bruno: BruFile | null): Promise<BruFile | null> => {
+            return new Promise((resolve) => {
+                if (!bruno?.script?.req) resolve(null);
 
-        console.log(bru)
-        vscode.postMessage({
-            type: "run-script",
-            data: {
-                code: bruContent.script.req,
-                args: null,
-                bruContent: bru,
-                when: "#script-pre"
-            }
-        })
-    }, [bruContent])
+                const listener = (event: MessageEvent) => {
+                    if (event.data.type === "script-result") {
+                        window.removeEventListener("message", listener);
 
-    const runRequest = useCallback(() => {
-        if (!bruContent?.http?.url) return;
-        const bru = parseBruVars(bruContent, bruContent?.vars?.req, { exclude: requestExclude, only: [] });
+                        if (event.data.data.isPre) {
+                            const headers = event.data?.data?.exports?.req?.headers;
+                            const body = event.data?.data?.exports?.req?.body
+                            const next = { ...bru }
+
+                            if (headers)
+                                next.headers = headers;
+
+                            if (body)
+                                next.body = { ...next.body, json: JSON.stringify(body) }
+
+                            resolve(next);
+                        }
+                        else {
+                            resolve(null)
+                        }
+                    }
+                };
+
+                window.addEventListener("message", listener);
+
+                const bru = parseBruVars(bruno, bruno?.vars?.req, {
+                    exclude: requestExclude,
+                    only: [],
+                });
+
+                vscode.postMessage({
+                    type: "run-script",
+                    data: {
+                        code: bru.script?.req,
+                        args: null,
+                        bruContent: bru,
+                        when: "#script-pre",
+                    },
+                });
+            });
+        }, []
+    );
+
+
+    // fetch
+    const sendFetch = useCallback((bruno: BruFile | null) => {
+        if (!bruno?.http?.url) return;
+        const bru = parseBruVars(bruno, bruno?.vars?.req, { exclude: requestExclude, only: [] });
 
         vscode.postMessage({
             type: "fetch",
             data: {
-                uri: bruContent.http?.url,
+                uri: bru.http?.url,
                 init: {
-                    "method": bruContent.http?.method.toUpperCase(),
-                    "body": bruContent.http.method != "get" && bruContent?.http?.body && bru.body && bru.body[bruContent.http.body]
+                    "method": bru?.http?.method.toUpperCase(),
+                    "body": bru?.http?.method != "get" && bru?.http?.body && bru.body && bru.body[bru.http.body],
+                    headers: bru.headers?.filter(h => h.enabled).map(({ name, value }) => [name, value])
                 } as RequestInit
             }
         })
-    }, [bruContent])
+    }, [])
 
     //feed the timeline
     useEffect(() => {
         if (!bruResponse) return;
+
         const current: TimelineEvent_t = {
             status: bruResponse?.status,
             method: bruContent?.http?.method.toUpperCase(),
@@ -63,16 +134,20 @@ export default function () {
 
     //try to run Post response script.
     useEffect(() => {
-        if (!bruContent?.script?.res) return;
+        const varPreParsed = parseBruVars(bruContent, bruContent?.vars?.req, { exclude: requestExclude, only: [] });
+        const varPostParsed = parseBruVars(varPreParsed, bruContent?.vars?.res, { exclude: requestExclude, only: [] })
+        if (!varPostParsed?.script?.res) return;
         if (!bruResponse) return;
+
+
         vscode.postMessage({
             type: "run-script",
             data: {
-                code: bruContent.script.res,
+                code: varPostParsed.script.res,
                 args: {
                     bruResponse
                 },
-                bruContent: parseBruVars(bruContent, bruContent?.vars?.res, { exclude: requestExclude, only: [] }),
+                bruContent: varPostParsed,
                 when: "#script-post"
             }
         })
@@ -100,7 +175,6 @@ export default function () {
                     ))}
                 </select>
             </div>
-
             <input
                 type="text"
                 style={{ outline: "0px" }}
@@ -123,8 +197,9 @@ export default function () {
                 width="24" height="24" viewBox="0 0 24 24" strokeWidth="1.5" stroke="rgb(204, 204, 204)"
                 fill="none" strokeLinecap="round" strokeLinejoin="round"
                 onClick={() => {
-                    runRequestScript()
-                    runRequest()
+                    runRequestScript(bruContent).then(res => {
+                        sendFetch(res);
+                    })
                 }}>
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <line x1="5" y1="12" x2="19" y2="12"></line>

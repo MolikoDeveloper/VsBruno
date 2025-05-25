@@ -1,7 +1,9 @@
+/// <reference path="./prelude.d.ts"/>
 
 // USE IT TO RUN COLLECTIONS!!!!  IF FALSE, STOP CURRENT.
 globalThis.__SKIP__ = false; //return this value to VM
 globalThis.__STOP_ALL__ = false; //return this value to VM
+globalThis.bodyChanged = null;
 (function () {
   const _cwd = cwd;
   // Queue outgoing events until host is ready
@@ -187,7 +189,7 @@ globalThis.__STOP_ALL__ = false; //return this value to VM
   class req {
     script_body = "";
     script_method = "";
-    script_headers = {};
+    script_headers = [];
     script_url = "";
     script_timeout = "";
 
@@ -211,7 +213,7 @@ globalThis.__STOP_ALL__ = false; //return this value to VM
     })();
 
     static method = bruContent.http.method.toUpperCase();
-    static headers = bruContent.headers;
+    static headers = bruContent.headers || {};
     static url = bruContent.http.url;
     static timeout = undefined
 
@@ -229,7 +231,8 @@ globalThis.__STOP_ALL__ = false; //return this value to VM
     }
 
     static setBody(_body) {
-      if (typeof _body === string) this.script_body = JSON.parse(_body)
+      if (!_body) return;
+      if (typeof _body === "string") this.script_body = JSON.parse(_body)
       this.script_body = _body
     }
 
@@ -253,12 +256,33 @@ globalThis.__STOP_ALL__ = false; //return this value to VM
       __emit__("req.headers")
     }
 
-    static setHeader(header) {
-      __emit__("set.req.header", header)
+    static setHeader(header, value, enabled) {
+      if (!header || !value) return;
+      this.script_headers = this.headers;
+      if (!Array.isArray(this.script_headers)) this.script_headers = [];
+
+      const existing = this.script_headers.find(
+        (h) => h.name.toLowerCase() === header.toLowerCase()
+      );
+
+      if (existing) {
+        existing.value = value;
+        if (enabled !== undefined) {
+          existing.enabled = enabled;
+        }
+      } else {
+        this.script_headers.push({
+          name: header,
+          value,
+          enabled: enabled !== undefined ? enabled : true,
+        });
+      }
     }
 
     static setHeaders(headers) {
-      __emit__("set.req.headers", headers)
+      headers.forEach(({ name, value, enabled }) => {
+        this.setHeader(name, value, enabled);
+      });
     }
 
     static setMaxRedirects(count) {

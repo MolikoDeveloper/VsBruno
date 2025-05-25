@@ -63,8 +63,6 @@ export default function ({ value, onChange, context = "req", externalModels }: {
             }
         }
 
-        console.log("json", jsonDataMap)
-
         monaco.languages.registerCompletionItemProvider('typescript', {
             triggerCharacters: ['.'],
             provideCompletionItems: (model, position) => {

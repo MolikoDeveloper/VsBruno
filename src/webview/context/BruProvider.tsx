@@ -7,6 +7,8 @@ import type { SerializedResponse } from "src/types/shared";
 interface BruContextType {
     bruContent: BruFile | null,
     setBruContent: Dispatch<SetStateAction<BruFile | null>>;
+    scriptedBruContent: BruFile | null
+    setScriptedBruContent: Dispatch<SetStateAction<BruFile | null>>;
     bruCollection: BruCollection | null,
     setBruCollection: Dispatch<SetStateAction<BruCollection | null>>,
     bruConfig: BrunoConfig | null,
@@ -22,12 +24,13 @@ const BruContext = createContext<BruContextType | undefined>(undefined);
 export const BruProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [bruContent, setBruContent] = useState<BruFile | null>(null);
     const [bruCollection, setBruCollection] = useState<BruCollection | null>(null);
+    const [scriptedBruContent, setScriptedBruContent] = useState<BruFile | null>(null);
     const [bruConfig, setBruConfig] = useState<BrunoConfig | null>(null);
     const [bruEnvironment, setBruEnvironment] = useState<BruEnvFile | null>(null);
     const [bruResponse, setBruResponse] = useState<SerializedResponse | null>(null);
 
     return (
-        <BruContext.Provider value={{ bruContent, setBruContent, bruCollection, setBruCollection, bruConfig, setBruConfig, bruEnvironment, setBruEnvironment, bruResponse, setBruResponse }}>
+        <BruContext.Provider value={{ bruContent, setBruContent, scriptedBruContent, setScriptedBruContent, bruCollection, setBruCollection, bruConfig, setBruConfig, bruEnvironment, setBruEnvironment, bruResponse, setBruResponse }}>
             {children}
         </BruContext.Provider>
     )

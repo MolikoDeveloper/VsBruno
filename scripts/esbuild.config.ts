@@ -29,6 +29,7 @@ const MonacoEntry = [
 ];
 
 const prod = process.env.NODE_ENV === 'production';
+console.log("production mode:", prod)
 
 export const react: BuildOptions = {
     entryPoints: webviewEntryPoints,

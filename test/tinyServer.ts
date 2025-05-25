@@ -10,6 +10,7 @@ Bun.serve({
 
                 try {
                     const js = await req.json()
+                    console.log(req.headers)
                     return Response.json(js);
                 }
                 catch (err: any) {

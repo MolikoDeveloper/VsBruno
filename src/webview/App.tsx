@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import type { SerializedResponse, WorkSpaceScripts } from "src/types/shared";
 import { vscode } from "src/common/vscodeapi";
 import ResponsePanel from "src/webview/components/ResponsePanels/ResponsePanel";
-import type { BruFile, BruCollection } from "src/types/bruno/bruno";
+import type { BruFile, BruCollection, BruHeaders } from "src/types/bruno/bruno";
 import type { BrunoConfig } from "src/types/bruno/bruno.config";
 import { useEditorConfig } from "./context/EditorProvider";
 import { useWorkspaceScripts } from "./context/scriptsProvider";
@@ -22,13 +22,13 @@ type providerMsg =
     { type: "bruno-config", data: BrunoConfig } |
     { type: "bru-event", data: { type: string; payload: any } } |
     { type: "script-error", data: any } |
-    { type: "script-result", data: any } |
+    { type: "script-result", data: { isPre: boolean, exports: Record<string, string> & { req: { headers: BruHeaders[] | undefined, body: any | undefined } }, inbound: (ev: any) => void } } |
     { type: "script-state", data: any } |
     { type: "vscode-theme-data", data: { base: string, colors: any, tokenColors: any } } |
     { type: "bruno-scripts", data: WorkSpaceScripts[] }
 
 export default function () {
-    const { bruContent, setBruContent, bruCollection, setBruCollection, setBruConfig, setBruResponse } = useBruContent();
+    const { bruContent, setBruContent, setScriptedBruContent, setBruCollection, setBruConfig, setBruResponse, scriptedBruContent } = useBruContent();
     const { setScripts } = useWorkspaceScripts();
     const [scriptStatus, SetScriptStatus] = useState<"starting" | "running" | "stopping" | "stopped">("stopped");
     const { setThemeKind } = useEditorConfig();
@@ -36,12 +36,12 @@ export default function () {
 
     useEffect(() => {
         vscode.postMessage({ type: "init" });
-
         const listener = (event: MessageEvent) => {
             const message: providerMsg = event.data;
             switch (message.type) {
                 case "open":
-                    setBruContent(message.data)
+                    setBruContent(message.data);
+                    setScriptedBruContent(message.data);
                     break;
                 case "update":
                     setFirstLoad(true);
@@ -54,9 +54,23 @@ export default function () {
                     setBruCollection(message.data)
                     break;
                 case "script-result":
-                    break;
-                case "script-error":
-                    console.log(`error`, message.data)
+                    if (message.data.isPre) {
+                        const headers = message.data.exports?.req?.headers;
+                        const body = message.data.exports?.req?.body;
+                        setScriptedBruContent(prev => {
+                            // parte base
+                            const next = { ...prev };
+                            // actualizo headers sólo si vienen
+                            if (headers) {
+                                next.headers = headers;
+                            }
+                            // actualizo body sólo si viene
+                            if (body) {
+                                next.body = { ...next.body, json: JSON.stringify(body) };
+                            }
+                            return next;
+                        });
+                    }
                     break;
                 case "bruno-config":
                     setBruConfig(message.data)

@@ -6,8 +6,8 @@ import BruCollectionEditorProvider from "./Editor_Providers/BruCollectionEditorP
 import BruEnvironmentsEditorProvider from "./Editor_Providers/BruEnviromentEditorProvider"
 import { Downloader } from "./sandbox/Downloader";
 import { bindingsByPlatformAndArch } from "./sandbox/archs";
-import { watchFolders } from "./common/watcher";
 import * as crypto from 'crypto';
+import { TsLibDownloader } from "./sandbox/tslibDownloader";
 
 let scriptChannel: vscode.OutputChannel;
 let brunoChannel: vscode.OutputChannel;
@@ -20,7 +20,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
   watcher_(context);
   const gs = context.globalState;
   CreateCommands(gs);
-  const rollupVersion = require('package.json').dependencies.rollup;
+  const _package = require('package.json')
+  const rollupVersion = _package.dependencies.rollup;
+  const tsVersion = _package.peerDependencies.typescript;
+
   const ver = (bindingsByPlatformAndArch as any)[process.platform][process.arch].base as string
   const binaryPath = path.join(__dirname, "vendor", "rollup", `rollup.${ver}.node`);
 
@@ -68,17 +71,19 @@ export const activate = async (context: vscode.ExtensionContext) => {
           'No, Disable.'
         );
         if (choice === 'Yes, Download.') {
-          const downloader = new Downloader(__dirname, rollupVersion);
+          const Rollupdownloader = new Downloader(__dirname, rollupVersion);
           try {
-            await downloader.download().then(async d => {
+            await Rollupdownloader.download().then(async d => {
               if (d) {
-                const ok = await downloader.testBinary();
+                const ok = await Rollupdownloader.testBinary();
+
                 if (!ok) throw new Error('the binary does not respond.');
+
+                await gs.update('rollupEnabled', true);
+                vscode.window.showInformationMessage('Rollup downloaded ✅');
+                res();
               }
             });
-
-            await gs.update('rollupEnabled', true);
-            vscode.window.showInformationMessage('Rollup downloaded ✅');
           } catch (err: any) {
             await gs.update('rollupEnabled', undefined);
             vscode.window.showErrorMessage('Error downloading Rollup: ' + err.message);
@@ -89,6 +94,13 @@ export const activate = async (context: vscode.ExtensionContext) => {
         }
         else {
           await gs.update("rollupEnabled", undefined)
+        }
+      }
+      if (!fs.existsSync(path.join(__dirname, "lib.es2019.d.ts"))) {
+        try {
+          await new TsLibDownloader(__dirname, tsVersion).download();
+        } catch (err: any) {
+          vscode.window.showErrorMessage("Failed to download TS libs: " + err.message);
         }
       }
       res()
@@ -196,7 +208,7 @@ function watcher_(ctx: vscode.ExtensionContext) {
           "workbench.action.webview.reloadWebviewAction"  // comando correcto :contentReference[oaicite:1]{index=1}
         );
       }
-    }, 1000);
+    }, 2000);
   };
 
   // crea un FileSystemWatcher por carpeta

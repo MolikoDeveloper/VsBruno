@@ -4,7 +4,6 @@ import { unwrapDefault } from "./unwrapDefault";
 import * as vscode from "vscode";
 import commonjs from "@rollup/plugin-commonjs";
 import nodeResolve from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
 import json from "@rollup/plugin-json";
 import path from "path";
 import ts from "typescript";
@@ -19,9 +18,10 @@ import type { RawSourceMap, SourceMapConsumer as SourceMapConsumerType } from "s
 export class SandboxNode implements Sandbox {
     /* 1‑shot state */
     private didInit = false;
-    private rollup: typeof import("rollup") | null = null;
+    private rollup: any | null = null;
     private SMC: typeof SourceMapConsumerType | null = null;
     private readonly originalPrepare = Error.prepareStackTrace;
+    private tsconfigLocation: string = ""
 
     /* recursos por última ejecución (para stop) */
     private lastSmc: SourceMapConsumerType | null = null;
@@ -51,29 +51,29 @@ export class SandboxNode implements Sandbox {
 
         if (!bruContent) {
             Print("script", "Error getting Bruno Config");
-            return { 'logs': [], 'exports': [], 'inbound': () => { } };
+            return { 'exports': {}, 'inbound': () => { } };
         }
 
         await this.ensureSetup();                       // tsconfig + carpetas
-        const rollup = await this.getRollupv2();          // singleton Rollup
+        if (!this.tsconfigLocation) {
+            this.tsconfigLocation = vscode.Uri.joinPath(this.extensionUri, "dist/tsconfig.json").fsPath
+        }
+        this.rollup = await this.getRollupv2();          // singleton Rollup
         const SourceMapConsumer = await this.getSMC();  // impl JS pura
 
         const ENTRY_ID = currentFilePath;
-        const logs: LogEntry[] = [];
 
         const pushLog = (kind: LogEntry["kind"], ...values: any[]) => {
-            console.log(values)
             const text = values
                 .map((v) => (typeof v === "string" ? v : safeStringify(v) || "undefined"))
                 .join(" ");
-            logs.push({ kind, values: [text] });
-            Print("script", `[${kind}] ${text}`);
+            if (text || values?.[0]) Print("script", `[${kind}] ${text}`);
         };
 
         /* ── plugin fs via vscode ── */
-        const fsPlugin: import("rollup").Plugin = {
+        const fsPlugin: any = {
             name: "vscode-fs",
-            async resolveId(source, importer) {
+            async resolveId(source: string, importer: string) {
                 if (!source.startsWith(".")) return null;
                 const base =
                     !importer || importer === ENTRY_ID || importer.startsWith("\0")
@@ -93,7 +93,7 @@ export class SandboxNode implements Sandbox {
                 }
                 return null;
             },
-            async load(id) {
+            async load(id: string) {
                 if (!id.startsWith(collectionRoot.fsPath + path.sep)) return null;
                 const buf = await vscode.workspace.fs.readFile(vscode.Uri.file(id));
                 return buf.toString();
@@ -101,10 +101,10 @@ export class SandboxNode implements Sandbox {
         };
 
         /* ── entrada virtual ── */
-        const virtualPlugin: import("rollup").Plugin = {
+        const virtualPlugin: any = {
             name: "virtual-entry",
-            resolveId: (id) => (id === ENTRY_ID ? ENTRY_ID : null),
-            load: (id) => {
+            resolveId: (id: string) => (id === ENTRY_ID ? ENTRY_ID : null),
+            load: (id: string) => {
                 if (id !== ENTRY_ID) return null;
                 const { outputText } = ts.transpileModule(code, {
                     compilerOptions: {
@@ -115,8 +115,10 @@ export class SandboxNode implements Sandbox {
                     fileName: currentFilePath,
                 });
 
-                const finalCode = `${banner}\n${outputText}\n
-                ${isPre ? "" : "module.exports = {__SKIP__: globalThis.__SKIP__, __STOP_ALL__: globalThis.__STOP_ALL__}"}`;
+                const modules = isPre ?
+                    `module.exports = {...module.exports, req: {body: req.script_body,method: req.script_method,headers: req.script_headers,url: req.script_url,timeout: req.script_timeout} }` :
+                    `module.exports = {...module.exports,__SKIP__: globalThis.__SKIP__, __STOP_ALL__: globalThis.__STOP_ALL__}`
+                const finalCode = `${banner}\n${outputText}\n${modules.trim()}`;
                 const lines = finalCode.split(/\r?\n/).length;
                 return {
                     code: finalCode,
@@ -149,25 +151,22 @@ export class SandboxNode implements Sandbox {
         /* ── bundling ── */
         let cjsCode = "";
         let rawMap: RawSourceMap | null = null;
-
         try {
-            const bundle = await rollup.rollup({
+            const bundle = await this.rollup.rollup({
                 input: ENTRY_ID,
-                external: (id) => !id.startsWith(".") && !path.isAbsolute(id),
+                external: (id: string) => !id.startsWith(".") && !path.isAbsolute(id),
                 plugins: [
                     virtualPlugin,
                     fsPlugin,
                     nodeResolve({ preferBuiltins: true, moduleDirectories: ["node_modules"], modulePaths }),
                     commonjs(),
                     json({ namedExports: true, preferConst: true, compact: true }),
-                    typescript({
-                        tsconfig: vscode.Uri.joinPath(this.extensionUri, "dist/sandbox-tsconfig.json").fsPath,
-                        tslib: "node_modules/tslib",
-                        typescript: ts
-                    }),
                 ],
-                onwarn: (w) => pushLog("warn", new Error(w.message)),
+                onwarn: (w: any) => {
+                    console.warn(w);
+                }
             });
+
             const { output } = await bundle.generate({
                 format: "cjs",
                 exports: "auto",
@@ -221,7 +220,7 @@ export class SandboxNode implements Sandbox {
         vm.runInContext("globalThis.__bruQueued?.splice(0).forEach(globalThis.__bruOutbound);", context);
 
         try {
-            new vm.Script(cjsCode, { filename: currentFilePath }).runInContext(context);
+            const vmscript = new vm.Script(cjsCode, { filename: currentFilePath }).runInContext(context);
         } catch (execErr: any) {
             pushLog("error", execErr.message);
         } finally {
@@ -229,14 +228,13 @@ export class SandboxNode implements Sandbox {
         }
 
         return {
-            exports: unwrapDefault((context as any).module.exports),
-            logs,
+            exports: unwrapDefault({ ...(context as any).module.exports, ...(context as any).exports }),
             inbound: (e: any) => (context as any).__bruInbound(e),
         };
 
         /* helper vacío */
         function emptyResult(): ScriptResult {
-            return { exports: [], logs, inbound: () => { } };
+            return { exports: [], inbound: () => { } };
         }
     }
 
@@ -268,28 +266,24 @@ export class SandboxNode implements Sandbox {
         return this.rollup!;
     }
 
-    private async getRollupv2(): Promise<typeof import("rollup")> {
-        if (!this.rollup)// return this.rollup;
-        {
-            // -- ruta donde Downloader dejó el paquete completo
+    private async getRollupv2(): Promise<any> {
+        if (!this.rollup || null == this.rollup) {
             const localDir = path.join(this.extensionUri.fsPath, "dist", "vendor", "rollup");
             try {
-                // 1. Resolvemos 'rollup' considerando localDir como raíz
-                const resolved = createRequire(import.meta.url).resolve("rollup", {
+                const resolved = createRequire(this.extensionUri.fsPath).resolve("rollup", {
                     paths: [localDir],
                 });
 
-                // 2. Lo importamos como ES-module
-                this.rollup = await import(pathToFileURL(resolved).href);
+                this.rollup = await import(resolved);
                 return this.rollup!;
-            } catch {
-                /* Si falla, probamos la resolución estándar */
+            } catch (err: any) {
+                Print("bruno", "💥 rollup fail to import.")
+                Print("bruno", err.message)
             }
         }
-
-        // Fallback: que exista en algún node_modules tradicional
-        this.rollup = await import("rollup");
-        return this.rollup!;
+        else {
+            return this.rollup;
+        }
     }
 
     private async getSMC() {
@@ -303,7 +297,7 @@ export class SandboxNode implements Sandbox {
 
 /* ───────────────────────── utilidades fuera de la clase ───────────────────── */
 async function ensureSandboxSetup(extensionUri: vscode.Uri) {
-    const tsconfigUri = vscode.Uri.joinPath(extensionUri, "dist/sandbox-tsconfig.json");
+    const tsconfigUri = vscode.Uri.joinPath(extensionUri, "dist/tsconfig.json");
     try {
         await vscode.workspace.fs.stat(tsconfigUri);
     } catch {
@@ -318,10 +312,10 @@ async function ensureSandboxSetup(extensionUri: vscode.Uri) {
                 "types": ["node"]
             },
         };
-        await vscode.workspace.fs.writeFile(
+        /*await vscode.workspace.fs.writeFile(
             tsconfigUri,
             Buffer.from(JSON.stringify(cfg, null, 2))
-        );
+        );*/
     }
 
     const nm = vscode.Uri.joinPath(extensionUri, "dist/node_modules");
@@ -341,6 +335,7 @@ function safeStringify(val: any) {
 }
 
 function makeConsole(push: (k: LogEntry["kind"], ...v: any[]) => void) {
+
     return {
         log: (...v: any[]) => push("log", ...v),
         warn: (...v: any[]) => push("warn", ...v),

@@ -19,7 +19,6 @@ export interface RunOptions {
 
 export interface ScriptResult {
     exports: any;
-    logs: LogEntry[];
     inbound: (e: any) => any
 }
 
