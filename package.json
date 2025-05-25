@@ -2,7 +2,7 @@
   "main": "./dist/extension.cjs",
   "publisher": "molikodeveloper",
   "name": "vs-bruno",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "preview": true,
   "description": "a bruno files compatible api client.",
   "displayName": "vsc-bru [preview]",

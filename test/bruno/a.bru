@@ -50,13 +50,16 @@ vars:post-response {
 }
 
 script:pre-request {
-  req.setBody({
-      ...req.body,
-      a: "{{total}}"
-      });
-  req.setHeader("cc", "a");
+  req.setBody(
+      {
+          ...req.body,
+          TotalString: "{{total}}"
+      }
+  );
+  
+  console.log("request:",req.getBody());
 }
 
 script:post-response {
-  console.log("hola!")
+  console.log("Response:", res.getBody());
 }
