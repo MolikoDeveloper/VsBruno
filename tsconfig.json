@@ -42,5 +42,8 @@
     "src/**/*",
     "src/types/**/*.d.ts",
     "test"
+  ],
+  "exclude": [
+    "dist"
   ]
 }
