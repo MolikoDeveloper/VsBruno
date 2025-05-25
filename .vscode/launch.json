@@ -11,7 +11,7 @@
       "args": [
         "--folder-uri=${workspaceFolder}/test/bruno",
         "--extensionDevelopmentPath=${workspaceFolder}",
-        //"--disable-extensions",
+        "--disable-extensions",
         "--user-data-dir=${workspaceFolder}/.vscode/test-user-data"
       ],
       "outFiles": [

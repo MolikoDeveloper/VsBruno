@@ -56,3 +56,7 @@ script:pre-request {
       });
   req.setHeader("cc", "a");
 }
+
+script:post-response {
+  console.log("hola!")
+}

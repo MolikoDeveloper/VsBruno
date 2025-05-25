@@ -179,6 +179,4 @@ out
 bin
 .node
 bun.lock
-
-test/*.ts
-test/*.json
+*.cpuprofile

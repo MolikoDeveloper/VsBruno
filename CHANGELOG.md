@@ -2,10 +2,35 @@
 
 ### added
 - auto complete for external script files.
+- added variable syntax to json body.
+- {{variables}} parse.
+- **pre Request**: 
+    - ```ts
+        req.setBody({name: "value"}})
+        //or
+        req.setBody({ '{{variable1}}': '{{variable2}}'}});
+        ```
+    - ```ts
+        // adds or update a header.
+        req.setHeader("Content-Type", "application/json", true); /** enabled: true by default.*/
+        
+        // for multiple headers.
+        req.setHeaders([
+            {
+                name: 'Content-Type',
+                value: "text/plain"
+            },
+            {
+                name: 'Authorization',
+                value: "Basic user:pass"
+            }
+        ])
+        ```
 
 ### changed
 - less files exported for monaco-editor loader.
 - rollup download folder.
+- vscode engine upgrade.
 
 ### fixed
 - retain Context When the editor is hidden in production.

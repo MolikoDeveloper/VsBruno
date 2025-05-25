@@ -7,7 +7,7 @@ import BruEnvironmentsEditorProvider from "./Editor_Providers/BruEnviromentEdito
 import { Downloader } from "./sandbox/Downloader";
 import { bindingsByPlatformAndArch } from "./sandbox/archs";
 import * as crypto from 'crypto';
-import { TsLibDownloader } from "./sandbox/tslibDownloader";
+//import { TsLibDownloader } from "./sandbox/tslibDownloader";
 
 let scriptChannel: vscode.OutputChannel;
 let brunoChannel: vscode.OutputChannel;
@@ -26,7 +26,6 @@ export const activate = async (context: vscode.ExtensionContext) => {
 
   const ver = (bindingsByPlatformAndArch as any)[process.platform][process.arch].base as string
   const binaryPath = path.join(__dirname, "vendor", "rollup", `rollup.${ver}.node`);
-
 
   const bruCollectionProvider = new BruCollectionEditorProvider(context);
   const bruEnvProvider = new BruEnvironmentsEditorProvider(context);
@@ -96,13 +95,13 @@ export const activate = async (context: vscode.ExtensionContext) => {
           await gs.update("rollupEnabled", undefined)
         }
       }
-      if (!fs.existsSync(path.join(__dirname, "lib.es2019.d.ts"))) {
+      /*if (!fs.existsSync(path.join(__dirname, "lib.es2019.d.ts"))) {
         try {
           await new TsLibDownloader(__dirname, tsVersion).download();
         } catch (err: any) {
           vscode.window.showErrorMessage("Failed to download TS libs: " + err.message);
         }
-      }
+      }*/
       res()
     })
   }
@@ -205,7 +204,7 @@ function watcher_(ctx: vscode.ExtensionContext) {
       } else {
         Print("bruno", `⟳ Reload Webviews: ${fp}`);
         await vscode.commands.executeCommand(
-          "workbench.action.webview.reloadWebviewAction"  // comando correcto :contentReference[oaicite:1]{index=1}
+          "workbench.action.webview.reloadWebviewAction"
         );
       }
     }, 2000);

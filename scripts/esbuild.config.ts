@@ -40,7 +40,7 @@ export const react: BuildOptions = {
     target: ["es2022"],
     external: [],
     sourcemap: !prod ? 'inline' : false,
-    minify: !prod,
+    minify: true,
     outdir: 'dist',
     loader: {
         ".ttf": "file"
@@ -78,7 +78,7 @@ export const extension: BuildOptions = {
     format: 'cjs',
     target: 'node18',
     sourcemap: !prod ? "inline" : false,
-    minify: !prod,
+    minify: true,
     outfile: 'dist/extension.cjs',
     external: ['vscode', 'fsevents'],
     define: {
@@ -97,7 +97,7 @@ export const prelude: BuildOptions = {
     format: "iife",
     target: [],
     sourcemap: !prod ? 'inline' : false,
-    minify: !prod,
+    minify: true,
     plugins: [
         dtsToGlobalPlugin({
             replace: [
