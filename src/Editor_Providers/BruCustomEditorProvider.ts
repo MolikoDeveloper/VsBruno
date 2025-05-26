@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
 import type { SerializedResponse } from "../types/shared";
-import { bruToJsonV2, jsonToBruV2, bruToEnvJsonV2, envJsonToBruV2, collectionBruToJson, jsonToCollectionBru } from "@usebruno/lang";
+import { bruToJsonV2, jsonToBruV2, collectionBruToJson } from "@usebruno/lang";
 import type { BruFile } from "src/types/bruno/bruno";
 import { Print } from "src/extension";
 import type { RunOptions, Sandbox } from "src/sandbox/types";
 import { humanDuration, humanSize } from "src/common/humanSize";
 import * as path from 'path';
-import * as fs from 'fs';
 
 /* ──────────────────────────── Tipos auxiliares ───────────────────────────── */
 type WebviewMsg =
@@ -419,7 +418,7 @@ export default class BruCustomEditorProvider implements vscode.CustomTextEditorP
         //allow certain inline script
         const nonce = crypto.randomUUID().replace(/-/g, '');
 
-        return /*html*/ `
+        return /**/ `
 <!DOCTYPE html>
 <html lang="en">
     <head>

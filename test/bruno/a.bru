@@ -10,11 +10,6 @@ post {
   auth: none
 }
 
-headers {
-  a: b
-  cc: b
-}
-
 body:json {
   {
     "count": {{total}},
@@ -41,7 +36,7 @@ body:sparql {
 }
 
 vars:pre-request {
-  @total: 100
+  @total: 100342
   @item: item:aa
 }
 
@@ -50,13 +45,18 @@ vars:post-response {
 }
 
 script:pre-request {
-  //a
+  import a from "./src/getuser";
+  
+  console.log(a())
+  
   req.setBody(
       {
           ...req.body,
-          TotalString: "{{total}}"
+          TotalString: "hola"
       }
   );
+  
+  req.setHeader("content-type", "text/plain");
   
   console.log("request:", req.getBody());
 }
