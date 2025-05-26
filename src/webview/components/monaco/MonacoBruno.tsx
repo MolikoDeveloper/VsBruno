@@ -107,6 +107,17 @@ export default function ({ value, onChange, context = "req", externalModels }: {
                 return { suggestions };
             }
         });
+
+        monaco.editor.defineTheme("js-dark", {
+            base: "vs-dark",
+            inherit: true,
+            rules: [
+                { token: "identifier.method", foreground: "00FF00" },
+                { token: "property", foreground: "00FF00" },
+            ],
+            colors: {
+            }
+        })
     }, [])
 
     const onMount = useCallback<OnMount>((editor, monaco) => {
@@ -140,6 +151,7 @@ export default function ({ value, onChange, context = "req", externalModels }: {
             }
 
         })
+
         //console.log("modules:", externalModels?.map(d => d.file))
         //console.log("globalthis.__workspacePath:", cpath.path.replace('/', ''))
         //console.log("currentDir:", (globalThis as any).__workspacePath.replace('/' + (globalThis as any).__filename, ''))
@@ -148,7 +160,7 @@ export default function ({ value, onChange, context = "req", externalModels }: {
     return (
         <Editor
             language="typescript"
-            theme={themeKind === 2 ? "vs-dark" : themeKind === 1 ? "light" : "hc-black"}
+            theme={themeKind === 2 ? "js-dark" : themeKind === 1 ? "vs" : "hc-black"}
             height="100%"
             path={cpath.path.replace('/', '')}
             options={{ minimap: { enabled: false }, fixedOverflowWidgets: true }}

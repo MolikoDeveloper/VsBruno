@@ -50,6 +50,7 @@ vars:post-response {
 }
 
 script:pre-request {
+  //a
   req.setBody(
       {
           ...req.body,
@@ -57,7 +58,7 @@ script:pre-request {
       }
   );
   
-  console.log("request:",req.getBody());
+  console.log("request:", req.getBody());
 }
 
 script:post-response {
