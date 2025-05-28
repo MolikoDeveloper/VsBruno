@@ -1,5 +1,8 @@
 ## [0.0.32]
 
+### fixed
+ - rollup import on windows.
+
 ### added
 - auto complete for external script files.
 - added variable syntax to json body.

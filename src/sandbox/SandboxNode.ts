@@ -277,7 +277,6 @@ export class SandboxNode implements Sandbox {
                 this.rollup = await import(`file:///${resolved}`);
                 return this.rollup!;
             } catch (err: any) {
-                console.log("Tried path:", localDir);
                 Print("bruno", "💥 rollup fail to import.");
                 console.error(err);
             }
