@@ -36,7 +36,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruCollectionProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: prod,
+        retainContextWhenHidden: true,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
@@ -49,7 +49,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruEnvProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: prod,
+        retainContextWhenHidden: true,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,
@@ -114,7 +114,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
     bruProvider,
     {
       webviewOptions: {
-        retainContextWhenHidden: prod,
+        retainContextWhenHidden: true,
         enableFindWidget: false
       },
       supportsMultipleEditorsPerDocument: false,

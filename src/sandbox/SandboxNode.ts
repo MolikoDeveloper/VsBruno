@@ -175,7 +175,7 @@ export class SandboxNode implements Sandbox {
             cjsCode = `${output[0].code}\n//# sourceURL=${currentFilePath.replace(/\\/g, "/")}`;
             rawMap = output[0].map as unknown as RawSourceMap;
         } catch (err: any) {
-            pushLog("error", err.message);
+            Print("bruno", err)
             return emptyResult();
         }
 
@@ -274,14 +274,14 @@ export class SandboxNode implements Sandbox {
                     paths: [localDir],
                 });
 
-                this.rollup = await import(resolved);
+                this.rollup = await import(`file:///${resolved}`);
                 return this.rollup!;
             } catch (err: any) {
-                Print("bruno", "💥 rollup fail to import.")
-                Print("bruno", err.message)
+                console.log("Tried path:", localDir);
+                Print("bruno", "💥 rollup fail to import.");
+                console.error(err);
             }
-        }
-        else {
+        } else {
             return this.rollup;
         }
     }

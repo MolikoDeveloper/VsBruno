@@ -21,7 +21,7 @@ export class TsLibDownloader {
 
         const tgz = `https://registry.npmjs.org/typescript/-/typescript-${ver}.tgz`;
 
-        Print("bruno", `⬇  Descargando TypeScript ${ver} …`);
+        Print("bruno", `⬇  Downloading TypeScript ${ver} …`);
 
         /* 1) Bajamos el tgz completo en memoria */
         const tgzBuf = await new Promise<Buffer>((resolve, reject) => {
