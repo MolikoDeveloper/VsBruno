@@ -1,4 +1,9 @@
-## [0.0.32]
+## [0.0.33] - 2025-05-25
+
+### fixed
+ - Rollup Binary on windows OS.
+
+## [0.0.32] - 2025-05-25
 
 ### fixed
  - rollup import on windows.
