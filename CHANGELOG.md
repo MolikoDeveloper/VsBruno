@@ -1,3 +1,8 @@
+## [0.0.33] - 2025-06-02
+
+### fixed
+ - correct vscode engine version.
+
 ## [0.0.33] - 2025-05-25
 
 ### fixed
