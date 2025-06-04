@@ -107,8 +107,10 @@ export default function () {
             data: {
                 uri: bru.http?.url,
                 init: {
-                    "method": bru?.http?.method.toUpperCase(),
-                    "body": bru?.http?.method != "get" && bru?.http?.body && bru.body && bru.body[bru.http.body],
+                    method: bru?.http?.method.toUpperCase(),
+                    body: bru?.http?.method !== "get"
+                        ? bru?.http?.body && bru.body && bru.body[bru.http.body]
+                        : undefined,
                     headers: bru.headers?.filter(h => h.enabled).map(({ name, value }) => [name, value])
                 } as RequestInit
             }
