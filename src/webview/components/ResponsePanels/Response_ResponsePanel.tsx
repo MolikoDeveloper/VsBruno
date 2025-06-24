@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import { useEditorConfig } from "src/webview/context/EditorProvider";
 
 export default function () {
-    const { bruResponse } = useBruContent()
+    const { bruResponse } = useBruContent();
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [height, setHeight] = useState<string>('0px');
     const { themeKind } = useEditorConfig();
@@ -16,9 +16,7 @@ export default function () {
             }
         };
 
-        update(); // primera medición
-
-        // Observa cambios de tamaño del contenedor
+        update();
         const ro = new ResizeObserver(update);
         if (containerRef.current) ro.observe(containerRef.current);
 
