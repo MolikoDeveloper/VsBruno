@@ -154,7 +154,7 @@
     ],
     "configuration": [
       {
-        "title": "VS-Bruno Settings",
+        "title": "General",
         "properties": {
           "vs-bruno.moduleResolutionOrder": {
             "type": "array",
@@ -173,13 +173,24 @@
               "workspace",
               "global"
             ],
-            "description": "Define la prioridad para la resolucion de modulos del sandbox."
+            "description": "set the priority of sandbox module resolution."
           },
           "vs-bruno.useModuleResolution": {
             "type": "boolean",
             "order": 0,
             "default": true,
-            "description": "Habilita o deshabilita la resolución de módulos en el sandbox de VS-Bruno según el orden definido en `moduleResolutionOrder` (global → workspace → extensión)."
+            "description": "Enables module resolution in the VS-Bruno sandbox according to the order defined in `moduleResolutionOrder` (global → workspace → extension)."
+          }
+        }
+      },
+      {
+        "title": "View",
+        "properties": {
+          "vs-bruno.toggleTestView": {
+            "type": "boolean",
+            "order": 0,
+            "default": false,
+            "description": "Toggle the Tests Response tag view."
           }
         }
       }

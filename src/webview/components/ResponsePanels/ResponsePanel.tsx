@@ -84,13 +84,13 @@ export default function ({ className }: Props) {
       {toggleView ? (
         // ─────── Split View: Main arriba + Tests abajo ───────
         <>
-          <PanelGroup direction="vertical">
-            <Panel>
+          <PanelGroup direction="vertical" className="h-full w-full">
+            <Panel className="min-h-[350px] h-full relative">
               <section className=" h-full mb-4">
                 {mainPanels[currentTab] ?? null}
               </section>
             </Panel>
-            <Panel>
+            <Panel className="min-h-[200px] h-full relative">
               <section className="overflow-auto">
                 {currentTab === "Tests" && <>WIPA</>}
               </section>
